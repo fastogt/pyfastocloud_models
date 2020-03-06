@@ -138,9 +138,7 @@ class ServiceSettings(MongoModel):
         return result
 
     def add_streams(self, streams: [IStream]):
-        for stream in streams:
-            if stream:
-                self.streams.append(stream)
+        self.streams.extend(streams)
         self.save()
 
     def add_stream(self, stream: IStream):

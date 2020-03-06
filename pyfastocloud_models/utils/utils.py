@@ -42,6 +42,9 @@ def download_file(url: str, path: str, extension: str, timeout=1):
 
 
 def is_valid_http_url(url: str, timeout=1) -> bool:
+    if not url or len(url) == 0:
+        return False
+
     try:
         response = requests.head(url, timeout=timeout)
         return response.status_code == 200

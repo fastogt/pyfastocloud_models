@@ -105,6 +105,10 @@ class UserStream(EmbeddedMongoModel):
     def get_id(self) -> str:
         return str(self.pk)
 
+    @property
+    def id(self):
+        return self.pk
+
     def to_front_dict(self):
         res = self.sid.to_front_dict()
         res[UserStream.FAVORITE_FIELD] = self.favorite
@@ -188,10 +192,6 @@ class Subscriber(MongoModel):
                 self.devices.remove(dev)
                 break
         self.save()
-
-        # devices = self.devices.get({'id': sid})
-        # if devices:
-        #    devices.delete()
 
     def find_device(self, did: ObjectId):
         for dev in self.devices:

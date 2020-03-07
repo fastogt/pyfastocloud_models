@@ -35,19 +35,6 @@ class ProviderPair(EmbeddedMongoModel):
     role = fields.IntegerField(min_value=Roles.READ, max_value=Roles.ADMIN, default=Roles.ADMIN)
 
 
-def safe_delete_stream(stream: IStream):
-    if stream:
-        from pyfastocloud_models.subscriber.entry import Subscriber
-        subscribers = Subscriber.objects.all()
-        for subscriber in subscribers:
-            subscriber.remove_official_stream(stream)
-            subscriber.remove_official_vod(stream)
-            subscriber.remove_official_catchup(stream)
-        for catchup in stream.parts:
-            safe_delete_stream(catchup)
-        stream.delete()
-
-
 class ServiceSettings(MongoModel):
     class Meta:
         collection_name = 'services'
@@ -149,12 +136,12 @@ class ServiceSettings(MongoModel):
     def remove_stream(self, stream: IStream):
         if stream:
             self.streams.remove(stream)
-            safe_delete_stream(stream)
+            stream.delete()
             self.save()
 
     def remove_all_streams(self):
         for stream in list(self.streams):
-            safe_delete_stream(stream)
+            stream.delete()
         self.streams = []
         self.save()
 
@@ -178,5 +165,5 @@ class ServiceSettings(MongoModel):
 
     def delete(self, *args, **kwargs):
         for stream in self.streams:
-            safe_delete_stream(stream)
+            stream.delete()
         return super(ServiceSettings, self).delete(*args, **kwargs)

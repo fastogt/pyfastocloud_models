@@ -107,12 +107,13 @@ class IStream(MongoModel):
     iarc = fields.IntegerField(default=21, min_value=0,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
 
-    parts = fields.ListField(fields.ReferenceField('IStream'), default=[], blank=True)
+    parts = fields.ListField(fields.ReferenceField('IStream'), default=[])
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[])  #
 
     def add_part(self, stream):
-        self.parts.append(stream)
-        self.save()
+        if stream:
+            self.parts.append(stream)
+            self.save()
 
     def get_groups(self) -> list:
         return self.group.split(';')
@@ -173,6 +174,18 @@ class IStream(MongoModel):
 
     def generate_input_playlist(self, header=True) -> str:
         raise NotImplementedError('subclasses must override generate_input_playlist()!')
+
+    def delete(self, *args, **kwargs):
+        from pyfastocloud_models.subscriber.entry import Subscriber
+        subscribers = Subscriber.objects.all()
+        for subscriber in subscribers:
+            subscriber.remove_official_stream(self)
+            subscriber.remove_official_vod(self)
+            subscriber.remove_official_catchup(self)
+        for catchup in self.parts:
+            if catchup:
+                catchup.delete()
+        return super(IStream, self).delete(*args, **kwargs)
 
 
 class ProxyStream(IStream):
@@ -441,4 +454,5 @@ class EventStream(VodEncodeStream):
         return constants.StreamType.EVENT
 
 
-IStream.register_delete_rule(IStream, 'IStream.parts', fields.ReferenceField.PULL)
+# if remove catchup also clean parts
+CatchupStream.register_delete_rule(IStream, 'parts', fields.ReferenceField.PULL)

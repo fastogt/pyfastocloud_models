@@ -141,7 +141,7 @@ class Subscriber(MongoModel):
 
     SUBSCRIBER_HASH_LENGTH = 32
 
-    email = fields.CharField(max_length=64, required=True)
+    email = fields.EmailField(required=True)
     first_name = fields.CharField(max_length=64, required=True)
     last_name = fields.CharField(max_length=64, required=True)
     password = fields.CharField(min_length=SUBSCRIBER_HASH_LENGTH, max_length=SUBSCRIBER_HASH_LENGTH, required=True)

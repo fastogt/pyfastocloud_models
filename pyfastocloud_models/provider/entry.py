@@ -2,6 +2,8 @@ from datetime import datetime
 from enum import IntEnum
 
 from pymodm import MongoModel, fields
+from bson.objectid import ObjectId
+
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from pyfastocloud_models.service.entry import ServiceSettings
@@ -9,6 +11,24 @@ import pyfastocloud_models.constants as constants
 
 
 class Provider(MongoModel):
+    @staticmethod
+    def get_by_id(sid: ObjectId):
+        try:
+            provider = Provider.objects.get({'_id': sid})
+        except Provider.DoesNotExist:
+            return None
+        else:
+            return provider
+
+    @staticmethod
+    def get_by_email(email: str):
+        try:
+            provider = Provider.objects.get({'email': email})
+        except Provider.DoesNotExist:
+            return None
+        else:
+            return provider
+
     class Status(IntEnum):
         NO_ACTIVE = 0
         ACTIVE = 1
@@ -40,12 +60,12 @@ class Provider(MongoModel):
         return self.pk
 
     def add_server(self, server):
-        self.servers.append(server)
-        self.save()
+        if server:
+            self.servers.append(server)
 
     def remove_server(self, server):
-        self.servers.remove(server)
-        self.save()
+        if server:
+            self.servers.remove(server)
 
     @staticmethod
     def generate_password_hash(password: str) -> str:

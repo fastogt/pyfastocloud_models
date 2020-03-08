@@ -36,6 +36,15 @@ class ProviderPair(EmbeddedMongoModel):
 
 
 class ServiceSettings(MongoModel):
+    @staticmethod
+    def get_by_id(sid: ObjectId):
+        try:
+            ser = ServiceSettings.objects.get({'_id': sid})
+        except ServiceSettings.DoesNotExist:
+            return None
+        else:
+            return ser
+
     class Meta:
         collection_name = 'services'
 
@@ -62,8 +71,7 @@ class ServiceSettings(MongoModel):
     DEFAULT_SERVICE_CODS_HOST = 'localhost'
     DEFAULT_SERVICE_CODS_PORT = 6001
 
-    streams = fields.ListField(fields.ReferenceField(IStream, on_delete=fields.ReferenceField.PULL), default=[],
-                               blank=True)
+    streams = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
     series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), default=[],
                               blank=True)
     providers = fields.EmbeddedDocumentListField(ProviderPair, default=[])
@@ -126,37 +134,31 @@ class ServiceSettings(MongoModel):
 
     def add_streams(self, streams: [IStream]):
         self.streams.extend(streams)
-        self.save()
 
     def add_stream(self, stream: IStream):
         if stream:
             self.streams.append(stream)
-            self.save()
 
     def remove_stream(self, stream: IStream):
         if stream:
             self.streams.remove(stream)
             stream.delete()
-            self.save()
 
     def remove_all_streams(self):
         for stream in list(self.streams):
             stream.delete()
         self.streams = []
-        self.save()
 
     def add_provider(self, user: ProviderPair):
         if user:
             self.providers.append(user)
-            self.save()
 
     def remove_provider(self, provider):
         for prov in list(self.providers):
             if prov.user == provider:
                 self.providers.remove(provider)
-        self.save()
 
-    def find_stream_settings_by_id(self, sid: ObjectId):
+    def find_stream_by_id(self, sid: ObjectId):
         for stream in self.streams:
             if stream.id == sid:
                 return stream

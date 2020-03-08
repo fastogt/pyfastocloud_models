@@ -118,6 +118,24 @@ class UserStream(EmbeddedMongoModel):
 
 
 class Subscriber(MongoModel):
+    @staticmethod
+    def get_by_id(sid: ObjectId):
+        try:
+            sub = Subscriber.objects.get({'_id': sid})
+        except Subscriber.DoesNotExist:
+            return None
+        else:
+            return sub
+
+    @staticmethod
+    def get_by_email(email: str):
+        try:
+            sub = Subscriber.objects.get({'email': email})
+        except Subscriber.DoesNotExist:
+            return None
+        else:
+            return sub
+
     class Meta:
         collection_name = 'subscribers'
         allow_inheritance = True
@@ -178,20 +196,17 @@ class Subscriber(MongoModel):
         return date_to_utc_msec(self.exp_date)
 
     def add_server(self, server: ServiceSettings):
-        self.servers.append(server)
-        self.save()
+        if server:
+            self.servers.append(server)
 
     def add_device(self, device: Device):
         if len(self.devices) < self.max_devices_count:
             self.devices.append(device)
-            self.save()
 
     def remove_device(self, did: ObjectId):
         for dev in self.devices:
             if dev.id == did:
                 self.devices.remove(dev)
-                break
-        self.save()
 
     def find_device(self, did: ObjectId):
         for dev in self.devices:
@@ -228,7 +243,6 @@ class Subscriber(MongoModel):
                 return
 
         self.streams.append(user_stream)
-        self.save()
 
     def remove_official_stream(self, ostream: IStream):
         if not ostream:
@@ -237,10 +251,9 @@ class Subscriber(MongoModel):
         for stream in self.streams:
             if not stream.private and stream.sid == ostream:
                 self.streams.remove(stream)
-        self.save()
 
     def remove_official_stream_by_id(self, sid: ObjectId):
-        original_stream = IStream.get_stream_by_id(sid)
+        original_stream = IStream.get_by_id(sid)
         self.remove_official_stream(original_stream)
 
     # official vods
@@ -257,7 +270,6 @@ class Subscriber(MongoModel):
                 return
 
         self.vods.append(user_stream)
-        self.save()
 
     def remove_official_vod(self, ostream: IStream):
         if not ostream:
@@ -266,10 +278,9 @@ class Subscriber(MongoModel):
         for vod in self.vods:
             if not vod.private and vod.sid == ostream:
                 self.vods.remove(vod)
-        self.save()
 
     def remove_official_vod_by_id(self, sid: ObjectId):
-        original_stream = IStream.get_stream_by_id(sid)
+        original_stream = IStream.get_by_id(sid)
         self.remove_official_vod(original_stream)
 
     # official catchups
@@ -286,7 +297,6 @@ class Subscriber(MongoModel):
                 return
 
         self.catchups.append(user_stream)
-        self.save()
 
     def remove_official_catchup(self, ostream: IStream):
         if not ostream:
@@ -295,10 +305,9 @@ class Subscriber(MongoModel):
         for catchup in self.catchups:
             if not catchup.private and catchup.sid == ostream:
                 self.catchups.remove(catchup)
-        self.save()
 
     def remove_official_catchup_by_id(self, sid: ObjectId):
-        original_stream = IStream.get_stream_by_id(sid)
+        original_stream = IStream.get_by_id(sid)
         self.remove_official_catchup(original_stream)
 
     # own
@@ -309,22 +318,19 @@ class Subscriber(MongoModel):
 
         user_stream.private = True
         self.streams.append(user_stream)
-        self.save()
 
     def remove_own_stream_by_id(self, sid: ObjectId):
-        stream = IStream.get_stream_by_id(sid)
+        stream = IStream.get_by_id(sid)
         if stream:
             for stream in self.streams:
                 if stream.sid == sid:
                     self.stream.remove(stream)
             stream.delete()
-            self.save()
 
     def remove_all_own_streams(self):
         for stream in self.streams:
             if stream.private:
                 self.streams.remove(stream)
-        self.save()
 
     def add_own_vod(self, user_stream: UserStream):
         for vod in self.vod:
@@ -333,22 +339,19 @@ class Subscriber(MongoModel):
 
         user_stream.private = True
         self.vod.append(user_stream)
-        self.save()
 
     def remove_own_vod_by_id(self, sid: ObjectId):
-        vod = IStream.get_stream_by_id(sid)
+        vod = IStream.get_by_id(sid)
         if vod:
             for vod in self.vod:
                 if vod.private and vod.sid == sid:
                     self.vod.remove(vod)
             vod.delete()
-            self.save()
 
     def remove_all_own_vods(self):
         for stream in self.vods:
             if stream.private:
                 self.vods.remove(stream)
-        self.save()
 
     # available
     def official_streams(self):
@@ -417,7 +420,6 @@ class Subscriber(MongoModel):
     def select_all_streams(self, select: bool):
         if not select:
             self.streams = []
-            self.save()
             return
 
         ustreams = []
@@ -430,12 +432,10 @@ class Subscriber(MongoModel):
             ustreams.append(user_stream)
 
         self.streams = ustreams
-        self.save()
 
     def select_all_vods(self, select: bool):
         if not select:
             self.vods = []
-            self.save()
             return
 
         ustreams = []
@@ -448,12 +448,10 @@ class Subscriber(MongoModel):
             ustreams.append(user_vod)
 
         self.vods = ustreams
-        self.save()
 
     def select_all_catchups(self, select: bool):
         if not select:
             self.catchups = []
-            self.save()
             return
 
         ustreams = []
@@ -466,7 +464,6 @@ class Subscriber(MongoModel):
             ustreams.append(user_catchup)
 
         self.catchups = ustreams
-        self.save()
 
     def delete(self, *args, **kwargs):
         self.remove_all_own_streams()

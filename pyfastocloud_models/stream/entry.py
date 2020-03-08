@@ -76,7 +76,7 @@ class StreamLogLevel(IntEnum):
 
 class IStream(MongoModel):
     @staticmethod
-    def get_stream_by_id(sid: ObjectId):
+    def get_by_id(sid: ObjectId):
         try:
             stream = IStream.objects.get({'_id': sid})
         except IStream.DoesNotExist:
@@ -113,7 +113,10 @@ class IStream(MongoModel):
     def add_part(self, stream):
         if stream:
             self.parts.append(stream)
-            self.save()
+
+    def remove_part(self, stream):
+        if stream:
+            self.parts.remove(stream)
 
     def get_groups(self) -> list:
         return self.group.split(';')
@@ -182,9 +185,7 @@ class IStream(MongoModel):
             subscriber.remove_official_stream(self)
             subscriber.remove_official_vod(self)
             subscriber.remove_official_catchup(self)
-        for catchup in self.parts:
-            if catchup:
-                catchup.delete()
+            subscriber.save()
         return super(IStream, self).delete(*args, **kwargs)
 
 

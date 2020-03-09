@@ -1,38 +1,11 @@
-from enum import IntEnum
-
 from bson import ObjectId
-from pymodm import MongoModel, fields, EmbeddedMongoModel
+from pymodm import MongoModel, fields
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort
 from pyfastocloud_models.stream.entry import IStream
 from pyfastocloud_models.series.entry import Serial
-
-
-# #EXTM3U
-# #EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Amptv.png/330px-Amptv.png" group-title="Armenia(Հայաստան)",1TV
-# http://amtv1.livestreamingcdn.com/am2abr/tracks-v1a1/index.m3u8
-
-class ProviderPair(EmbeddedMongoModel):
-    class Roles(IntEnum):
-        READ = 0
-        WRITE = 1
-        SUPPORT = 2
-        ADMIN = 3
-
-        @classmethod
-        def choices(cls):
-            return [(choice, choice.name) for choice in cls]
-
-        @classmethod
-        def coerce(cls, item):
-            return cls(int(item)) if not isinstance(item, cls) else item
-
-        def __str__(self):
-            return str(self.value)
-
-    user = fields.ReferenceField('Provider')
-    role = fields.IntegerField(min_value=Roles.READ, max_value=Roles.ADMIN, default=Roles.ADMIN)
+from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
 class ServiceSettings(MongoModel):

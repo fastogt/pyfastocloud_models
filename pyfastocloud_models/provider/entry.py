@@ -7,6 +7,7 @@ from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from pyfastocloud_models.service.entry import ServiceSettings
+from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 import pyfastocloud_models.constants as constants
 
 
@@ -51,6 +52,7 @@ class Provider(MongoModel):
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
     servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[])
+    load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL), default=[])
 
     def get_id(self) -> str:
         return str(self.pk)

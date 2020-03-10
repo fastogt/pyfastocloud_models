@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import IntEnum
 
 from pymodm import MongoModel, fields
+from pymongo.operations import IndexModel
 from bson.objectid import ObjectId
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -42,6 +43,7 @@ class Provider(MongoModel):
     class Meta:
         collection_name = 'providers'
         allow_inheritance = True
+        indexes = [IndexModel([('email', 1)], unique=True)]
 
     email = fields.EmailField(required=True)
     password = fields.CharField(required=True)
@@ -52,7 +54,8 @@ class Provider(MongoModel):
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
     servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[])
-    load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL), default=[])
+    load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL),
+                                      default=[])
 
     def get_id(self) -> str:
         return str(self.pk)

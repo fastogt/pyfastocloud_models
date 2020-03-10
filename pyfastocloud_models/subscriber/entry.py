@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 from enum import IntEnum
 
 from pymodm import MongoModel, fields, EmbeddedMongoModel
+from pymongo.operations import IndexModel
 
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.stream.entry import IStream
@@ -139,6 +140,7 @@ class Subscriber(MongoModel):
     class Meta:
         collection_name = 'subscribers'
         allow_inheritance = True
+        indexes = [IndexModel([('email', 1)], unique=True)]
 
     MAX_DATE = datetime(2100, 1, 1)
     ID_FIELD = 'id'

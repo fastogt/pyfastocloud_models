@@ -18,6 +18,7 @@ class BaseFields:
     GROUP_FIELD = 'group'
     VISIBLE_FIELD = 'visible'
     IARC_FIELD = 'iarc'
+    VIEW_COUNT_FIELD = 'view_count'
 
     TYPE_FIELD = 'type'
     INPUT_STREAMS_FIELD = 'input_streams'
@@ -107,6 +108,7 @@ class IStream(MongoModel):
     iarc = fields.IntegerField(default=21, min_value=0,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
 
+    view_count = fields.IntegerField(default=0)
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[])
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[])  #
 
@@ -126,7 +128,8 @@ class IStream(MongoModel):
                 StreamFields.TYPE_FIELD: self.get_type(),
                 StreamFields.ICON_FIELD: self.tvg_logo, StreamFields.PRICE_FIELD: self.price,
                 StreamFields.VISIBLE_FIELD: self.visible,
-                StreamFields.IARC_FIELD: self.iarc, StreamFields.GROUP_FIELD: self.group}
+                StreamFields.IARC_FIELD: self.iarc, StreamFields.VIEW_COUNT_FIELD: self.view_count,
+                StreamFields.GROUP_FIELD: self.group}
 
     def get_type(self) -> constants.StreamType:
         raise NotImplementedError('subclasses must override get_type()!')

@@ -83,5 +83,6 @@ class Provider(MongoModel):
         return check_password_hash(hash_str, password)
 
     @classmethod
-    def make_provider(cls, email: str, password: str, country: str, language: str):
-        return cls(email=email, password=Provider.generate_password_hash(password), country=country, language=language)
+    def make_provider(cls, email: str, first_name: str, last_name: str, password: str, country: str, language: str):
+        return cls(email=email, first_name=first_name, last_name=last_name,
+                   password=Provider.generate_password_hash(password), country=country, language=language)

@@ -9,6 +9,9 @@ from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
 class ServiceSettings(MongoModel):
+    NAME_FIELD = 'name'
+    ID_FIELD = 'id'
+
     @staticmethod
     def get_by_id(sid: ObjectId):
         try:
@@ -142,3 +145,6 @@ class ServiceSettings(MongoModel):
         for stream in self.streams:
             stream.delete()
         return super(ServiceSettings, self).delete(*args, **kwargs)
+
+    def to_front_dict(self) -> dict:
+        return {ServiceSettings.NAME_FIELD: self.name, ServiceSettings.ID_FIELD: self.get_id()}

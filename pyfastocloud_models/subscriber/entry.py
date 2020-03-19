@@ -95,10 +95,12 @@ class UserStream(EmbeddedMongoModel):
     FAVORITE_FIELD = 'favorite'
     PRIVATE_FIELD = 'private'
     RECENT_FIELD = 'recent'
+    LOCKED_FIELD = 'locked'
 
     sid = fields.ReferenceField(IStream, required=True)
     favorite = fields.BooleanField(default=False)
     private = fields.BooleanField(default=False)
+    locked = fields.BooleanField(default=False)
     recent = fields.DateTimeField(default=datetime.utcfromtimestamp(0))
     interruption_time = fields.IntegerField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC,
                                             required=True)
@@ -114,6 +116,7 @@ class UserStream(EmbeddedMongoModel):
         res = self.sid.to_front_dict()
         res[UserStream.FAVORITE_FIELD] = self.favorite
         res[UserStream.PRIVATE_FIELD] = self.private
+        res[UserStream.LOCKED_FIELD] = self.locked
         res[UserStream.RECENT_FIELD] = date_to_utc_msec(self.recent)
         return res
 

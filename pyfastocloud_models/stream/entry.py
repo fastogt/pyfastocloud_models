@@ -211,7 +211,6 @@ class HardwareStream(IStream):
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     audio_select = fields.IntegerField(default=constants.INVALID_AUDIO_SELECT, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
-    avformat = fields.BooleanField(default=constants.DEFAULT_AVFORMAT, required=True)
     restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS, required=True)
     auto_exit_time = fields.IntegerField(default=constants.DEFAULT_AUTO_EXIT_TIME, required=True)
     extra_config_fields = fields.CharField(default='', blank=True)
@@ -236,9 +235,6 @@ class HardwareStream(IStream):
 
     def get_loop(self):
         return self.loop
-
-    def get_avformat(self):
-        return self.avformat
 
     def get_restart_attempts(self):
         return self.restart_attempts

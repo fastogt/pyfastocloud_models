@@ -20,7 +20,6 @@ class Provider(MongoModel):
     LAST_NAME_FIELD = 'last_name'
     CREATED_DATE_FIELD = 'created_date'
     STATUS_FIELD = 'status'
-    TYPE_FIELD = 'type'
     LANGUAGE_FIELD = 'language'
     COUNTRY_FIELD = 'country'
 
@@ -62,7 +61,6 @@ class Provider(MongoModel):
     password = fields.CharField(required=True)
     created_date = fields.DateTimeField(default=datetime.now)
     status = fields.IntegerField(default=Status.NO_ACTIVE)
-    type = fields.IntegerField(default=Type.USER)
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
@@ -100,8 +98,6 @@ class Provider(MongoModel):
 
     def to_front_dict(self):
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,
-                Provider.FIRST_NAME_FIELD: self.first_name,
-                Provider.LAST_NAME_FIELD: self.last_name,
-                Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date),
-                Provider.STATUS_FIELD: self.status, Provider.TYPE_FIELD: self.type,
+                Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,
+                Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date), Provider.STATUS_FIELD: self.status,
                 Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}

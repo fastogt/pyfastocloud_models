@@ -86,7 +86,7 @@ class Device(EmbeddedMongoModel):
     def get_id(self) -> str:
         return str(self.id)
 
-    def to_dict(self) -> dict:
+    def to_front_dict(self) -> dict:
         return {Device.ID_FIELD: self.get_id(), Device.NAME_FIELD: self.name, Device.STATUS_FIELD: self.status,
                 Device.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date)}
 

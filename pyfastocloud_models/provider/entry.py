@@ -10,9 +10,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 import pyfastocloud_models.constants as constants
+from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
 class Provider(MongoModel):
+    ID_FIELD = 'id'
+    EMAIL_FIELD = 'email'
+    FIRST_NAME_FIELD = 'first_name'
+    LAST_NAME_FIELD = 'last_name'
+    CREATED_DATE_FIELD = 'created_date'
+    STATUS_FIELD = 'status'
+    TYPE_FIELD = 'type'
+    LANGUAGE_FIELD = 'language'
+    COUNTRY_FIELD = 'country'
+
     @staticmethod
     def get_by_id(sid: ObjectId):
         try:
@@ -86,3 +97,11 @@ class Provider(MongoModel):
     def make_provider(cls, email: str, first_name: str, last_name: str, password: str, country: str, language: str):
         return cls(email=email, first_name=first_name, last_name=last_name,
                    password=Provider.generate_password_hash(password), country=country, language=language)
+
+    def to_front_dict(self):
+        return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,
+                Provider.FIRST_NAME_FIELD: self.first_name,
+                Provider.LAST_NAME_FIELD: self.last_name,
+                Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date),
+                Provider.STATUS_FIELD: self.status, Provider.TYPE_FIELD: self.type,
+                Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}

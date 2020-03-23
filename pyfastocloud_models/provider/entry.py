@@ -108,7 +108,7 @@ class Provider(MongoModel):
 
         for lb in self.load_balancers:
             if lb:
-                servers.append(lb.to_front_dict())
+                load_balancers.append(lb.to_front_dict())
 
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,
                 Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,

@@ -16,6 +16,15 @@ DEFAULT_LOCALE = 'en'
 AVAILABLE_LOCALES = DEFAULT_LOCALE, 'ru'
 AVAILABLE_LOCALES_PAIRS = [(DEFAULT_LOCALE, 'English'), ('ru', 'Russian')]
 
+
+def is_valid_locale_code(code: str) -> bool:
+    for locale in AVAILABLE_LOCALES:
+        if locale[0] == code:
+            return True
+
+    return False
+
+
 INVALID_AUDIO_SELECT = -1
 DEFAULT_LOOP = False
 DEFAULT_HAVE_VIDEO = True
@@ -375,6 +384,14 @@ AVAILABLE_COUNTRIES = [('AF', 'Afghanistan'),
                        ('YE', 'Yemen'),
                        ('ZM', 'Zambia'),
                        ('ZW', 'Zimbabwe')]
+
+
+def is_valid_country_code(code: str) -> bool:
+    for country in AVAILABLE_COUNTRIES:
+        if country[0] == code:
+            return True
+
+    return False
 
 
 def round_value(value: float):

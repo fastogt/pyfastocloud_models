@@ -22,8 +22,6 @@ class Provider(MongoModel):
     STATUS_FIELD = 'status'
     LANGUAGE_FIELD = 'language'
     COUNTRY_FIELD = 'country'
-    SERVERS_FIELD = 'servers'
-    LOAD_BALANCERS = 'load_balancers'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -99,19 +97,7 @@ class Provider(MongoModel):
                    password=Provider.generate_password_hash(password), country=country, language=language)
 
     def to_front_dict(self):
-        servers = []
-        load_balancers = []
-
-        for server in self.servers:
-            if server:
-                servers.append(server.to_front_dict())
-
-        for lb in self.load_balancers:
-            if lb:
-                load_balancers.append(lb.to_front_dict())
-
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,
                 Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,
                 Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date), Provider.STATUS_FIELD: self.status,
-                Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country,
-                Provider.SERVERS_FIELD: servers, Provider.LOAD_BALANCERS: load_balancers}
+                Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}

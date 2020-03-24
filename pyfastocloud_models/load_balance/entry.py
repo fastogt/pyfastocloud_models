@@ -30,7 +30,7 @@ class LoadBalanceSettings(MongoModel):
     DEFAULT_SERVICE_CLIENTS_HOST = 'localhost'
     DEFAULT_SERVICE_CLIENTS_PORT = 6000
 
-    providers = fields.EmbeddedDocumentListField(ProviderPair, default=[])
+    providers = fields.EmbeddedDocumentListField(ProviderPair, default=[], blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
                             min_length=MIN_SERVICE_NAME_LENGTH)
@@ -53,7 +53,7 @@ class LoadBalanceSettings(MongoModel):
     def remove_provider(self, provider):
         for prov in list(self.providers):
             if prov.user == provider:
-                self.providers.remove(provider)
+                self.providers.remove(prov)
 
     def to_front_dict(self) -> dict:
         return {LoadBalanceSettings.NAME_FIELD: self.name, LoadBalanceSettings.ID_FIELD: self.get_id()}

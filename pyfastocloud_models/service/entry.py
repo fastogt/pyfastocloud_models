@@ -50,7 +50,7 @@ class ServiceSettings(MongoModel):
     streams = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
     series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), default=[],
                               blank=True)
-    providers = fields.EmbeddedDocumentListField(ProviderPair, default=[])
+    providers = fields.EmbeddedDocumentListField(ProviderPair, default=[], blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
                             min_length=MIN_SERVICE_NAME_LENGTH)
@@ -132,7 +132,7 @@ class ServiceSettings(MongoModel):
     def remove_provider(self, provider):
         for prov in list(self.providers):
             if prov.user == provider:
-                self.providers.remove(provider)
+                self.providers.remove(prov)
 
     def find_stream_by_id(self, sid: ObjectId):
         for stream in self.streams:

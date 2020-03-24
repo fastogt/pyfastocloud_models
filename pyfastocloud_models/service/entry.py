@@ -143,7 +143,8 @@ class ServiceSettings(MongoModel):
 
     def delete(self, *args, **kwargs):
         for stream in self.streams:
-            stream.delete()
+            if stream:
+                stream.delete()
         return super(ServiceSettings, self).delete(*args, **kwargs)
 
     def to_front_dict(self) -> dict:

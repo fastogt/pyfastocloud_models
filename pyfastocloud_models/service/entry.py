@@ -3,9 +3,9 @@ from pymodm import MongoModel, fields
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort
-from pyfastocloud_models.stream.entry import IStream
-from pyfastocloud_models.series.entry import Serial
 from pyfastocloud_models.provider.entry_pair import ProviderPair
+from pyfastocloud_models.series.entry import Serial
+from pyfastocloud_models.stream.entry import IStream
 
 
 class ServiceSettings(MongoModel):

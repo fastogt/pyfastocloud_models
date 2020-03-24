@@ -1,13 +1,13 @@
-import requests
 import json
-import ssl
 import os
+import ssl
 import uuid
-
-from urllib.parse import urlparse
 from datetime import datetime
-from validate_email import validate_email
+from urllib.parse import urlparse
 from urllib.request import urlopen
+
+import requests
+from validate_email import validate_email
 
 
 def date_to_utc_msec(date: datetime):

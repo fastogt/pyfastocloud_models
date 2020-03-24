@@ -1,15 +1,14 @@
 from datetime import datetime
 from enum import IntEnum
 
+from bson.objectid import ObjectId
 from pymodm import MongoModel, fields
 from pymongo.operations import IndexModel
-from bson.objectid import ObjectId
-
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from pyfastocloud_models.service.entry import ServiceSettings
-from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 import pyfastocloud_models.constants as constants
+from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
+from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 

@@ -1,14 +1,14 @@
+import os
 from datetime import datetime
 from enum import IntEnum
 from urllib.parse import urlparse
-import os
 
-from pymodm import MongoModel, fields, EmbeddedMongoModel
 from bson.objectid import ObjectId
+from pymodm import MongoModel, fields, EmbeddedMongoModel
 
-from pyfastocloud_models.utils.utils import date_to_utc_msec
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl
+from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
 class BaseFields:

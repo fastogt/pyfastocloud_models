@@ -122,6 +122,12 @@ class UserStream(EmbeddedMongoModel):
 
 
 class Subscriber(MongoModel):
+    ID_FIELD = 'id'
+    EMAIL_FIELD = 'email'
+    FIRST_NAME_FIELD = 'first_name'
+    LAST_NAME_FIELD = 'last_name'
+    PASSWORD_FIELD = 'password'
+
     @staticmethod
     def get_by_id(sid: ObjectId):
         try:
@@ -146,9 +152,6 @@ class Subscriber(MongoModel):
         indexes = [IndexModel([('email', 1)], unique=True)]
 
     MAX_DATE = datetime(2100, 1, 1)
-    ID_FIELD = 'id'
-    EMAIL_FIELD = 'login'
-    PASSWORD_FIELD = 'password'
 
     class Status(IntEnum):
         NOT_ACTIVE = 0
@@ -502,3 +505,7 @@ class Subscriber(MongoModel):
         return cls(email=email, first_name=first_name, last_name=last_name,
                    password=Subscriber.make_md5_hash_from_password(password), country=country,
                    language=language, exp_date=exp_date)
+
+    def to_front_dict(self) -> dict:
+        return {Subscriber.FIRST_NAME_FIELD: self.first_name, Subscriber.LAST_NAME_FIELD: self.last_name,
+                Subscriber.EMAIL_FIELD: self.email, Subscriber.ID_FIELD: self.get_id()}

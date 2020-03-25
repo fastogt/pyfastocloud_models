@@ -18,7 +18,7 @@ AVAILABLE_LOCALES_PAIRS = [(DEFAULT_LOCALE, 'English'), ('ru', 'Russian')]
 
 
 def is_valid_locale_code(code: str) -> bool:
-    for locale in AVAILABLE_LOCALES:
+    for locale in AVAILABLE_LOCALES_PAIRS:
         if locale[0] == code:
             return True
 

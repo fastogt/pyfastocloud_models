@@ -55,8 +55,8 @@ class Provider(MongoModel):
         indexes = [IndexModel([('email', 1)], unique=True)]
 
     email = fields.EmailField(required=True)
-    first_name = fields.CharField(max_length=64, required=True)
-    last_name = fields.CharField(max_length=64, required=True)
+    first_name = fields.CharField(min_length=2, max_length=64, required=True)
+    last_name = fields.CharField(min_length=2, max_length=64, required=True)
     password = fields.CharField(required=True)
     created_date = fields.DateTimeField(default=datetime.now)
     status = fields.IntegerField(default=Status.NO_ACTIVE)

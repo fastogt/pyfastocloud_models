@@ -57,6 +57,31 @@ class LoadBalanceSettings(MongoModel):
             if prov.user == provider:
                 self.providers.remove(prov)
 
+    @classmethod
+    def make_entry(cls, json: dict) -> 'LoadBalanceSettings':
+        cl = cls()
+        cl.update_entry(json)
+        return cl
+
+    def update_entry(self, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        name_field = json.get(LoadBalanceSettings.NAME_FIELD, None)
+        if not name_field:
+            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.NAME_FIELD))
+        self.name = name_field
+
+        host_field = json.get(LoadBalanceSettings.HOST_FIELD, None)
+        if not host_field:
+            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.HOST_FIELD))
+        self.host = HostAndPort.make_entry(host_field)
+
+        clients_host_field = json.get(LoadBalanceSettings.CLIENTS_HOST, None)
+        if not clients_host_field:
+            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.CLIENTS_HOST))
+        self.clients_host = HostAndPort.make_entry(clients_host_field)
+
     def to_front_dict(self) -> dict:
         return {LoadBalanceSettings.ID_FIELD: self.get_id(), LoadBalanceSettings.NAME_FIELD: self.name,
                 LoadBalanceSettings.HOST_FIELD: str(self.host),

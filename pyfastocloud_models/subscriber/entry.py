@@ -131,7 +131,6 @@ class Subscriber(MongoModel):
     EXP_DATE_FIELD = 'exp_date'
     STATUS_FIELD = 'status'
     MAX_DEVICE_COUNT_FIELD = 'max_devices_count'
-    DEVICES_FIELD = 'devices'
     LANGUAGE_FIELD = 'language'
     COUNTRY_FIELD = 'country'
 
@@ -513,14 +512,60 @@ class Subscriber(MongoModel):
                    password=Subscriber.make_md5_hash_from_password(password), country=country,
                    language=language, exp_date=exp_date)
 
-    def to_front_dict(self) -> dict:
-        devices = []
-        for dev in self.devices:
-            devices.append(dev.to_front_dict())
+    @classmethod
+    def make_entry(cls, json: dict) -> 'Subscriber':
+        cl = cls()
+        cl.update_entry(json)
+        return cl
 
+    def update_entry(self, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        email_field = json.get(Subscriber.EMAIL_FIELD, None)
+        if not email_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.EMAIL_FIELD))
+        self.email = email_field
+
+        first_name_field = json.get(Subscriber.FIRST_NAME_FIELD, None)
+        if not first_name_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.FIRST_NAME_FIELD))
+        self.first_name = first_name_field
+
+        last_name_field = json.get(Subscriber.LAST_NAME_FIELD, None)
+        if not last_name_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.LAST_NAME_FIELD))
+        self.last_name = last_name_field
+
+        exp_date_field = json.get(Subscriber.EXP_DATE_FIELD, None)
+        if not exp_date_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.EXP_DATE_FIELD))
+        self.exp_date = datetime.utcfromtimestamp(exp_date_field)
+
+        status_field = json.get(Subscriber.STATUS_FIELD, None)
+        if not status_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.STATUS_FIELD))
+        self.status = status_field
+
+        max_dev_field = json.get(Subscriber.MAX_DEVICE_COUNT_FIELD, None)
+        if not max_dev_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.MAX_DEVICE_COUNT_FIELD))
+        self.max_devices_count = max_dev_field
+
+        country_field = json.get(Subscriber.COUNTRY_FIELD, None)
+        if not country_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.COUNTRY_FIELD))
+        self.country = country_field
+
+        language_field = json.get(Subscriber.LANGUAGE_FIELD, None)
+        if not language_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.LANGUAGE_FIELD))
+        self.language = language_field
+
+    def to_front_dict(self) -> dict:
         return {Subscriber.FIRST_NAME_FIELD: self.first_name, Subscriber.LAST_NAME_FIELD: self.last_name,
                 Subscriber.EMAIL_FIELD: self.email, Subscriber.ID_FIELD: self.get_id(),
                 Subscriber.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 Subscriber.EXP_DATE_FIELD: self.expiration_date_utc_msec(), Subscriber.STATUS_FIELD: self.status,
-                Subscriber.MAX_DEVICE_COUNT_FIELD: self.max_devices_count, Subscriber.DEVICES_FIELD: devices,
+                Subscriber.MAX_DEVICE_COUNT_FIELD: self.max_devices_count,
                 Subscriber.LANGUAGE_FIELD: self.language, Subscriber.COUNTRY_FIELD: self.country}

@@ -12,18 +12,15 @@ class ServiceSettings(MongoModel):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
-    HTTP_HOST = 'http_host'
-    VODS_HOST = 'vods_host'
-    CODS_HOST = 'cods_host'
-    FEEDBACK_DIRECOTRY = 'feedback_directory'
-    TIMESHIFTS_DIRECTORY = 'timeshifts_directory'
-    HLS_DIRECTORY = 'hls_directory'
-    PLAYLIST_DIRECTORY = 'playlists_directory'
-    DVB_DIRECTORY = 'dvb_directory'
-    CAPTURE_CARD_DIRECTORY = 'capture_card_directory'
-    VODS_IN_DIRECTORY = 'vods_in_directory'
-    VODS_DIRECTORY = 'vods_directory'
-    CODS_DIRECTORY = 'cods_directory'
+    HTTP_HOST_FIELD = 'http_host'
+    VODS_HOST_FIELD = 'vods_host'
+    CODS_HOST_FIELD = 'cods_host'
+    FEEDBACK_DIRECOTRY_FIELD = 'feedback_directory'
+    TIMESHIFTS_DIRECTORY_FIELD = 'timeshifts_directory'
+    HLS_DIRECTORY_FIELD = 'hls_directory'
+    VODS_IN_DIRECTORY_FIELD = 'vods_in_directory'
+    VODS_DIRECTORY_FIELD = 'vods_directory'
+    CODS_DIRECTORY_FIELD = 'cods_directory'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -44,9 +41,6 @@ class ServiceSettings(MongoModel):
     DEFAULT_FEEDBACK_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/feedback'
     DEFAULT_TIMESHIFTS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/timeshifts'
     DEFAULT_HLS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/hls'
-    DEFAULT_PLAYLISTS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/playlists'
-    DEFAULT_DVB_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/dvb'
-    DEFAULT_CAPTURE_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/capture_card'
     DEFAULT_VODS_IN_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/vods_in'
     DEFAULT_VODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/vods'
     DEFAULT_CODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/cods'
@@ -79,9 +73,6 @@ class ServiceSettings(MongoModel):
     feedback_directory = fields.CharField(default=DEFAULT_FEEDBACK_DIR_PATH)
     timeshifts_directory = fields.CharField(default=DEFAULT_TIMESHIFTS_DIR_PATH)
     hls_directory = fields.CharField(default=DEFAULT_HLS_DIR_PATH)
-    playlists_directory = fields.CharField(default=DEFAULT_PLAYLISTS_DIR_PATH)
-    dvb_directory = fields.CharField(default=DEFAULT_DVB_DIR_PATH)
-    capture_card_directory = fields.CharField(default=DEFAULT_CAPTURE_DIR_PATH)
     vods_in_directory = fields.CharField(default=DEFAULT_VODS_IN_DIR_PATH)
     vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH)
     cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH)
@@ -160,16 +151,79 @@ class ServiceSettings(MongoModel):
                 stream.delete()
         return super(ServiceSettings, self).delete(*args, **kwargs)
 
+    @classmethod
+    def make_entry(cls, json: dict) -> 'ServiceSettings':
+        cl = cls()
+        cl.update_entry(json)
+        return cl
+
+    def update_entry(self, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        name_field = json.get(ServiceSettings.NAME_FIELD, None)
+        if not name_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.NAME_FIELD))
+        self.name = name_field
+
+        host_field = json.get(ServiceSettings.HOST_FIELD, None)
+        if not host_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.HOST_FIELD))
+        self.host = HostAndPort.make_entry(host_field)
+
+        http_host_field = json.get(ServiceSettings.HTTP_HOST_FIELD, None)
+        if not http_host_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.HTTP_HOST_FIELD))
+        self.http_host = HostAndPort.make_entry(http_host_field)
+
+        vods_host_field = json.get(ServiceSettings.VODS_HOST_FIELD, None)
+        if not vods_host_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.VODS_HOST_FIELD))
+        self.vods_host = HostAndPort.make_entry(vods_host_field)
+
+        cods_host_field = json.get(ServiceSettings.CODS_HOST_FIELD, None)
+        if not cods_host_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.CODS_HOST_FIELD))
+        self.cods_host = HostAndPort.make_entry(cods_host_field)
+
+        feedback_field = json.get(ServiceSettings.FEEDBACK_DIRECOTRY_FIELD, None)
+        if not feedback_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.FEEDBACK_DIRECOTRY_FIELD))
+        self.feedback_directory = feedback_field
+
+        timeshift_field = json.get(ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD, None)
+        if not timeshift_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD))
+        self.timeshifts_directory = timeshift_field
+
+        hls_field = json.get(ServiceSettings.HLS_DIRECTORY_FIELD, None)
+        if not hls_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.HLS_DIRECTORY_FIELD))
+        self.hls_directory = hls_field
+
+        vods_in_field = json.get(ServiceSettings.VODS_IN_DIRECTORY_FIELD, None)
+        if not vods_in_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.VODS_IN_DIRECTORY_FIELD))
+        self.vods_in_directory = vods_in_field
+
+        vods_field = json.get(ServiceSettings.VODS_DIRECTORY_FIELD, None)
+        if not vods_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.VODS_DIRECTORY_FIELD))
+        self.vods_directory = vods_field
+
+        cods_field = json.get(ServiceSettings.CODS_DIRECTORY_FIELD, None)
+        if not cods_field:
+            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.CODS_DIRECTORY_FIELD))
+        self.cods_directory = cods_field
+
     def to_front_dict(self) -> dict:
         return {ServiceSettings.ID_FIELD: self.get_id(), ServiceSettings.NAME_FIELD: self.name,
-                ServiceSettings.HOST_FIELD: str(self.host), ServiceSettings.HTTP_HOST: str(self.http_host),
-                ServiceSettings.VODS_HOST: str(self.vods_host), ServiceSettings.CODS_HOST: str(self.cods_host),
-                ServiceSettings.FEEDBACK_DIRECOTRY: self.feedback_directory,
-                ServiceSettings.TIMESHIFTS_DIRECTORY: self.timeshifts_directory,
-                ServiceSettings.HLS_DIRECTORY: self.hls_directory,
-                ServiceSettings.PLAYLIST_DIRECTORY: self.playlists_directory,
-                ServiceSettings.DVB_DIRECTORY: self.dvb_directory,
-                ServiceSettings.CAPTURE_CARD_DIRECTORY: self.capture_card_directory,
-                ServiceSettings.VODS_IN_DIRECTORY: self.vods_in_directory,
-                ServiceSettings.VODS_DIRECTORY: self.vods_directory,
-                ServiceSettings.CODS_DIRECTORY: self.cods_directory}
+                ServiceSettings.HOST_FIELD: str(self.host), ServiceSettings.HTTP_HOST_FIELD: str(self.http_host),
+                ServiceSettings.VODS_HOST_FIELD: str(self.vods_host),
+                ServiceSettings.CODS_HOST_FIELD: str(self.cods_host),
+                ServiceSettings.FEEDBACK_DIRECOTRY_FIELD: self.feedback_directory,
+                ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: self.timeshifts_directory,
+                ServiceSettings.HLS_DIRECTORY_FIELD: self.hls_directory,
+                ServiceSettings.VODS_IN_DIRECTORY_FIELD: self.vods_in_directory,
+                ServiceSettings.VODS_DIRECTORY_FIELD: self.vods_directory,
+                ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory}

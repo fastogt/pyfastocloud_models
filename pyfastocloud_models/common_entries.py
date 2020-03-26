@@ -102,5 +102,15 @@ class HostAndPort(EmbeddedMongoModel):
     host = fields.CharField(default=DEFAULT_HOST, required=True)
     port = fields.IntegerField(default=DEFAULT_PORT, required=True)
 
+    @staticmethod
+    def make_entry(host: str):
+        if not host:
+            raise ValueError('HostAndPort invalid input')
+        parts = host.split(':')
+        if len(parts) != 2:
+            raise ValueError('HostAndPort invalid input')
+
+        return HostAndPort(host=parts[0], port=int(parts[1]))
+
     def __str__(self):
         return '{0}:{1}'.format(self.host, self.port)

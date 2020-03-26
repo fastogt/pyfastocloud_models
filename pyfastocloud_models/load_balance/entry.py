@@ -59,4 +59,5 @@ class LoadBalanceSettings(MongoModel):
 
     def to_front_dict(self) -> dict:
         return {LoadBalanceSettings.ID_FIELD: self.get_id(), LoadBalanceSettings.NAME_FIELD: self.name,
-                LoadBalanceSettings.HOST_FIELD: self.host, LoadBalanceSettings.CLIENTS_HOST: self.clients_host}
+                LoadBalanceSettings.HOST_FIELD: str(self.host),
+                LoadBalanceSettings.CLIENTS_HOST: str(self.clients_host)}

@@ -162,8 +162,8 @@ class ServiceSettings(MongoModel):
 
     def to_front_dict(self) -> dict:
         return {ServiceSettings.ID_FIELD: self.get_id(), ServiceSettings.NAME_FIELD: self.name,
-                ServiceSettings.HOST_FIELD: self.host, ServiceSettings.HTTP_HOST: self.http_host,
-                ServiceSettings.VODS_HOST: self.vods_host, ServiceSettings.CODS_HOST: self.cods_directory,
+                ServiceSettings.HOST_FIELD: str(self.host), ServiceSettings.HTTP_HOST: str(self.http_host),
+                ServiceSettings.VODS_HOST: str(self.vods_host), ServiceSettings.CODS_HOST: str(self.cods_host),
                 ServiceSettings.FEEDBACK_DIRECOTRY: self.feedback_directory,
                 ServiceSettings.TIMESHIFTS_DIRECTORY: self.timeshifts_directory,
                 ServiceSettings.HLS_DIRECTORY: self.hls_directory,

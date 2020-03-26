@@ -6,8 +6,10 @@ from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
 class LoadBalanceSettings(MongoModel):
-    NAME_FIELD = 'name'
     ID_FIELD = 'id'
+    NAME_FIELD = 'name'
+    HOST_FIELD = 'host'
+    CLIENTS_HOST = 'clients_host'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -56,4 +58,5 @@ class LoadBalanceSettings(MongoModel):
                 self.providers.remove(prov)
 
     def to_front_dict(self) -> dict:
-        return {LoadBalanceSettings.NAME_FIELD: self.name, LoadBalanceSettings.ID_FIELD: self.get_id()}
+        return {LoadBalanceSettings.ID_FIELD: self.get_id(), LoadBalanceSettings.NAME_FIELD: self.name,
+                LoadBalanceSettings.HOST_FIELD: self.host, LoadBalanceSettings.CLIENTS_HOST: self.clients_host}

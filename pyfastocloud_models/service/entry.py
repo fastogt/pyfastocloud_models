@@ -9,8 +9,21 @@ from pyfastocloud_models.stream.entry import IStream
 
 
 class ServiceSettings(MongoModel):
-    NAME_FIELD = 'name'
     ID_FIELD = 'id'
+    NAME_FIELD = 'name'
+    HOST_FIELD = 'host'
+    HTTP_HOST = 'http_host'
+    VODS_HOST = 'vods_host'
+    CODS_HOST = 'cods_host'
+    FEEDBACK_DIRECOTRY = 'feedback_directory'
+    TIMESHIFTS_DIRECTORY = 'timeshifts_directory'
+    HLS_DIRECTORY = 'hls_directory'
+    PLAYLIST_DIRECTORY = 'playlists_directory'
+    DVB_DIRECTORY = 'dvb_directory'
+    CAPTURE_CARD_DIRECTORY = 'capture_card_directory'
+    VODS_IN_DIRECTORY = 'vods_in_directory'
+    VODS_DIRECTORY = 'vods_directory'
+    CODS_DIRECTORY = 'cods_directory'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -148,4 +161,15 @@ class ServiceSettings(MongoModel):
         return super(ServiceSettings, self).delete(*args, **kwargs)
 
     def to_front_dict(self) -> dict:
-        return {ServiceSettings.NAME_FIELD: self.name, ServiceSettings.ID_FIELD: self.get_id()}
+        return {ServiceSettings.ID_FIELD: self.get_id(), ServiceSettings.NAME_FIELD: self.name,
+                ServiceSettings.HOST_FIELD: self.host, ServiceSettings.HTTP_HOST: self.http_host,
+                ServiceSettings.VODS_HOST: self.vods_host, ServiceSettings.CODS_HOST: self.cods_directory,
+                ServiceSettings.FEEDBACK_DIRECOTRY: self.feedback_directory,
+                ServiceSettings.TIMESHIFTS_DIRECTORY: self.timeshifts_directory,
+                ServiceSettings.HLS_DIRECTORY: self.hls_directory,
+                ServiceSettings.PLAYLIST_DIRECTORY: self.playlists_directory,
+                ServiceSettings.DVB_DIRECTORY: self.dvb_directory,
+                ServiceSettings.CAPTURE_CARD_DIRECTORY: self.capture_card_directory,
+                ServiceSettings.VODS_IN_DIRECTORY: self.vods_in_directory,
+                ServiceSettings.VODS_DIRECTORY: self.vods_directory,
+                ServiceSettings.CODS_DIRECTORY: self.cods_directory}

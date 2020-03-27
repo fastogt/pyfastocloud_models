@@ -181,9 +181,9 @@ class Subscriber(MongoModel):
     first_name = fields.CharField(max_length=64, required=True)
     last_name = fields.CharField(max_length=64, required=True)
     password = fields.CharField(min_length=SUBSCRIBER_HASH_LENGTH, max_length=SUBSCRIBER_HASH_LENGTH, required=True)
-    created_date = fields.DateTimeField(default=datetime.now)
-    exp_date = fields.DateTimeField(default=MAX_DATE)
-    status = fields.IntegerField(default=Status.NOT_ACTIVE)
+    created_date = fields.DateTimeField(default=datetime.now, required=True)
+    exp_date = fields.DateTimeField(default=MAX_DATE, required=True)
+    status = fields.IntegerField(default=Status.NOT_ACTIVE, required=True)
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
@@ -542,9 +542,8 @@ class Subscriber(MongoModel):
         self.last_name = last_name_field
 
         created_date_field = json.get(Subscriber.CREATED_DATE_FIELD, None)
-        if not created_date_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.CREATED_DATE_FIELD))
-        self.created_date = datetime.utcfromtimestamp(created_date_field)
+        if created_date_field:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_field)
 
         exp_date_field = json.get(Subscriber.EXP_DATE_FIELD, None)
         if not exp_date_field:

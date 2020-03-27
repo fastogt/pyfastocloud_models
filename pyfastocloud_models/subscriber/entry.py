@@ -542,6 +542,11 @@ class Subscriber(MongoModel):
             raise ValueError('Invalid input({0} required)'.format(Subscriber.LAST_NAME_FIELD))
         self.last_name = last_name_field
 
+        created_date_field = json.get(Subscriber.CREATED_DATE_FIELD, None)
+        if not created_date_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.CREATED_DATE_FIELD))
+        self.created_date = datetime.utcfromtimestamp(created_date_field)
+
         exp_date_field = json.get(Subscriber.EXP_DATE_FIELD, None)
         if not exp_date_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.EXP_DATE_FIELD))

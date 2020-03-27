@@ -9,7 +9,7 @@ from pymongo.operations import IndexModel
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.stream.entry import IStream
-from pyfastocloud_models.utils.utils import date_to_utc_msec
+from pyfastocloud_models.utils.utils import date_to_utc_msec, is_valid_email
 
 
 def is_vod_stream(stream: IStream):
@@ -492,14 +492,10 @@ class Subscriber(MongoModel):
         # return Document.delete(self, *args, **kwargs)
 
     @staticmethod
-    def make_md5_hash_from_password(password: str) -> str:
+    def generate_password_hash(password: str) -> str:
         m = md5()
         m.update(password.encode())
         return m.hexdigest()
-
-    @staticmethod
-    def generate_password_hash(password: str) -> str:
-        return Subscriber.make_md5_hash_from_password(password)
 
     @staticmethod
     def check_password_hash(hash_str: str, password: str) -> bool:
@@ -509,7 +505,7 @@ class Subscriber(MongoModel):
     def make_subscriber(cls, email: str, first_name: str, last_name: str, password: str, country: str, language: str,
                         exp_date=MAX_DATE):
         return cls(email=email, first_name=first_name, last_name=last_name,
-                   password=Subscriber.make_md5_hash_from_password(password), country=country,
+                   password=Subscriber.generate_password_hash(password), country=country,
                    language=language, exp_date=exp_date)
 
     @classmethod
@@ -525,12 +521,15 @@ class Subscriber(MongoModel):
         email_field = json.get(Subscriber.EMAIL_FIELD, None)
         if not email_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.EMAIL_FIELD))
-        self.email = email_field
+        email = email_field.lower()
+        if not is_valid_email(email, False):
+            return ValueError('Invalid email')
+        self.email = email
 
         password_field = json.get(Subscriber.PASSWORD_FIELD, None)
         if password_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.PASSWORD_FIELD))
-        self.password = Subscriber.make_md5_hash_from_password(password_field)
+        self.password = Subscriber.generate_password_hash(password_field)
 
         first_name_field = json.get(Subscriber.FIRST_NAME_FIELD, None)
         if not first_name_field:

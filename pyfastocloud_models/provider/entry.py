@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 from pyfastocloud_models.service.entry import ServiceSettings
-from pyfastocloud_models.utils.utils import date_to_utc_msec
+from pyfastocloud_models.utils.utils import date_to_utc_msec, is_valid_email
 
 
 class Provider(MongoModel):
@@ -109,7 +109,10 @@ class Provider(MongoModel):
         email_field = json.get(Provider.EMAIL_FIELD, None)
         if not email_field:
             raise ValueError('Invalid input({0} required)'.format(Provider.EMAIL_FIELD))
-        self.email = email_field
+        email = email_field.lower()
+        if not is_valid_email(email, False):
+            return ValueError('Invalid email')
+        self.email = email
 
         password_field = json.get(Provider.PASSWORD_FIELD, None)
         if password_field:

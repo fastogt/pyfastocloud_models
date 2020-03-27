@@ -527,7 +527,7 @@ class Subscriber(MongoModel):
         self.email = email
 
         password_field = json.get(Subscriber.PASSWORD_FIELD, None)
-        if password_field:
+        if not password_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.PASSWORD_FIELD))
         self.password = Subscriber.generate_password_hash(password_field)
 

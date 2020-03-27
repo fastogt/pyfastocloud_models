@@ -115,7 +115,7 @@ class Provider(MongoModel):
         self.email = email
 
         password_field = json.get(Provider.PASSWORD_FIELD, None)
-        if password_field:
+        if not password_field:
             raise ValueError('Invalid input({0} required)'.format(Provider.PASSWORD_FIELD))
         self.password = Provider.generate_password_hash(password_field)
 

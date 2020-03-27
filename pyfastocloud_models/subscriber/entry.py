@@ -565,11 +565,15 @@ class Subscriber(MongoModel):
         country_field = json.get(Subscriber.COUNTRY_FIELD, None)
         if not country_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.COUNTRY_FIELD))
+        if not isinstance(country_field, str) or not constants.is_valid_country_code(country_field):
+            ValueError('Invalid country')
         self.country = country_field
 
         language_field = json.get(Subscriber.LANGUAGE_FIELD, None)
         if not language_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.LANGUAGE_FIELD))
+        if not isinstance(language_field, str) or not constants.is_valid_locale_code(language_field):
+            raise ValueError('Invalid language')
         self.language = language_field
 
     def to_front_dict(self) -> dict:

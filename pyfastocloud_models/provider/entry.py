@@ -21,6 +21,7 @@ class Provider(MongoModel):
     STATUS_FIELD = 'status'
     LANGUAGE_FIELD = 'language'
     COUNTRY_FIELD = 'country'
+    PASSWORD_FIELD = 'password'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -94,6 +95,60 @@ class Provider(MongoModel):
     def make_provider(cls, email: str, first_name: str, last_name: str, password: str, country: str, language: str):
         return cls(email=email, first_name=first_name, last_name=last_name,
                    password=Provider.generate_password_hash(password), country=country, language=language)
+
+    @classmethod
+    def make_entry(cls, json: dict) -> 'Provider':
+        cl = cls()
+        cl.update_entry(json)
+        return cl
+
+    def update_entry(self, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        email_field = json.get(Provider.EMAIL_FIELD, None)
+        if not email_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.EMAIL_FIELD))
+        self.email = email_field
+
+        password_field = json.get(Provider.PASSWORD_FIELD, None)
+        if password_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.PASSWORD_FIELD))
+        self.password = Provider.generate_password_hash(password_field)
+
+        first_name_field = json.get(Provider.FIRST_NAME_FIELD, None)
+        if not first_name_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.FIRST_NAME_FIELD))
+        self.first_name = first_name_field
+
+        last_name_field = json.get(Provider.LAST_NAME_FIELD, None)
+        if not last_name_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.LAST_NAME_FIELD))
+        self.last_name = last_name_field
+
+        created_date_field = json.get(Provider.CREATED_DATE_FIELD, None)
+        if not created_date_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.CREATED_DATE_FIELD))
+        self.created_date = datetime.utcfromtimestamp(created_date_field)
+
+        status_field = json.get(Provider.STATUS_FIELD, None)
+        if not status_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.STATUS_FIELD))
+        self.status = status_field
+
+        country_field = json.get(Provider.COUNTRY_FIELD, None)
+        if not country_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.COUNTRY_FIELD))
+        if not isinstance(country_field, str) or not constants.is_valid_country_code(country_field):
+            ValueError('Invalid country')
+        self.country = country_field
+
+        language_field = json.get(Provider.LANGUAGE_FIELD, None)
+        if not language_field:
+            raise ValueError('Invalid input({0} required)'.format(Provider.LANGUAGE_FIELD))
+        if not isinstance(language_field, str) or not constants.is_valid_locale_code(language_field):
+            raise ValueError('Invalid language')
+        self.language = language_field
 
     def to_front_dict(self):
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,

@@ -59,8 +59,8 @@ class Provider(MongoModel):
     first_name = fields.CharField(min_length=2, max_length=64, required=True)
     last_name = fields.CharField(min_length=2, max_length=64, required=True)
     password = fields.CharField(required=True)
-    created_date = fields.DateTimeField(default=datetime.now, required=True)
-    status = fields.IntegerField(default=Status.NO_ACTIVE, required=True)
+    created_date = fields.DateTimeField(default=datetime.now, required=True)  #
+    status = fields.IntegerField(default=Status.NO_ACTIVE, required=True)  #
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
@@ -134,9 +134,8 @@ class Provider(MongoModel):
             self.created_date = datetime.utcfromtimestamp(created_date_field)
 
         status_field = json.get(Provider.STATUS_FIELD, None)
-        if not status_field:
-            raise ValueError('Invalid input({0} required)'.format(Provider.STATUS_FIELD))
-        self.status = status_field
+        if status_field:
+            self.status = status_field
 
         country_field = json.get(Provider.COUNTRY_FIELD, None)
         if not country_field:

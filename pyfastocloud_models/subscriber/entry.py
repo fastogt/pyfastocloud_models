@@ -181,9 +181,9 @@ class Subscriber(MongoModel):
     first_name = fields.CharField(max_length=64, required=True)
     last_name = fields.CharField(max_length=64, required=True)
     password = fields.CharField(min_length=SUBSCRIBER_HASH_LENGTH, max_length=SUBSCRIBER_HASH_LENGTH, required=True)
-    created_date = fields.DateTimeField(default=datetime.now, required=True)
+    created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     exp_date = fields.DateTimeField(default=MAX_DATE, required=True)
-    status = fields.IntegerField(default=Status.NOT_ACTIVE, required=True)
+    status = fields.IntegerField(default=Status.NOT_ACTIVE, required=True)  #
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
@@ -552,8 +552,7 @@ class Subscriber(MongoModel):
 
         status_field = json.get(Subscriber.STATUS_FIELD, None)
         if not status_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.STATUS_FIELD))
-        self.status = status_field
+            self.status = status_field
 
         max_dev_field = json.get(Subscriber.MAX_DEVICE_COUNT_FIELD, None)
         if not max_dev_field:

@@ -527,6 +527,11 @@ class Subscriber(MongoModel):
             raise ValueError('Invalid input({0} required)'.format(Subscriber.EMAIL_FIELD))
         self.email = email_field
 
+        password_field = json.get(Subscriber.PASSWORD_FIELD, None)
+        if password_field:
+            raise ValueError('Invalid input({0} required)'.format(Subscriber.PASSWORD_FIELD))
+        self.password = Subscriber.make_md5_hash_from_password(password_field)
+
         first_name_field = json.get(Subscriber.FIRST_NAME_FIELD, None)
         if not first_name_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.FIRST_NAME_FIELD))

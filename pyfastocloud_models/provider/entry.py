@@ -111,7 +111,7 @@ class Provider(MongoModel):
             raise ValueError('Invalid input({0} required)'.format(Provider.EMAIL_FIELD))
         email = email_field.lower()
         if not is_valid_email(email, False):
-            return ValueError('Invalid email')
+            raise ValueError('Invalid email')
         self.email = email
 
         password_field = json.get(Provider.PASSWORD_FIELD, None)

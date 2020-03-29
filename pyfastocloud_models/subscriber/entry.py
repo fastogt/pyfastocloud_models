@@ -523,7 +523,7 @@ class Subscriber(MongoModel):
             raise ValueError('Invalid input({0} required)'.format(Subscriber.EMAIL_FIELD))
         email = email_field.lower()
         if not is_valid_email(email, False):
-            return ValueError('Invalid email')
+            raise ValueError('Invalid email')
         self.email = email
 
         password_field = json.get(Subscriber.PASSWORD_FIELD, None)

@@ -131,7 +131,7 @@ class Provider(MongoModel):
 
         created_date_field = json.get(Provider.CREATED_DATE_FIELD, None)
         if created_date_field:  # optional field
-            self.created_date = datetime.utcfromtimestamp(created_date_field)
+            self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
 
         status_field = json.get(Provider.STATUS_FIELD, None)
         if status_field:

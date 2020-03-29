@@ -543,12 +543,12 @@ class Subscriber(MongoModel):
 
         created_date_field = json.get(Subscriber.CREATED_DATE_FIELD, None)
         if created_date_field:  # optional field
-            self.created_date = datetime.utcfromtimestamp(created_date_field)
+            self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
 
         exp_date_field = json.get(Subscriber.EXP_DATE_FIELD, None)
         if not exp_date_field:
             raise ValueError('Invalid input({0} required)'.format(Subscriber.EXP_DATE_FIELD))
-        self.exp_date = datetime.utcfromtimestamp(exp_date_field)
+        self.exp_date = datetime.utcfromtimestamp(exp_date_field / 1000)
 
         status_field = json.get(Subscriber.STATUS_FIELD, None)
         if not status_field:

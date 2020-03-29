@@ -3,6 +3,7 @@ from pymodm import MongoModel, fields
 
 from pyfastocloud_models.common_entries import HostAndPort
 from pyfastocloud_models.provider.entry_pair import ProviderPair
+import pyfastocloud_models.constants as constants
 
 
 class LoadBalanceSettings(MongoModel):
@@ -10,6 +11,8 @@ class LoadBalanceSettings(MongoModel):
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
     CLIENTS_HOST = 'clients_host'
+    CATCHUPS_HOST_FIELD = 'catchups_host'
+    CATCHUPS_HTTP_ROOT_FIELD = 'catchups_http_root'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -32,6 +35,10 @@ class LoadBalanceSettings(MongoModel):
     DEFAULT_SERVICE_CLIENTS_HOST = 'localhost'
     DEFAULT_SERVICE_CLIENTS_PORT = 6000
 
+    DEFAULT_CATCHUPS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/hls'
+    DEFAULT_CATCHUPS_HTTP_HOST = 'localhost'
+    DEFAULT_CATCHUPS_HTTP_PORT = 8000
+
     providers = fields.EmbeddedDocumentListField(ProviderPair, default=[], blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
@@ -40,6 +47,9 @@ class LoadBalanceSettings(MongoModel):
                                         default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
     clients_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CLIENTS_HOST,
                                                                                  port=DEFAULT_SERVICE_CLIENTS_PORT))
+    catchups_http_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_CATCHUPS_HTTP_HOST,
+                                                                                       port=DEFAULT_CATCHUPS_HTTP_PORT))
+    catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -85,4 +95,6 @@ class LoadBalanceSettings(MongoModel):
     def to_front_dict(self) -> dict:
         return {LoadBalanceSettings.ID_FIELD: self.get_id(), LoadBalanceSettings.NAME_FIELD: self.name,
                 LoadBalanceSettings.HOST_FIELD: str(self.host),
-                LoadBalanceSettings.CLIENTS_HOST: str(self.clients_host)}
+                LoadBalanceSettings.CLIENTS_HOST: str(self.clients_host),
+                LoadBalanceSettings.CATCHUPS_HOST_FIELD: str(self.catchups_http_host),
+                LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: str(self.catchups_hls_directory)}

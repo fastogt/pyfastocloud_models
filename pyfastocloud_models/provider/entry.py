@@ -83,6 +83,14 @@ class Provider(MongoModel):
         if server:
             self.servers.remove(server)
 
+    def add_load_balancer(self, server):
+        if server:
+            self.load_balancers.append(server)
+
+    def remove_load_balancer(self, server):
+        if server:
+            self.load_balancers.remove(server)
+
     @staticmethod
     def generate_password_hash(password: str) -> str:
         return generate_password_hash(password, method='sha256')

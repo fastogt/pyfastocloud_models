@@ -19,23 +19,11 @@ class BaseFields:
     VISIBLE_FIELD = 'visible'
     IARC_FIELD = 'iarc'
     VIEW_COUNT_FIELD = 'view_count'
-
     TYPE_FIELD = 'type'
-    INPUT_STREAMS_FIELD = 'input_streams'
-    OUTPUT_STREAMS_FIELD = 'output_streams'
-    LOOP_START_TIME_FIELD = 'loop_start_time'
-    RSS_FIELD = 'rss'
-    CPU_FIELD = 'cpu'
-    STATUS_FIELD = 'status'
-    RESTARTS_FIELD = 'restarts'
-    START_TIME_FIELD = 'start_time'
-    TIMESTAMP_FIELD = 'timestamp'
-    IDLE_TIME_FIELD = 'idle_time'
 
 
 class StreamFields(BaseFields):
     ICON_FIELD = 'icon'
-    QUALITY_FIELD = 'quality'
 
 
 class VodFields(BaseFields):

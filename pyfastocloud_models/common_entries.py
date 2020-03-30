@@ -105,10 +105,10 @@ class HostAndPort(EmbeddedMongoModel):
     @staticmethod
     def make_entry(host: str):
         if not host:
-            raise ValueError('HostAndPort invalid input')
+            raise ValueError('HostAndPort invalid input({0})'.format(host))
         parts = host.split(':')
         if len(parts) != 2:
-            raise ValueError('HostAndPort invalid input')
+            raise ValueError('HostAndPort invalid input({0})'.format(host))
 
         return HostAndPort(host=parts[0], port=int(parts[1]))
 

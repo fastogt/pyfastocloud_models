@@ -100,7 +100,7 @@ class LoadBalanceSettings(MongoModel):
         catchups_http_root_field = json.get(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD, None)
         if not catchups_http_root_field:
             raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD))
-        self.catchups_hls_directory = HostAndPort.make_entry(catchups_http_root_field)
+        self.catchups_hls_directory = catchups_http_root_field
 
     def to_front_dict(self) -> dict:
         return {LoadBalanceSettings.ID_FIELD: self.get_id(), LoadBalanceSettings.NAME_FIELD: self.name,

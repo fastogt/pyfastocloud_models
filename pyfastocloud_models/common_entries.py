@@ -57,9 +57,9 @@ class HttpProxy(EmbeddedMongoModel, Maker):
     DEFAULT_USER = str()
     DEFAULT_PASSWORD = str()
 
-    uri = fields.CharField(required=True)
-    user = fields.CharField(default=DEFAULT_USER, required=False)
-    password = fields.CharField(default=DEFAULT_PASSWORD, required=False)
+    uri = fields.CharField(required=True, blank=True)
+    user = fields.CharField(default=DEFAULT_USER, required=False, blank=True)
+    password = fields.CharField(default=DEFAULT_PASSWORD, required=False, blank=True)
 
     def to_front_dict(self) -> dict:
         return {HttpProxy.URI_FIELD: self.uri, HttpProxy.USER_FIELD: self.user, HttpProxy.PASSWORD_FIELD: self.password}

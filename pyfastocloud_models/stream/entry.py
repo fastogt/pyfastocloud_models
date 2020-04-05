@@ -66,12 +66,12 @@ class IStream(MongoModel, Maker):
     created_date = fields.DateTimeField(default=datetime.now, required=True)
     group = fields.CharField(default=constants.DEFAULT_STREAM_GROUP_TITLE,
                              max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
-                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True)
+                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
 
     tvg_id = fields.CharField(default=constants.DEFAULT_STREAM_TVG_ID, max_length=constants.MAX_STREAM_TVG_ID_LENGTH,
-                              min_length=constants.MIN_STREAM_TVG_ID_LENGTH)
+                              min_length=constants.MIN_STREAM_TVG_ID_LENGTH, blank=True)
     tvg_name = fields.CharField(default=constants.DEFAULT_STREAM_TVG_NAME, max_length=constants.MAX_STREAM_NAME_LENGTH,
-                                min_length=constants.MIN_STREAM_NAME_LENGTH)  # for inner use
+                                min_length=constants.MIN_STREAM_NAME_LENGTH, blank=True)  # for inner use
     tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
                                 min_length=constants.MIN_URI_LENGTH, required=True)
 

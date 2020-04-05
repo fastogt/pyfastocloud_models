@@ -214,6 +214,33 @@ class IStream(MongoModel, Maker):
             for url in output_field:
                 self.output.append(OutputUrl.make_entry(url))
 
+    @staticmethod
+    def make_stream_entry(json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        stream_type = json[IStream.TYPE_FIELD]
+        if stream_type == constants.StreamType.PROXY:
+            return ProxyStream.make_entry(json)
+        elif stream_type == constants.StreamType.VOD_PROXY:
+            return ProxyVodStream.make_entry(json)
+        elif stream_type == constants.StreamType.RELAY:
+            return RelayStream.make_entry(json)
+        elif stream_type == constants.StreamType.ENCODE:
+            return EncodeStream.make_entry(json)
+        elif stream_type == constants.StreamType.VOD_RELAY:
+            return VodRelayStream.make_entry(json)
+        elif stream_type == constants.StreamType.VOD_ENCODE:
+            return VodEncodeStream.make_entry(json)
+        elif stream_type == constants.StreamType.COD_RELAY:
+            return CodRelayStream.make_entry(json)
+        elif stream_type == constants.StreamType.COD_ENCODE:
+            return CodEncodeStream.make_entry(json)
+        elif stream_type == constants.StreamType.CATCHUP:
+            return CatchupStream.make_entry(json)
+        else:
+            return TestLifeStream.make_entry(json)
+
 
 class ProxyStream(IStream):
     def __init__(self, *args, **kwargs):

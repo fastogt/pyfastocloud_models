@@ -20,10 +20,14 @@ class BaseFields:
     IARC_FIELD = 'iarc'
     VIEW_COUNT_FIELD = 'view_count'
     TYPE_FIELD = 'type'
+    CREATED_DATE_FIELD = 'created_date'
+    OUTPUT_FIELD = 'output'
 
 
 class StreamFields(BaseFields):
     ICON_FIELD = 'icon'
+    TVG_ID_FIELD = 'tvg_id'
+    TVG_NAME_FIELD = 'tvg_name'
 
 
 class VodFields(BaseFields):
@@ -77,9 +81,9 @@ class IStream(MongoModel):
         collection_name = 'streams'
         allow_inheritance = True
 
-    created_date = fields.DateTimeField(default=datetime.now)  # for inner use
-    name = fields.CharField(default=constants.DEFAULT_STREAM_NAME, max_length=constants.MAX_STREAM_NAME_LENGTH,
-                            min_length=constants.MIN_STREAM_NAME_LENGTH, required=True)
+    name = fields.CharField(max_length=constants.MAX_STREAM_NAME_LENGTH, min_length=constants.MIN_STREAM_NAME_LENGTH,
+                            required=True)
+    created_date = fields.DateTimeField(default=datetime.now, required=True)  # for inner use
     group = fields.CharField(default=constants.DEFAULT_STREAM_GROUP_TITLE,
                              max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
                              min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
@@ -88,17 +92,17 @@ class IStream(MongoModel):
                               min_length=constants.MIN_STREAM_TVG_ID_LENGTH, blank=True)
     tvg_name = fields.CharField(default=constants.DEFAULT_STREAM_TVG_NAME, max_length=constants.MAX_STREAM_NAME_LENGTH,
                                 min_length=constants.MIN_STREAM_NAME_LENGTH, blank=True)  #
-    tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URL_LENGTH,
-                                min_length=constants.MIN_URL_LENGTH, required=True)  #
+    tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
+                                min_length=constants.MIN_URI_LENGTH, required=True)  #
 
     price = fields.FloatField(default=0.0, min_value=constants.MIN_PRICE, max_value=constants.MAX_PRICE, required=True)
     visible = fields.BooleanField(default=True, required=True)
     iarc = fields.IntegerField(default=21, min_value=0,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
 
-    view_count = fields.IntegerField(default=0)
+    view_count = fields.IntegerField(default=0, required=True)
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[])
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[])  #
+    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)  #
 
     def add_part(self, stream):
         if stream:
@@ -178,6 +182,57 @@ class IStream(MongoModel):
             subscriber.remove_official_catchup(self)
             subscriber.save()
         return super(IStream, self).delete(*args, **kwargs)
+
+    @classmethod
+    def make_entry(cls, json: dict) -> 'IStream':
+        cl = cls()
+        cl.update_entry(json)
+        return cl
+
+    def update_entry(self, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        name_field = json.get(StreamFields.NAME_FIELD, None)
+        if not name_field:
+            raise ValueError('Invalid input({0} required)'.format(StreamFields.NAME_FIELD))
+        self.name = name_field
+
+        created_date_field = json.get(StreamFields.CREATED_DATE_FIELD, None)
+        if created_date_field:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
+
+        group_field = json.get(StreamFields.GROUP_FIELD, None)
+        if group_field:  # optional field
+            self.group = group_field
+
+        tvg_id_field = json.get(StreamFields.TVG_ID_FIELD, None)
+        if tvg_id_field:  # optional field
+            self.tvg_id = tvg_id_field
+
+        tvg_name_field = json.get(StreamFields.TVG_NAME_FIELD, None)
+        if tvg_name_field:  # optional field
+            self.tvg_name = tvg_name_field
+
+        tvg_logo_field = json.get(StreamFields.ICON_FIELD, None)
+        if tvg_logo_field:  # optional field
+            self.tvg_logo = tvg_logo_field
+
+        price_field = json.get(StreamFields.PRICE_FIELD, None)
+        if price_field:  # optional field
+            self.price = price_field
+
+        visible_field = json.get(StreamFields.VISIBLE_FIELD, None)
+        if visible_field:  # optional field
+            self.visible = visible_field
+
+        iarc_field = json.get(StreamFields.IARC_FIELD, None)
+        if iarc_field:  # optional field
+            self.iarc = iarc_field
+
+        output_field = json.get(StreamFields.IARC_FIELD, None)
+        if output_field:  # optional field
+            self.output = OutputUrl.make_entry(output_field)
 
 
 class ProxyStream(IStream):
@@ -402,8 +457,8 @@ class VodBasedStream(EmbeddedMongoModel):
                                    min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
                                    max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
                                    required=True)
-    trailer_url = fields.CharField(default=constants.INVALID_TRAILER_URL, max_length=constants.MAX_URL_LENGTH,
-                                   min_length=constants.MIN_URL_LENGTH, required=True)
+    trailer_url = fields.CharField(default=constants.INVALID_TRAILER_URL, max_length=constants.MAX_URI_LENGTH,
+                                   min_length=constants.MIN_URI_LENGTH, required=True)
     user_score = fields.FloatField(default=0, min_value=0, max_value=100, required=True)
     prime_date = fields.DateTimeField(default=MIN_DATE, required=True)
     country = fields.CharField(default=DEFAULT_COUNTRY, required=True)

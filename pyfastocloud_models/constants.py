@@ -2,8 +2,8 @@ from enum import IntEnum
 
 MIN_COUNTRY_LENGTH = 2
 MAX_COUNTRY_LENGTH = 2048
-MIN_URL_LENGTH = 3
-MAX_URL_LENGTH = 2048
+MIN_URI_LENGTH = 3
+MAX_URI_LENGTH = 2048
 MIN_PATH_LENGTH = 1
 MAX_PATH_LENGTH = 255
 
@@ -111,7 +111,6 @@ DEFAULT_STREAM_PIPELINE_PATH_TEMPLATE_3SIS = 'http://{0}:{1}/stream/pipeline/{2}
 
 DEFAULT_TEST_URL = 'test'
 
-DEFAULT_STREAM_NAME = 'Stream'
 DEFAULT_STREAM_ICON_URL = 'https://fastocloud.com/static/images/unknown_channel.png'
 DEFAULT_STREAM_PREVIEW_ICON_URL = 'https://fastocloud.com/static/images/unknown_preview.png'
 INVALID_TRAILER_URL = 'https://fastocloud.com/static/video/invalid_trailer.m3u8'

@@ -88,7 +88,7 @@ class IStream(MongoModel, Maker):
         output = []
         for out in self.output:
             output.append(out.to_front_dict())
-            
+
         return {IStream.ID_FIELD: self.get_id(), IStream.NAME_FIELD: self.name,
                 IStream.CREATED_DATE_FIELD: self.created_date_utc_msec(), IStream.GROUP_FIELD: self.group,
                 IStream.TYPE_FIELD: self.get_type(), IStream.TVG_ID_FIELD: self.tvg_id,
@@ -227,8 +227,17 @@ class ProxyStream(IStream):
 
 
 class HardwareStream(IStream):
-    log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, required=True)
+    LOG_LEVEL_FIELD = 'log_level'
+    INPUT_FIELD = 'input'
+    HAVE_VIDEO_FIELD = 'have_video'
+    HAVE_AUDIO_FIELD = 'have_audio'
+    AUDIO_SELECT_FIELD = 'audio_select'
+    LOOP_FIELD = 'loop'
+    RESTART_ATTEMPTS_FIELD = 'restart_attempts'
+    AUTO_EXIT_TIME_FIELD = 'auto_exit_time'
+    EXTRA_CONFIG_FIELD = 'extra_config_fields'
 
+    log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, required=True)
     input = fields.EmbeddedDocumentListField(InputUrl, default=[])
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
@@ -237,6 +246,22 @@ class HardwareStream(IStream):
     restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS, required=True)
     auto_exit_time = fields.IntegerField(default=constants.DEFAULT_AUTO_EXIT_TIME, required=True)
     extra_config_fields = fields.CharField(default='', blank=True)
+
+    def to_front_dict(self) -> dict:
+        base = super(HardwareStream, self).to_front_dict()
+        input = []
+        for inp in self.input:
+            input.append(inp.to_front_dict())
+        base[HardwareStream.LOG_LEVEL_FIELD] = self.log_level
+        base[HardwareStream.INPUT_FIELD] = input
+        base[HardwareStream.HAVE_VIDEO_FIELD] = self.have_video
+        base[HardwareStream.HAVE_AUDIO_FIELD] = self.have_audio
+        base[HardwareStream.AUDIO_SELECT_FIELD] = self.audio_select
+        base[HardwareStream.LOOP_FIELD] = self.loop
+        base[HardwareStream.RESTART_ATTEMPTS_FIELD] = self.restart_attempts
+        base[HardwareStream.AUTO_EXIT_TIME_FIELD] = self.auto_exit_time
+        base[HardwareStream.EXTRA_CONFIG_FIELD] = self.extra_config_fields
+        return base
 
     def __init__(self, *args, **kwargs):
         super(HardwareStream, self).__init__(*args, **kwargs)
@@ -279,11 +304,20 @@ class HardwareStream(IStream):
 
 
 class RelayStream(HardwareStream):
+    VIDEO_PARSER_FIELD = 'video_parser'
+    AUDIO_PARSER_FIELD = 'audio_parser'
+
     def __init__(self, *args, **kwargs):
         super(RelayStream, self).__init__(*args, **kwargs)
 
     video_parser = fields.CharField(default=constants.DEFAULT_VIDEO_PARSER, required=True)
     audio_parser = fields.CharField(default=constants.DEFAULT_AUDIO_PARSER, required=True)
+
+    def to_front_dict(self) -> dict:
+        base = super(RelayStream, self).to_front_dict()
+        base[RelayStream.VIDEO_PARSER_FIELD] = self.video_parser
+        base[RelayStream.AUDIO_PARSER_FIELD] = self.audio_parser
+        return base
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.RELAY
@@ -296,6 +330,21 @@ class RelayStream(HardwareStream):
 
 
 class EncodeStream(HardwareStream):
+    RELAY_AUDIO_FIELD = 'relay_audio'
+    RELAY_VIDEO_FIELD = 'relay_video'
+    DEINTERLACE_FIELD = 'deinterlace'
+    FRAME_RATE_FIELD = 'frame_rate'
+    VOLUME_FIELD = 'volume'
+    VIDEO_CODEC_FIELD = 'video_codec'
+    AUDIO_CODEC_FIELD = 'audio_codec'
+    AUDIO_CHANNELS_COUNT_FIELD = 'audio_channels_count'
+    SIZE_FIELD = 'size'
+    VIDEO_BITRATE_FIELD = 'video_bit_rate'
+    AUDIO_BITRATE_FIELD = 'audio_bit_rate'
+    LOGO_FIELD = 'logo'
+    RSVG_LOGO_FIELD = 'rsvg_logo'
+    ASPECT_RATIO_FIELD = 'aspect_ratio'
+
     def __init__(self, *args, **kwargs):
         super(EncodeStream, self).__init__(*args, **kwargs)
 
@@ -313,6 +362,24 @@ class EncodeStream(HardwareStream):
     logo = fields.EmbeddedDocumentField(Logo, default=Logo())
     rsvg_logo = fields.EmbeddedDocumentField(RSVGLogo, default=RSVGLogo())
     aspect_ratio = fields.EmbeddedDocumentField(Rational, default=Rational())
+
+    def to_front_dict(self) -> dict:
+        base = super(EncodeStream, self).to_front_dict()
+        base[EncodeStream.RELAY_AUDIO_FIELD] = self.relay_audio
+        base[EncodeStream.RELAY_VIDEO_FIELD] = self.relay_video
+        base[EncodeStream.DEINTERLACE_FIELD] = self.deinterlace
+        base[EncodeStream.FRAME_RATE_FIELD] = self.frame_rate
+        base[EncodeStream.VOLUME_FIELD] = self.volume
+        base[EncodeStream.VIDEO_CODEC_FIELD] = self.video_codec
+        base[EncodeStream.AUDIO_CODEC_FIELD] = self.audio_codec
+        base[EncodeStream.AUDIO_CHANNELS_COUNT_FIELD] = self.audio_channels_count
+        base[EncodeStream.SIZE_FIELD] = str(self.size)
+        base[EncodeStream.VIDEO_BITRATE_FIELD] = self.video_bit_rate
+        base[EncodeStream.AUDIO_BITRATE_FIELD] = self.audio_bit_rate
+        base[EncodeStream.LOGO_FIELD] = self.logo.to_front_dict()
+        base[EncodeStream.RSVG_LOGO_FIELD] = self.rsvg_logo.to_front_dict()
+        base[EncodeStream.ASPECT_RATIO_FIELD] = str(self.aspect_ratio)
+        return base
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.ENCODE
@@ -349,12 +416,21 @@ class EncodeStream(HardwareStream):
 
 
 class TimeshiftRecorderStream(RelayStream):
+    TIMESHIFT_CHUNK_DURATION = 'timeshift_chunk_duration'
+    TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
+
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)
     timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION, required=True)
     timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME, required=True)
 
     def __init__(self, *args, **kwargs):
         super(TimeshiftRecorderStream, self).__init__(*args, **kwargs)
+
+    def to_front_dict(self) -> dict:
+        base = super(TimeshiftRecorderStream, self).to_front_dict()
+        base[TimeshiftRecorderStream.TIMESHIFT_CHUNK_DURATION] = self.timeshift_chunk_duration
+        base[TimeshiftRecorderStream.TIMESHIFT_CHUNK_LIFE_TIME] = self.timeshift_chunk_life_time
+        return base
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.TIMESHIFT_RECORDER
@@ -392,11 +468,20 @@ class CatchupStream(TimeshiftRecorderStream):
 
 
 class TimeshiftPlayerStream(RelayStream):
+    TIMESHIFT_DIR_FIELD = 'timeshift_dir'
+    TIMESHIFT_DELAY = 'timeshift_delay'
+
     timeshift_dir = fields.CharField(required=True)  # FIXME default
     timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY, required=True)
 
     def __init__(self, *args, **kwargs):
         super(TimeshiftPlayerStream, self).__init__(*args, **kwargs)
+
+    def to_front_dict(self) -> dict:
+        base = super(TimeshiftPlayerStream, self).to_front_dict()
+        base[TimeshiftPlayerStream.TIMESHIFT_DIR_FIELD] = self.timeshift_dir
+        base[TimeshiftPlayerStream.TIMESHIFT_DELAY] = self.timeshift_delay
+        return base
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.TIMESHIFT_PLAYER

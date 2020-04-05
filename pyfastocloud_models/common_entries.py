@@ -151,6 +151,12 @@ class Size(EmbeddedMongoModel):
 
 
 class Logo(EmbeddedMongoModel):
+    PATH_FIELD = 'path'
+    X_FIELD = 'x'
+    Y_FIELD = 'y'
+    ALPHA_FIELD = 'alpha'
+    SIZE_FIELD = 'size'
+
     path = fields.CharField(default=constants.INVALID_LOGO_PATH, required=True, blank=True)
     x = fields.IntegerField(default=constants.DEFAULT_LOGO_X, required=True)
     y = fields.IntegerField(default=constants.DEFAULT_LOGO_Y, required=True)
@@ -160,12 +166,17 @@ class Logo(EmbeddedMongoModel):
     def is_valid(self):
         return self.path != constants.INVALID_LOGO_PATH
 
-    def to_dict(self) -> dict:
-        return {'path': self.path, 'position': '{0},{1}'.format(self.x, self.y), 'alpha': self.alpha,
-                'size': str(self.size)}
+    def to_front_dict(self) -> dict:
+        return {Logo.PATH_FIELD: self.path, 'position': '{0},{1}'.format(self.x, self.y), Logo.ALPHA_FIELD: self.alpha,
+                Logo.SIZE_FIELD: str(self.size)}
 
 
 class RSVGLogo(EmbeddedMongoModel):
+    PATH_FIELD = 'path'
+    X_FIELD = 'x'
+    Y_FIELD = 'y'
+    SIZE_FIELD = 'size'
+
     path = fields.CharField(default=constants.INVALID_LOGO_PATH, required=True, blank=True)
     x = fields.IntegerField(default=constants.DEFAULT_LOGO_X, required=True)
     y = fields.IntegerField(default=constants.DEFAULT_LOGO_Y, required=True)
@@ -174,8 +185,9 @@ class RSVGLogo(EmbeddedMongoModel):
     def is_valid(self):
         return self.path != constants.INVALID_LOGO_PATH
 
-    def to_dict(self) -> dict:
-        return {'path': self.path, 'position': '{0},{1}'.format(self.x, self.y), 'size': str(self.size)}
+    def to_front_dict(self) -> dict:
+        return {RSVGLogo.PATH_FIELD: self.path, 'position': '{0},{1}'.format(self.x, self.y),
+                RSVGLogo.SIZE_FIELD: str(self.size)}
 
 
 class Rational(EmbeddedMongoModel):

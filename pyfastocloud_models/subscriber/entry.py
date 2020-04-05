@@ -576,6 +576,7 @@ class Subscriber(MongoModel):
     def to_front_dict(self) -> dict:
         return {Subscriber.FIRST_NAME_FIELD: self.first_name, Subscriber.LAST_NAME_FIELD: self.last_name,
                 Subscriber.EMAIL_FIELD: self.email, Subscriber.ID_FIELD: self.get_id(),
+                Subscriber.PASSWORD_FIELD: self.password,
                 Subscriber.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 Subscriber.EXP_DATE_FIELD: self.expiration_date_utc_msec(), Subscriber.STATUS_FIELD: self.status,
                 Subscriber.MAX_DEVICE_COUNT_FIELD: self.max_devices_count,

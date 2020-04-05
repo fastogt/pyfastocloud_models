@@ -7,42 +7,8 @@ from bson.objectid import ObjectId
 from pymodm import MongoModel, fields, EmbeddedMongoModel
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl
+from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker
 from pyfastocloud_models.utils.utils import date_to_utc_msec
-
-
-class BaseFields:
-    NAME_FIELD = 'name'
-    ID_FIELD = 'id'
-    PRICE_FIELD = 'price'
-    GROUP_FIELD = 'group'
-    VISIBLE_FIELD = 'visible'
-    IARC_FIELD = 'iarc'
-    VIEW_COUNT_FIELD = 'view_count'
-    TYPE_FIELD = 'type'
-    CREATED_DATE_FIELD = 'created_date'
-    OUTPUT_FIELD = 'output'
-
-
-class StreamFields(BaseFields):
-    ICON_FIELD = 'icon'
-    TVG_ID_FIELD = 'tvg_id'
-    TVG_NAME_FIELD = 'tvg_name'
-
-
-class VodFields(BaseFields):
-    DESCRIPTION_FIELD = 'description'  #
-    VOD_TYPE_FIELD = 'vod_type'
-    TRAILER_URL_FIELD = 'trailer_url'
-    USER_SCORE_FIELD = 'user_score'
-    PRIME_DATE_FIELD = 'date'
-    COUNTRY_FIELD = 'country'
-    DURATION_FIELD = 'duration'
-
-
-class CatchupsFields(BaseFields):
-    START_RECORD_FIELD = 'start'
-    STOP_RECORD_FIELD = 'stop'
 
 
 class StreamLogLevel(IntEnum):
@@ -67,7 +33,21 @@ class StreamLogLevel(IntEnum):
         return str(self.value)
 
 
-class IStream(MongoModel):
+class IStream(MongoModel, Maker):
+    NAME_FIELD = 'name'
+    ID_FIELD = 'id'
+    PRICE_FIELD = 'price'
+    GROUP_FIELD = 'group'
+    VISIBLE_FIELD = 'visible'
+    IARC_FIELD = 'iarc'
+    VIEW_COUNT_FIELD = 'view_count'
+    TYPE_FIELD = 'type'
+    CREATED_DATE_FIELD = 'created_date'
+    OUTPUT_FIELD = 'output'
+    ICON_FIELD = 'icon'
+    TVG_ID_FIELD = 'tvg_id'
+    TVG_NAME_FIELD = 'tvg_name'
+
     @staticmethod
     def get_by_id(sid: ObjectId):
         try:
@@ -83,17 +63,17 @@ class IStream(MongoModel):
 
     name = fields.CharField(max_length=constants.MAX_STREAM_NAME_LENGTH, min_length=constants.MIN_STREAM_NAME_LENGTH,
                             required=True)
-    created_date = fields.DateTimeField(default=datetime.now, required=True)  # for inner use
+    created_date = fields.DateTimeField(default=datetime.now, required=True)
     group = fields.CharField(default=constants.DEFAULT_STREAM_GROUP_TITLE,
                              max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
-                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
+                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True)
 
     tvg_id = fields.CharField(default=constants.DEFAULT_STREAM_TVG_ID, max_length=constants.MAX_STREAM_TVG_ID_LENGTH,
-                              min_length=constants.MIN_STREAM_TVG_ID_LENGTH, blank=True)
+                              min_length=constants.MIN_STREAM_TVG_ID_LENGTH)
     tvg_name = fields.CharField(default=constants.DEFAULT_STREAM_TVG_NAME, max_length=constants.MAX_STREAM_NAME_LENGTH,
-                                min_length=constants.MIN_STREAM_NAME_LENGTH, blank=True)  #
+                                min_length=constants.MIN_STREAM_NAME_LENGTH)  # for inner use
     tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
-                                min_length=constants.MIN_URI_LENGTH, required=True)  #
+                                min_length=constants.MIN_URI_LENGTH, required=True)
 
     price = fields.FloatField(default=0.0, min_value=constants.MIN_PRICE, max_value=constants.MAX_PRICE, required=True)
     visible = fields.BooleanField(default=True, required=True)
@@ -103,6 +83,21 @@ class IStream(MongoModel):
     view_count = fields.IntegerField(default=0, required=True)
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[])
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)  #
+
+    def to_front_dict(self) -> dict:
+        output = []
+        for out in self.output:
+            output.append(out.to_front_dict())
+            
+        return {IStream.ID_FIELD: self.get_id(), IStream.NAME_FIELD: self.name,
+                IStream.CREATED_DATE_FIELD: self.created_date_utc_msec(), IStream.GROUP_FIELD: self.group,
+                IStream.TYPE_FIELD: self.get_type(), IStream.TVG_ID_FIELD: self.tvg_id,
+                IStream.TVG_NAME_FIELD: self.tvg_name, IStream.ICON_FIELD: self.tvg_logo,
+                IStream.PRICE_FIELD: self.price, IStream.VISIBLE_FIELD: self.visible, IStream.IARC_FIELD: self.iarc,
+                IStream.VIEW_COUNT_FIELD: self.view_count, IStream.OUTPUT_FIELD: output}
+
+    def created_date_utc_msec(self):
+        return date_to_utc_msec(self.created_date)
 
     def add_part(self, stream):
         if stream:
@@ -114,14 +109,6 @@ class IStream(MongoModel):
 
     def get_groups(self) -> list:
         return self.group.split(';')
-
-    def to_front_dict(self) -> dict:
-        return {StreamFields.NAME_FIELD: self.name, StreamFields.ID_FIELD: self.get_id(),
-                StreamFields.TYPE_FIELD: self.get_type(),
-                StreamFields.ICON_FIELD: self.tvg_logo, StreamFields.PRICE_FIELD: self.price,
-                StreamFields.VISIBLE_FIELD: self.visible,
-                StreamFields.IARC_FIELD: self.iarc, StreamFields.VIEW_COUNT_FIELD: self.view_count,
-                StreamFields.GROUP_FIELD: self.group}
 
     def get_type(self) -> constants.StreamType:
         raise NotImplementedError('subclasses must override get_type()!')
@@ -165,8 +152,8 @@ class IStream(MongoModel):
                     url = 'http://{0}/{1}/{2}/{3}/{4}/{5}/{6}'.format(lb_server_host_and_port, uid, pass_hash, did,
                                                                       self.id,
                                                                       out.id, file_name)
-                    result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'.format(
-                        self.tvg_id, self.tvg_name, self.tvg_logo, self.group, self.name, url)
+                    result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'. \
+                        format(self.tvg_id, self.tvg_name, self.tvg_logo, self.group, self.name, url)
 
         return result
 
@@ -183,56 +170,49 @@ class IStream(MongoModel):
             subscriber.save()
         return super(IStream, self).delete(*args, **kwargs)
 
-    @classmethod
-    def make_entry(cls, json: dict) -> 'IStream':
-        cl = cls()
-        cl.update_entry(json)
-        return cl
-
     def update_entry(self, json: dict):
-        if not json:
-            raise ValueError('Invalid input')
-
-        name_field = json.get(StreamFields.NAME_FIELD, None)
+        Maker.update_entry(self, json)
+        name_field = json.get(IStream.NAME_FIELD, None)
         if not name_field:
-            raise ValueError('Invalid input({0} required)'.format(StreamFields.NAME_FIELD))
+            raise ValueError('Invalid input({0} required)'.format(IStream.NAME_FIELD))
         self.name = name_field
 
-        created_date_field = json.get(StreamFields.CREATED_DATE_FIELD, None)
+        created_date_field = json.get(IStream.CREATED_DATE_FIELD, None)
         if created_date_field:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
 
-        group_field = json.get(StreamFields.GROUP_FIELD, None)
+        group_field = json.get(IStream.GROUP_FIELD, None)
         if group_field:  # optional field
             self.group = group_field
 
-        tvg_id_field = json.get(StreamFields.TVG_ID_FIELD, None)
+        tvg_id_field = json.get(IStream.TVG_ID_FIELD, None)
         if tvg_id_field:  # optional field
             self.tvg_id = tvg_id_field
 
-        tvg_name_field = json.get(StreamFields.TVG_NAME_FIELD, None)
+        tvg_name_field = json.get(IStream.TVG_NAME_FIELD, None)
         if tvg_name_field:  # optional field
             self.tvg_name = tvg_name_field
 
-        tvg_logo_field = json.get(StreamFields.ICON_FIELD, None)
+        tvg_logo_field = json.get(IStream.ICON_FIELD, None)
         if tvg_logo_field:  # optional field
             self.tvg_logo = tvg_logo_field
 
-        price_field = json.get(StreamFields.PRICE_FIELD, None)
+        price_field = json.get(IStream.PRICE_FIELD, None)
         if price_field:  # optional field
             self.price = price_field
 
-        visible_field = json.get(StreamFields.VISIBLE_FIELD, None)
+        visible_field = json.get(IStream.VISIBLE_FIELD, None)
         if visible_field:  # optional field
             self.visible = visible_field
 
-        iarc_field = json.get(StreamFields.IARC_FIELD, None)
+        iarc_field = json.get(IStream.IARC_FIELD, None)
         if iarc_field:  # optional field
             self.iarc = iarc_field
 
-        output_field = json.get(StreamFields.IARC_FIELD, None)
+        output_field = json.get(IStream.OUTPUT_FIELD, None)
         if output_field:  # optional field
-            self.output = OutputUrl.make_entry(output_field)
+            for url in output_field:
+                self.output.append(OutputUrl.make_entry(url))
 
 
 class ProxyStream(IStream):
@@ -384,8 +364,17 @@ class TimeshiftRecorderStream(RelayStream):
 
 
 class CatchupStream(TimeshiftRecorderStream):
+    START_RECORD_FIELD = 'start'
+    STOP_RECORD_FIELD = 'stop'
+
     start = fields.DateTimeField(default=datetime.utcfromtimestamp(0))
     stop = fields.DateTimeField(default=datetime.utcfromtimestamp(0))
+
+    def start_utc_msec(self):
+        return date_to_utc_msec(self.start)
+
+    def stop_utc_msec(self):
+        return date_to_utc_msec(self.stop)
 
     def __init__(self, *args, **kwargs):
         super(CatchupStream, self).__init__(*args, **kwargs)
@@ -397,10 +386,8 @@ class CatchupStream(TimeshiftRecorderStream):
 
     def to_front_dict(self) -> dict:
         base = super(CatchupStream, self).to_front_dict()
-        start_utc = date_to_utc_msec(self.start)
-        stop_utc = date_to_utc_msec(self.stop)
-        base[CatchupsFields.START_RECORD_FIELD] = start_utc
-        base[CatchupsFields.STOP_RECORD_FIELD] = stop_utc
+        base[CatchupStream.START_RECORD_FIELD] = self.start_utc_msec()
+        base[CatchupStream.STOP_RECORD_FIELD] = self.stop_utc_msec()
         return base
 
 
@@ -445,6 +432,14 @@ class CodEncodeStream(EncodeStream):
 
 
 class VodBasedStream(EmbeddedMongoModel):
+    DESCRIPTION_FIELD = 'description'  #
+    VOD_TYPE_FIELD = 'vod_type'
+    TRAILER_URL_FIELD = 'trailer_url'
+    USER_SCORE_FIELD = 'user_score'
+    PRIME_DATE_FIELD = 'date'
+    COUNTRY_FIELD = 'country'
+    DURATION_FIELD = 'duration'
+
     MAX_DATE = datetime(2100, 1, 1)
     MIN_DATE = datetime(1970, 1, 1)
     DEFAULT_COUNTRY = 'Unknown'
@@ -464,6 +459,17 @@ class VodBasedStream(EmbeddedMongoModel):
     country = fields.CharField(default=DEFAULT_COUNTRY, required=True)
     duration = fields.IntegerField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC, required=True)
 
+    def prime_date_utc_msec(self):
+        return date_to_utc_msec(self.prime_date)
+
+    def to_front_dict(self):
+        return {VodBasedStream.DESCRIPTION_FIELD: self.description,
+                VodBasedStream.TRAILER_URL_FIELD: self.trailer_url,
+                VodBasedStream.USER_SCORE_FIELD: self.user_score,
+                VodBasedStream.PRIME_DATE_FIELD: self.prime_date_utc_msec(),
+                VodBasedStream.COUNTRY_FIELD: self.country,
+                VodBasedStream.DURATION_FIELD: self.duration}
+
 
 class ProxyVodStream(ProxyStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
@@ -472,6 +478,11 @@ class ProxyVodStream(ProxyStream, VodBasedStream):
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.VOD_PROXY
+
+    def to_front_dict(self) -> dict:
+        front = ProxyStream.to_front_dict(self)
+        base = VodBasedStream.to_front_dict(self)
+        return {**front, **base}
 
 
 class VodRelayStream(RelayStream, VodBasedStream):
@@ -482,6 +493,11 @@ class VodRelayStream(RelayStream, VodBasedStream):
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.VOD_RELAY
 
+    def to_front_dict(self) -> dict:
+        front = ProxyStream.to_front_dict(self)
+        base = VodBasedStream.to_front_dict(self)
+        return {**front, **base}
+
 
 class VodEncodeStream(EncodeStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
@@ -490,6 +506,11 @@ class VodEncodeStream(EncodeStream, VodBasedStream):
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.VOD_ENCODE
+
+    def to_front_dict(self) -> dict:
+        front = ProxyStream.to_front_dict(self)
+        base = VodBasedStream.to_front_dict(self)
+        return {**front, **base}
 
 
 class EventStream(VodEncodeStream):

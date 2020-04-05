@@ -27,6 +27,9 @@ class Url(EmbeddedMongoModel, Maker):
     id = fields.IntegerField(default=lambda: Url.generate_id(), required=True)
     uri = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=True)
 
+    def to_front_dict(self) -> dict:
+        return {Url.ID_FIELD: self.id, Url.URI_FIELD: self.uri}
+
     @staticmethod
     def generate_id():
         current_value = Url._next_url_id
@@ -58,6 +61,9 @@ class HttpProxy(EmbeddedMongoModel, Maker):
     user = fields.CharField(default=DEFAULT_USER, required=False)
     password = fields.CharField(default=DEFAULT_PASSWORD, required=False)
 
+    def to_front_dict(self) -> dict:
+        return {HttpProxy.URI_FIELD: self.uri, HttpProxy.USER_FIELD: self.user, HttpProxy.PASSWORD_FIELD: self.password}
+
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
@@ -85,6 +91,13 @@ class InputUrl(Url):
     stream_link = fields.BooleanField(default=False, required=True)
     proxy = fields.EmbeddedDocumentField(HttpProxy, blank=True)
 
+    def to_front_dict(self) -> dict:
+        base = super(InputUrl, self).to_front_dict()
+        base[InputUrl.USER_AGENT_FIELD] = self.user_agent
+        base[InputUrl.STREAM_LINK_FIELD] = self.stream_link
+        base[InputUrl.PROXY_FIELD] = self.proxy.to_front_dict()
+        return base
+
     def update_entry(self, json: dict):
         Url.update_entry(self, json)
 
@@ -107,6 +120,12 @@ class OutputUrl(Url):
 
     http_root = fields.CharField(default='/', max_length=constants.MAX_PATH_LENGTH, required=False)
     hls_type = fields.IntegerField(default=constants.HlsType.HLS_PULL, required=False)
+
+    def to_front_dict(self) -> dict:
+        base = super(OutputUrl, self).to_front_dict()
+        base[OutputUrl.HTTP_ROOT_FIELD] = self.http_root
+        base[OutputUrl.HLS_TYPE_FIELD] = self.hls_type
+        return base
 
     def update_entry(self, json: dict):
         Url.update_entry(self, json)

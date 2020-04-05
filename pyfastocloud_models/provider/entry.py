@@ -161,6 +161,7 @@ class Provider(MongoModel):
 
     def to_front_dict(self):
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,
+                Provider.PASSWORD_FIELD: self.password,
                 Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,
                 Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date), Provider.STATUS_FIELD: self.status,
                 Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}

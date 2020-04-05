@@ -66,12 +66,12 @@ class IStream(MongoModel, Maker):
     created_date = fields.DateTimeField(default=datetime.now, required=True)
     group = fields.CharField(default=constants.DEFAULT_STREAM_GROUP_TITLE,
                              max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
-                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
+                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True)
 
     tvg_id = fields.CharField(default=constants.DEFAULT_STREAM_TVG_ID, max_length=constants.MAX_STREAM_TVG_ID_LENGTH,
-                              min_length=constants.MIN_STREAM_TVG_ID_LENGTH, blank=True)
+                              min_length=constants.MIN_STREAM_TVG_ID_LENGTH)
     tvg_name = fields.CharField(default=constants.DEFAULT_STREAM_TVG_NAME, max_length=constants.MAX_STREAM_NAME_LENGTH,
-                                min_length=constants.MIN_STREAM_NAME_LENGTH, blank=True)  # for inner use
+                                min_length=constants.MIN_STREAM_NAME_LENGTH)  # for inner use
     tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
                                 min_length=constants.MIN_URI_LENGTH, required=True)
 
@@ -85,16 +85,21 @@ class IStream(MongoModel, Maker):
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)  #
 
     def to_front_dict(self) -> dict:
-        output = []
-        for out in self.output:
-            output.append(out.to_front_dict())
+        result = {IStream.ID_FIELD: self.get_id(), IStream.NAME_FIELD: self.name,
+                  IStream.CREATED_DATE_FIELD: self.created_date_utc_msec(), IStream.GROUP_FIELD: self.group,
+                  IStream.TYPE_FIELD: self.get_type(), IStream.TVG_ID_FIELD: self.tvg_id,
+                  IStream.TVG_NAME_FIELD: self.tvg_name, IStream.ICON_FIELD: self.tvg_logo,
+                  IStream.PRICE_FIELD: self.price, IStream.VISIBLE_FIELD: self.visible, IStream.IARC_FIELD: self.iarc,
+                  IStream.VIEW_COUNT_FIELD: self.view_count}
 
-        return {IStream.ID_FIELD: self.get_id(), IStream.NAME_FIELD: self.name,
-                IStream.CREATED_DATE_FIELD: self.created_date_utc_msec(), IStream.GROUP_FIELD: self.group,
-                IStream.TYPE_FIELD: self.get_type(), IStream.TVG_ID_FIELD: self.tvg_id,
-                IStream.TVG_NAME_FIELD: self.tvg_name, IStream.ICON_FIELD: self.tvg_logo,
-                IStream.PRICE_FIELD: self.price, IStream.VISIBLE_FIELD: self.visible, IStream.IARC_FIELD: self.iarc,
-                IStream.VIEW_COUNT_FIELD: self.view_count, IStream.OUTPUT_FIELD: output}
+        if self.output:
+            output = []
+            for out in self.output:
+                output.append(out.to_front_dict())
+
+            result[IStream.OUTPUT_FIELD] = output
+
+        return result
 
     def created_date_utc_msec(self):
         return date_to_utc_msec(self.created_date)
@@ -287,7 +292,8 @@ class HardwareStream(IStream):
         base[HardwareStream.LOOP_FIELD] = self.loop
         base[HardwareStream.RESTART_ATTEMPTS_FIELD] = self.restart_attempts
         base[HardwareStream.AUTO_EXIT_TIME_FIELD] = self.auto_exit_time
-        base[HardwareStream.EXTRA_CONFIG_FIELD] = self.extra_config_fields
+        if self.extra_config_fields:
+            base[HardwareStream.EXTRA_CONFIG_FIELD] = self.extra_config_fields
         return base
 
     def __init__(self, *args, **kwargs):
@@ -446,7 +452,6 @@ class TimeshiftRecorderStream(RelayStream):
     TIMESHIFT_CHUNK_DURATION = 'timeshift_chunk_duration'
     TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
 
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)
     timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION, required=True)
     timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME, required=True)
 
@@ -515,8 +520,6 @@ class TimeshiftPlayerStream(RelayStream):
 
 
 class TestLifeStream(RelayStream):
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)
-
     def __init__(self, *args, **kwargs):
         super(TestLifeStream, self).__init__(*args, **kwargs)
 

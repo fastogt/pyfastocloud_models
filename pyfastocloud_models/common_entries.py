@@ -95,7 +95,8 @@ class InputUrl(Url):
         base = super(InputUrl, self).to_front_dict()
         base[InputUrl.USER_AGENT_FIELD] = self.user_agent
         base[InputUrl.STREAM_LINK_FIELD] = self.stream_link
-        base[InputUrl.PROXY_FIELD] = self.proxy.to_front_dict()
+        if self.proxy:
+            base[InputUrl.PROXY_FIELD] = self.proxy.to_front_dict()
         return base
 
     def update_entry(self, json: dict):

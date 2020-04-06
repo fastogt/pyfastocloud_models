@@ -618,11 +618,30 @@ class TimeshiftRecorderStream(RelayStream):
     TIMESHIFT_CHUNK_DURATION = 'timeshift_chunk_duration'
     TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
 
+    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)  #
+
     timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION, required=True)
     timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME, required=True)
 
     def __init__(self, *args, **kwargs):
         super(TimeshiftRecorderStream, self).__init__(*args, **kwargs)
+
+    def update_entry(self, json: dict):
+        RelayStream.update_entry(self, json)
+
+        chunk_duration_field = json.get(TimeshiftRecorderStream.TIMESHIFT_CHUNK_DURATION, None)
+        if chunk_duration_field is not None:  # optional field
+            if not isinstance(chunk_duration_field, int):
+                raise ValueError(
+                    'Invalid input({0} should be in int)'.format(TimeshiftRecorderStream.TIMESHIFT_CHUNK_DURATION))
+            self.timeshift_chunk_duration = chunk_duration_field
+
+        chunk_life_field = json.get(TimeshiftRecorderStream.TIMESHIFT_CHUNK_LIFE_TIME, None)
+        if chunk_life_field is not None:  # optional field
+            if not isinstance(chunk_life_field, int):
+                raise ValueError(
+                    'Invalid input({0} should be in int)'.format(TimeshiftRecorderStream.TIMESHIFT_CHUNK_LIFE_TIME))
+            self.timeshift_chunk_life_time = chunk_life_field
 
     def to_front_dict(self) -> dict:
         base = super(TimeshiftRecorderStream, self).to_front_dict()
@@ -641,8 +660,15 @@ class CatchupStream(TimeshiftRecorderStream):
     START_RECORD_FIELD = 'start'
     STOP_RECORD_FIELD = 'stop'
 
-    start = fields.DateTimeField(default=datetime.utcfromtimestamp(0))
-    stop = fields.DateTimeField(default=datetime.utcfromtimestamp(0))
+    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
+
+    start = fields.DateTimeField(default=datetime.utcfromtimestamp(0), required=True)
+    stop = fields.DateTimeField(default=datetime.utcfromtimestamp(0), required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(CatchupStream, self).__init__(*args, **kwargs)
+        self.timeshift_chunk_duration = constants.DEFAULT_CATCHUP_CHUNK_DURATION
+        self.auto_exit_time = constants.DEFAULT_CATCHUP_EXIT_TIME
 
     def start_utc_msec(self):
         return date_to_utc_msec(self.start)
@@ -650,10 +676,21 @@ class CatchupStream(TimeshiftRecorderStream):
     def stop_utc_msec(self):
         return date_to_utc_msec(self.stop)
 
-    def __init__(self, *args, **kwargs):
-        super(CatchupStream, self).__init__(*args, **kwargs)
-        self.timeshift_chunk_duration = constants.DEFAULT_CATCHUP_CHUNK_DURATION
-        self.auto_exit_time = constants.DEFAULT_CATCHUP_EXIT_TIME
+    def update_entry(self, json: dict):
+        TimeshiftRecorderStream.update_entry(self, json)
+        start_field = json.get(CatchupStream.START_RECORD_FIELD, None)
+        if start_field is None:
+            raise ValueError('Invalid input({0} required)'.format(CatchupStream.START_RECORD_FIELD))
+        if not isinstance(start_field, int):
+            raise ValueError('Invalid input({0} should be in int)'.format(CatchupStream.START_RECORD_FIELD))
+        self.start = datetime.utcfromtimestamp(start_field / 1000)
+
+        stop_field = json.get(CatchupStream.STOP_RECORD_FIELD, None)
+        if stop_field is None:
+            raise ValueError('Invalid input({0} required)'.format(CatchupStream.STOP_RECORD_FIELD))
+        if not isinstance(stop_field, int):
+            raise ValueError('Invalid input({0} should be in int)'.format(CatchupStream.STOP_RECORD_FIELD))
+        self.stop = datetime.utcfromtimestamp(stop_field / 1000)
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.CATCHUP
@@ -669,11 +706,30 @@ class TimeshiftPlayerStream(RelayStream):
     TIMESHIFT_DIR_FIELD = 'timeshift_dir'
     TIMESHIFT_DELAY = 'timeshift_delay'
 
+    input = fields.EmbeddedDocumentListField(InputUrl, default=[], blank=True)  #
+
     timeshift_dir = fields.CharField(required=True)  # FIXME default
     timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY, required=True)
 
     def __init__(self, *args, **kwargs):
         super(TimeshiftPlayerStream, self).__init__(*args, **kwargs)
+
+    def update_entry(self, json: dict):
+        RelayStream.update_entry(self, json)
+
+        timeshift_dir_field = json.get(TimeshiftPlayerStream.TIMESHIFT_DIR_FIELD, None)
+        if timeshift_dir_field is not None:  # optional field
+            if not isinstance(timeshift_dir_field, str):
+                raise ValueError(
+                    'Invalid input({0} should be in String)'.format(TimeshiftPlayerStream.TIMESHIFT_DIR_FIELD))
+            self.timeshift_dir = timeshift_dir_field
+
+        timeshift_delay_field = json.get(TimeshiftPlayerStream.TIMESHIFT_DELAY, None)
+        if timeshift_delay_field is not None:  # optional field
+            if not isinstance(timeshift_delay_field, int):
+                raise ValueError(
+                    'Invalid input({0} should be in int)'.format(TimeshiftPlayerStream.TIMESHIFT_DELAY))
+            self.timeshift_chunk_life_time = timeshift_delay_field
 
     def to_front_dict(self) -> dict:
         base = super(TimeshiftPlayerStream, self).to_front_dict()

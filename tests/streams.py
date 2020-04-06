@@ -14,8 +14,9 @@ class StreamsTest(unittest.TestCase):
         stable = int(now.microsecond / 1000) * 1000
         now = now.replace(microsecond=stable)
         msec = int(now.timestamp() * 1000)
-        output_url = OutputUrl(uri='test')
-        proxy_data = {ProxyStream.NAME_FIELD: 'Test', ProxyStream.GROUP_FIELD: 'Movies;USA',
+        output_url = OutputUrl(uri='test')  # required
+        name = 'Test'  # required
+        proxy_data = {ProxyStream.NAME_FIELD: name, ProxyStream.GROUP_FIELD: 'Movies;USA',
                       ProxyStream.CREATED_DATE_FIELD: msec, ProxyStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
         proxy = ProxyStream.make_entry(proxy_data)
         self.assertEqual(proxy.name, proxy_data[ProxyStream.NAME_FIELD])
@@ -25,9 +26,10 @@ class StreamsTest(unittest.TestCase):
         self.assertTrue(proxy.is_valid())
 
     def test_relay(self):
-        input_url = InputUrl(uri='test')
-        output_url = OutputUrl(uri='test')
-        relay_data = {RelayStream.NAME_FIELD: 'Relay', RelayStream.INPUT_FIELD: [input_url.to_front_dict()],
+        input_url = InputUrl(uri='test')  # required
+        output_url = OutputUrl(uri='test')  # required
+        name = 'Relay'  # required
+        relay_data = {RelayStream.NAME_FIELD: name, RelayStream.INPUT_FIELD: [input_url.to_front_dict()],
                       RelayStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
         relay = RelayStream.make_entry(relay_data)
         self.assertEqual(relay.name, relay_data[ProxyStream.NAME_FIELD])
@@ -36,9 +38,10 @@ class StreamsTest(unittest.TestCase):
         self.assertTrue(relay.is_valid())
 
     def test_encode(self):
-        input_url = InputUrl(uri='test')
-        output_url = OutputUrl(uri='test')
-        encode_data = {EncodeStream.NAME_FIELD: 'Encode', EncodeStream.INPUT_FIELD: [input_url.to_front_dict()],
+        input_url = InputUrl(uri='test')  # required
+        output_url = OutputUrl(uri='test')  # required
+        name = 'Encode'  # required
+        encode_data = {EncodeStream.NAME_FIELD: name, EncodeStream.INPUT_FIELD: [input_url.to_front_dict()],
                        EncodeStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
         encode = EncodeStream.make_entry(encode_data)
         self.assertEqual(encode.name, encode_data[EncodeStream.NAME_FIELD])

@@ -210,13 +210,13 @@ class IStream(MongoModel, Maker):
 
         visible_field = json.get(IStream.VISIBLE_FIELD, None)
         if visible_field is not None:  # optional field
-            if not isinstance(price_field, float):
+            if not isinstance(visible_field, float):
                 raise ValueError('Invalid input({0} should be in bool)'.format(IStream.VISIBLE_FIELD))
             self.visible = visible_field
 
         iarc_field = json.get(IStream.IARC_FIELD, None)
         if iarc_field is not None:  # optional field
-            if not isinstance(price_field, int):
+            if not isinstance(iarc_field, int):
                 raise ValueError('Invalid input({0} should be in int)'.format(IStream.IARC_FIELD))
             self.iarc = iarc_field
 
@@ -278,7 +278,7 @@ class HardwareStream(IStream):
     EXTRA_CONFIG_FIELD = 'extra_config_fields'
 
     log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, required=True)
-    input = fields.EmbeddedDocumentListField(InputUrl, default=[])
+    input = fields.EmbeddedDocumentListField(InputUrl, default=[], blank=True)
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     audio_select = fields.IntegerField(default=constants.INVALID_AUDIO_SELECT, required=True)
@@ -286,6 +286,65 @@ class HardwareStream(IStream):
     restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS, required=True)
     auto_exit_time = fields.IntegerField(default=constants.DEFAULT_AUTO_EXIT_TIME, required=True)
     extra_config_fields = fields.CharField(default='', blank=True)
+
+    def __init__(self, *args, **kwargs):
+        super(HardwareStream, self).__init__(*args, **kwargs)
+
+    def update_entry(self, json: dict):
+        IStream.update_entry(self, json)
+
+        log_level_field = json.get(HardwareStream.LOG_LEVEL_FIELD, None)
+        if log_level_field is not None:  # optional field
+            if not isinstance(log_level_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.LOG_LEVEL_FIELD))
+            self.log_level = log_level_field
+
+        input_field = json.get(HardwareStream.INPUT_FIELD, None)
+        if input_field is not None:  # optional field
+            for url in input_field:
+                self.input.append(InputUrl.make_entry(url))
+
+        have_video_field = json.get(HardwareStream.HAVE_VIDEO_FIELD, None)
+        if have_video_field is not None:  # optional field
+            if not isinstance(have_video_field, bool):
+                raise ValueError('Invalid input({0} should be in bool)'.format(HardwareStream.HAVE_VIDEO_FIELD))
+            self.have_video = have_video_field
+
+        have_audio_field = json.get(HardwareStream.HAVE_AUDIO_FIELD, None)
+        if have_audio_field is not None:  # optional field
+            if not isinstance(have_audio_field, bool):
+                raise ValueError('Invalid input({0} should be in bool)'.format(HardwareStream.HAVE_AUDIO_FIELD))
+            self.have_audio = have_audio_field
+
+        audio_select_field = json.get(HardwareStream.AUDIO_SELECT_FIELD, None)
+        if audio_select_field is not None:  # optional field
+            if not isinstance(audio_select_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.AUDIO_SELECT_FIELD))
+            self.audio_select = audio_select_field
+
+        loop_field = json.get(HardwareStream.LOOP_FIELD, None)
+        if loop_field is not None:  # optional field
+            if not isinstance(loop_field, bool):
+                raise ValueError('Invalid input({0} should be in bool)'.format(HardwareStream.LOOP_FIELD))
+            self.loop = loop_field
+
+        restart_field = json.get(HardwareStream.RESTART_ATTEMPTS_FIELD, None)
+        if restart_field is not None:  # optional field
+            if not isinstance(restart_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.RESTART_ATTEMPTS_FIELD))
+            self.restart_attempts = restart_field
+
+        auto_exit_field = json.get(HardwareStream.AUTO_EXIT_TIME_FIELD, None)
+        if auto_exit_field is not None:  # optional field
+            if not isinstance(auto_exit_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.AUTO_EXIT_TIME_FIELD))
+            self.auto_exit_time = auto_exit_field
+
+        extra_field = json.get(HardwareStream.EXTRA_CONFIG_FIELD, None)
+        if extra_field is not None:  # optional field
+            if not isinstance(extra_field, str):
+                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.EXTRA_CONFIG_FIELD))
+            self.extra_config_fields = extra_field
 
     def to_front_dict(self) -> dict:
         base = super(HardwareStream, self).to_front_dict()
@@ -303,9 +362,6 @@ class HardwareStream(IStream):
         if self.extra_config_fields:
             base[HardwareStream.EXTRA_CONFIG_FIELD] = self.extra_config_fields
         return base
-
-    def __init__(self, *args, **kwargs):
-        super(HardwareStream, self).__init__(*args, **kwargs)
 
     def get_type(self) -> constants.StreamType:
         raise NotImplementedError('subclasses must override get_type()!')
@@ -348,11 +404,29 @@ class RelayStream(HardwareStream):
     VIDEO_PARSER_FIELD = 'video_parser'
     AUDIO_PARSER_FIELD = 'audio_parser'
 
-    def __init__(self, *args, **kwargs):
-        super(RelayStream, self).__init__(*args, **kwargs)
+    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
+    input = fields.EmbeddedDocumentListField(InputUrl, required=True)
 
     video_parser = fields.CharField(default=constants.DEFAULT_VIDEO_PARSER, required=True)
     audio_parser = fields.CharField(default=constants.DEFAULT_AUDIO_PARSER, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(RelayStream, self).__init__(*args, **kwargs)
+
+    def update_entry(self, json: dict):
+        HardwareStream.update_entry(self, json)
+
+        video_parse_field = json.get(RelayStream.VIDEO_PARSER_FIELD, None)
+        if video_parse_field is not None:  # optional field
+            if not isinstance(video_parse_field, str):
+                raise ValueError('Invalid input({0} should be in int)'.format(RelayStream.VIDEO_PARSER_FIELD))
+            self.video_parser = video_parse_field
+
+        audio_parse_field = json.get(RelayStream.AUDIO_PARSER_FIELD, None)
+        if audio_parse_field is not None:  # optional field
+            if not isinstance(audio_parse_field, str):
+                raise ValueError('Invalid input({0} should be in int)'.format(RelayStream.AUDIO_PARSER_FIELD))
+            self.audio_parser = audio_parse_field
 
     def to_front_dict(self) -> dict:
         base = super(RelayStream, self).to_front_dict()
@@ -386,8 +460,8 @@ class EncodeStream(HardwareStream):
     RSVG_LOGO_FIELD = 'rsvg_logo'
     ASPECT_RATIO_FIELD = 'aspect_ratio'
 
-    def __init__(self, *args, **kwargs):
-        super(EncodeStream, self).__init__(*args, **kwargs)
+    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
+    input = fields.EmbeddedDocumentListField(InputUrl, required=True)
 
     relay_video = fields.BooleanField(default=constants.DEFAULT_RELAY_VIDEO, required=True)
     relay_audio = fields.BooleanField(default=constants.DEFAULT_RELAY_AUDIO, required=True)
@@ -403,6 +477,90 @@ class EncodeStream(HardwareStream):
     logo = fields.EmbeddedDocumentField(Logo, default=Logo())
     rsvg_logo = fields.EmbeddedDocumentField(RSVGLogo, default=RSVGLogo())
     aspect_ratio = fields.EmbeddedDocumentField(Rational, default=Rational())
+
+    def __init__(self, *args, **kwargs):
+        super(EncodeStream, self).__init__(*args, **kwargs)
+
+    def update_entry(self, json: dict):
+        HardwareStream.update_entry(self, json)
+
+        relay_video_field = json.get(EncodeStream.RELAY_VIDEO_FIELD, None)
+        if relay_video_field is not None:  # optional field
+            if not isinstance(relay_video_field, bool):
+                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.RELAY_VIDEO_FIELD))
+            self.relay_video = relay_video_field
+
+        relay_audio_field = json.get(EncodeStream.RELAY_AUDIO_FIELD, None)
+        if relay_audio_field is not None:  # optional field
+            if not isinstance(relay_audio_field, bool):
+                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.RELAY_AUDIO_FIELD))
+            self.relay_audio = relay_audio_field
+
+        deinterlace_field = json.get(EncodeStream.DEINTERLACE_FIELD, None)
+        if deinterlace_field is not None:  # optional field
+            if not isinstance(deinterlace_field, bool):
+                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.DEINTERLACE_FIELD))
+            self.deinterlace = deinterlace_field
+
+        frame_rate_field = json.get(EncodeStream.FRAME_RATE_FIELD, None)
+        if frame_rate_field is not None:  # optional field
+            if not isinstance(frame_rate_field, bool):
+                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.FRAME_RATE_FIELD))
+            self.frame_rate = frame_rate_field
+
+        volume_field = json.get(EncodeStream.VOLUME_FIELD, None)
+        if volume_field is not None:  # optional field
+            if not isinstance(volume_field, float):
+                raise ValueError('Invalid input({0} should be in float)'.format(EncodeStream.VOLUME_FIELD))
+            self.volume = volume_field
+
+        video_codec_field = json.get(EncodeStream.VIDEO_CODEC_FIELD, None)
+        if video_codec_field is not None:  # optional field
+            if not isinstance(video_codec_field, str):
+                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.VIDEO_CODEC_FIELD))
+            self.video_codec = video_codec_field
+
+        audio_codec_field = json.get(EncodeStream.AUDIO_CODEC_FIELD, None)
+        if audio_codec_field is not None:  # optional field
+            if not isinstance(audio_codec_field, str):
+                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.AUDIO_CODEC_FIELD))
+            self.audio_codec = audio_codec_field
+
+        size_field = json.get(EncodeStream.SIZE_FIELD, None)
+        if size_field is not None:  # optional field
+            if not isinstance(size_field, str):
+                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.SIZE_FIELD))
+            self.size = Size.make_entry(size_field)
+
+        video_bit_rate_field = json.get(EncodeStream.VIDEO_BITRATE_FIELD, None)
+        if video_bit_rate_field is not None:  # optional field
+            if not isinstance(video_bit_rate_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(EncodeStream.VIDEO_BITRATE_FIELD))
+            self.video_bit_rate = video_bit_rate_field
+
+        audio_bit_rate_field = json.get(EncodeStream.AUDIO_BITRATE_FIELD, None)
+        if audio_bit_rate_field is not None:  # optional field
+            if not isinstance(audio_bit_rate_field, int):
+                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.AUDIO_BITRATE_FIELD))
+            self.audio_bit_rate = audio_bit_rate_field
+
+        logo_field = json.get(EncodeStream.LOGO_FIELD, None)
+        if logo_field is not None:  # optional field
+            if not isinstance(logo_field, dict):
+                raise ValueError('Invalid input({0} should be in dict)'.format(EncodeStream.LOGO_FIELD))
+            self.logo = Logo.make_entry(logo_field)
+
+        rlogo_field = json.get(EncodeStream.RSVG_LOGO_FIELD, None)
+        if rlogo_field is not None:  # optional field
+            if not isinstance(rlogo_field, dict):
+                raise ValueError('Invalid input({0} should be in dict)'.format(EncodeStream.RSVG_LOGO_FIELD))
+            self.rsvg_logo = Logo.make_entry(rlogo_field)
+
+        aspect_field = json.get(EncodeStream.ASPECT_RATIO_FIELD, None)
+        if aspect_field is not None:  # optional field
+            if not isinstance(aspect_field, str):
+                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.ASPECT_RATIO_FIELD))
+            self.aspect_ratio = Rational.make_entry(aspect_field)
 
     def to_front_dict(self) -> dict:
         base = super(EncodeStream, self).to_front_dict()

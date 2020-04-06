@@ -74,11 +74,11 @@ class HttpProxy(EmbeddedMongoModel, Maker):
         self.uri = uri_field
 
         user_field = json.get(HttpProxy.USER_FIELD, None)
-        if user_field:  # optional field
+        if user_field is not None:  # optional field
             self.user = user_field
 
         password_field = json.get(HttpProxy.PASSWORD_FIELD, None)
-        if password_field:  # optional field
+        if password_field is not None:  # optional field
             self.password = password_field
 
 
@@ -147,18 +147,28 @@ class Size(EmbeddedMongoModel):
     def is_valid(self):
         return self.width != constants.INVALID_WIDTH and self.height != constants.INVALID_HEIGHT
 
+    @classmethod
+    def make_entry(cls, size: str):
+        if not size:
+            raise ValueError('Size invalid input({0})'.format(size))
+        parts = size.split('x')
+        if len(parts) != 2:
+            raise ValueError('Size invalid input({0})'.format(size))
+
+        return cls(width=int(parts[0]), height=int(parts[1]))
+
     def __str__(self):
         return '{0}x{1}'.format(self.width, self.height)
 
 
-class Logo(EmbeddedMongoModel):
+class Logo(EmbeddedMongoModel, Maker):
     PATH_FIELD = 'path'
     X_FIELD = 'x'
     Y_FIELD = 'y'
     ALPHA_FIELD = 'alpha'
     SIZE_FIELD = 'size'
 
-    path = fields.CharField(default=constants.INVALID_LOGO_PATH, required=True, blank=True)
+    path = fields.CharField(default=constants.INVALID_LOGO_PATH, blank=True)
     x = fields.IntegerField(default=constants.DEFAULT_LOGO_X, required=True)
     y = fields.IntegerField(default=constants.DEFAULT_LOGO_Y, required=True)
     alpha = fields.FloatField(default=constants.DEFAULT_LOGO_ALPHA, required=True)
@@ -166,6 +176,29 @@ class Logo(EmbeddedMongoModel):
 
     def is_valid(self):
         return self.path != constants.INVALID_LOGO_PATH
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+
+        path_field = json.get(Logo.PATH_FIELD, None)
+        if not path_field:
+            raise ValueError('Invalid input({0} required)'.format(HttpProxy.PATH_FIELD))
+
+        x_field = json.get(Logo.X_FIELD, None)
+        if x_field is not None:  # optional field
+            self.x = x_field
+
+        y_field = json.get(Logo.X_FIELD, None)
+        if y_field is not None:  # optional field
+            self.x = y_field
+
+        alpha_field = json.get(Logo.ALPHA_FIELD, None)
+        if alpha_field is not None:  # optional field
+            self.alpha = alpha_field
+
+        size_field = json.get(Logo.SIZE_FIELD, None)
+        if size_field is not None:  # optional field
+            self.size = Size.make_entry(size_field)
 
     def to_front_dict(self) -> dict:
         return {Logo.PATH_FIELD: self.path, 'position': '{0},{1}'.format(self.x, self.y), Logo.ALPHA_FIELD: self.alpha,
@@ -178,13 +211,32 @@ class RSVGLogo(EmbeddedMongoModel):
     Y_FIELD = 'y'
     SIZE_FIELD = 'size'
 
-    path = fields.CharField(default=constants.INVALID_LOGO_PATH, required=True, blank=True)
+    path = fields.CharField(default=constants.INVALID_LOGO_PATH, blank=True)
     x = fields.IntegerField(default=constants.DEFAULT_LOGO_X, required=True)
     y = fields.IntegerField(default=constants.DEFAULT_LOGO_Y, required=True)
     size = fields.EmbeddedDocumentField(Size, default=Size())
 
     def is_valid(self):
         return self.path != constants.INVALID_LOGO_PATH
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+
+        path_field = json.get(RSVGLogo.PATH_FIELD, None)
+        if not path_field:
+            raise ValueError('Invalid input({0} required)'.format(HttpProxy.PATH_FIELD))
+
+        x_field = json.get(RSVGLogo.X_FIELD, None)
+        if x_field is not None:  # optional field
+            self.x = x_field
+
+        y_field = json.get(RSVGLogo.X_FIELD, None)
+        if y_field is not None:  # optional field
+            self.x = y_field
+
+        size_field = json.get(RSVGLogo.SIZE_FIELD, None)
+        if size_field is not None:  # optional field
+            self.size = Size.make_entry(size_field)
 
     def to_front_dict(self) -> dict:
         return {RSVGLogo.PATH_FIELD: self.path, 'position': '{0},{1}'.format(self.x, self.y),
@@ -197,6 +249,16 @@ class Rational(EmbeddedMongoModel):
 
     def is_valid(self):
         return self.num != constants.INVALID_RATIO_NUM and self.den != constants.INVALID_RATIO_DEN
+
+    @classmethod
+    def make_entry(cls, ratio: str):
+        if not ratio:
+            raise ValueError('Rational invalid input({0})'.format(ratio))
+        parts = ratio.split(':')
+        if len(parts) != 2:
+            raise ValueError('Rational invalid input({0})'.format(ratio))
+
+        return cls(num=int(parts[0]), den=int(parts[1]))
 
     def __str__(self):
         return '{0}:{1}'.format(self.num, self.den)

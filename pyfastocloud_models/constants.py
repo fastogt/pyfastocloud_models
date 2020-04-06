@@ -114,11 +114,11 @@ DEFAULT_TEST_URL = 'test'
 DEFAULT_STREAM_ICON_URL = 'https://fastocloud.com/static/images/unknown_channel.png'
 DEFAULT_STREAM_PREVIEW_ICON_URL = 'https://fastocloud.com/static/images/unknown_preview.png'
 INVALID_TRAILER_URL = 'https://fastocloud.com/static/video/invalid_trailer.m3u8'
-DEFAULT_STREAM_GROUP_TITLE = ''
+DEFAULT_STREAM_GROUP_TITLE = str()
 DEFAULT_VOD_DESCRIPTION = 'Some description'
 DEFAULT_SERIES_DESCRIPTION = 'Some description'
-DEFAULT_STREAM_TVG_NAME = ''
-DEFAULT_STREAM_TVG_ID = ''
+DEFAULT_STREAM_TVG_NAME = str()
+DEFAULT_STREAM_TVG_ID = str()
 DEFAULT_DEVICES_COUNT = 10
 
 MIN_STREAM_NAME_LENGTH = 0

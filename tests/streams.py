@@ -2,7 +2,7 @@
 import datetime
 import unittest
 
-from pyfastocloud_models.stream.entry import ProxyStream, OutputUrl
+from pyfastocloud_models.stream.entry import ProxyStream, RelayStream, EncodeStream, OutputUrl, InputUrl
 
 
 class StreamsTest(unittest.TestCase):
@@ -21,9 +21,30 @@ class StreamsTest(unittest.TestCase):
         self.assertEqual(proxy.name, proxy_data[ProxyStream.NAME_FIELD])
         self.assertEqual(proxy.group, proxy_data[ProxyStream.GROUP_FIELD])
         self.assertEqual(proxy.created_date_utc_msec(), msec)
-        arr = [output_url]
-        self.assertEqual(proxy.output, arr)
+        self.assertEqual(proxy.output, [output_url])
         self.assertTrue(proxy.is_valid())
+
+    def test_relay(self):
+        input_url = InputUrl(uri='test')
+        output_url = OutputUrl(uri='test')
+        relay_data = {RelayStream.NAME_FIELD: 'Relay', RelayStream.INPUT_FIELD: [input_url.to_front_dict()],
+                      RelayStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
+        relay = RelayStream.make_entry(relay_data)
+        self.assertEqual(relay.name, relay_data[ProxyStream.NAME_FIELD])
+        self.assertEqual(relay.input, [input_url])
+        self.assertEqual(relay.output, [output_url])
+        self.assertTrue(relay.is_valid())
+
+    def test_encode(self):
+        input_url = InputUrl(uri='test')
+        output_url = OutputUrl(uri='test')
+        encode_data = {EncodeStream.NAME_FIELD: 'Encode', EncodeStream.INPUT_FIELD: [input_url.to_front_dict()],
+                       EncodeStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
+        encode = EncodeStream.make_entry(encode_data)
+        self.assertEqual(encode.name, encode_data[EncodeStream.NAME_FIELD])
+        self.assertEqual(encode.input, [input_url])
+        self.assertEqual(encode.output, [output_url])
+        self.assertTrue(encode.is_valid())
 
 
 if __name__ == '__main__':

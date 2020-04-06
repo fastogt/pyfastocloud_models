@@ -14,10 +14,36 @@ class Maker:
         if not json:
             raise ValueError('Invalid input')
 
-    def throw_invalid_input(self, field: str, invalid_value):
-        raise ValueError(
-            'Invalid input field({0}) type: {1}, expected: {2}'.format(field, type(invalid_value),
-                                                                       type(getattr(self, field))))
+    @staticmethod
+    def check_required_type(field: str, expected, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        value_field = json.get(field, None)
+        if not value_field:
+            raise ValueError('Invalid input({0} required)'.format(field))
+
+        actual = type(value_field)
+        if actual is not expected:
+            raise ValueError('Invalid input field({0}) actual type: {1}, expected: {2}'.format(field, actual, expected))
+
+        return True, value_field
+
+    @staticmethod
+    def check_optional_type(field: str, expected, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        value_field = json.get(field, None)
+        if value_field is not None:  # optional field
+            actual = type(value_field)
+            if actual is not expected:
+                raise ValueError(
+                    'Invalid input field({0}) actual type: {1}, expected: {2}'.format(field, actual, expected))
+
+            return True, value_field
+
+        return False, None
 
 
 class Url(EmbeddedMongoModel, Maker):

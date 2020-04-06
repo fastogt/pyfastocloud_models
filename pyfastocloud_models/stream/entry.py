@@ -175,55 +175,48 @@ class IStream(MongoModel, Maker):
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
-        name_field = json.get(IStream.NAME_FIELD, None)
-        if not name_field:
-            raise ValueError('Invalid input({0} required)'.format(IStream.NAME_FIELD))
-        self.name = name_field
+        res, name = self.check_required_type(IStream.NAME_FIELD, str, json)
+        if res:  # required field
+            self.name = name
 
-        created_date_field = json.get(IStream.CREATED_DATE_FIELD, None)
-        if created_date_field is not None:  # optional field
-            if not isinstance(created_date_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(IStream.CREATED_DATE_FIELD))
-            self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
+        res, created_date_msec = self.check_optional_type(IStream.CREATED_DATE_FIELD, int, json)
+        if res:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
-        group_field = json.get(IStream.GROUP_FIELD, None)
-        if group_field is not None:  # optional field
-            self.group = group_field
+        res, group = self.check_optional_type(IStream.GROUP_FIELD, str, json)
+        if res:  # optional field
+            self.group = group
 
-        tvg_id_field = json.get(IStream.TVG_ID_FIELD, None)
-        if tvg_id_field is not None:  # optional field
-            self.tvg_id = tvg_id_field
+        res, tvg_id = self.check_optional_type(IStream.TVG_ID_FIELD, str, json)
+        if res:  # optional field
+            self.tvg_id = tvg_id
 
-        tvg_name_field = json.get(IStream.TVG_NAME_FIELD, None)
-        if tvg_name_field is not None:  # optional field
-            self.tvg_name = tvg_name_field
+        res, tvg_name = self.check_optional_type(IStream.TVG_NAME_FIELD, str, json)
+        if res:  # optional field
+            self.tvg_name = tvg_name
 
-        tvg_logo_field = json.get(IStream.ICON_FIELD, None)
-        if tvg_logo_field is not None:  # optional field
-            self.tvg_logo = tvg_logo_field
+        res, icon = self.check_optional_type(IStream.ICON_FIELD, str, json)
+        if res:  # optional field
+            self.tvg_logo = icon
 
-        price_field = json.get(IStream.PRICE_FIELD, None)
-        if price_field is not None:  # optional field
-            if not isinstance(price_field, float):
-                self.throw_invalid_input(IStream.PRICE_FIELD, price_field)
-            self.price = price_field
+        res, price = self.check_optional_type(IStream.PRICE_FIELD, float, json)
+        if res:  # optional field
+            self.price = price
 
-        visible_field = json.get(IStream.VISIBLE_FIELD, None)
-        if visible_field is not None:  # optional field
-            if not isinstance(visible_field, float):
-                raise ValueError('Invalid input({0} should be in bool)'.format(IStream.VISIBLE_FIELD))
-            self.visible = visible_field
+        res, visible = self.check_optional_type(IStream.VISIBLE_FIELD, bool, json)
+        if res:  # optional field
+            self.visible = visible
 
-        iarc_field = json.get(IStream.IARC_FIELD, None)
-        if iarc_field is not None:  # optional field
-            if not isinstance(iarc_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(IStream.IARC_FIELD))
-            self.iarc = iarc_field
+        res, iarc = self.check_optional_type(IStream.IARC_FIELD, int, json)
+        if res:  # optional field
+            self.iarc = iarc
 
-        output_field = json.get(IStream.OUTPUT_FIELD, None)
-        if output_field is not None:  # optional field
-            for url in output_field:
-                self.output.append(OutputUrl.make_entry(url))
+        res, output = self.check_optional_type(IStream.OUTPUT_FIELD, list, json)
+        if res:  # optional field
+            stabled = []
+            for url in output:
+                stabled.append(OutputUrl.make_entry(url))
+            self.output = stabled
 
     @staticmethod
     def make_stream_entry(json: dict):
@@ -293,58 +286,44 @@ class HardwareStream(IStream):
     def update_entry(self, json: dict):
         IStream.update_entry(self, json)
 
-        log_level_field = json.get(HardwareStream.LOG_LEVEL_FIELD, None)
-        if log_level_field is not None:  # optional field
-            if not isinstance(log_level_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.LOG_LEVEL_FIELD))
-            self.log_level = log_level_field
+        res, log_level = IStream.check_optional_type(HardwareStream.LOG_LEVEL_FIELD, int, json)
+        if res:  # optional field
+            self.log_level = log_level
 
-        input_field = json.get(HardwareStream.INPUT_FIELD, None)
-        if input_field is not None:  # optional field
-            for url in input_field:
-                self.input.append(InputUrl.make_entry(url))
+        res, inp = IStream.check_optional_type(HardwareStream.INPUT_FIELD, list, json)
+        if res:  # optional field
+            stabled = []
+            for url in inp:
+                stabled.append(InputUrl.make_entry(url))
+            self.input = stabled
 
-        have_video_field = json.get(HardwareStream.HAVE_VIDEO_FIELD, None)
-        if have_video_field is not None:  # optional field
-            if not isinstance(have_video_field, bool):
-                raise ValueError('Invalid input({0} should be in bool)'.format(HardwareStream.HAVE_VIDEO_FIELD))
-            self.have_video = have_video_field
+        res, have_video = IStream.check_optional_type(HardwareStream.HAVE_VIDEO_FIELD, bool, json)
+        if res:  # optional field
+            self.have_video = have_video
 
-        have_audio_field = json.get(HardwareStream.HAVE_AUDIO_FIELD, None)
-        if have_audio_field is not None:  # optional field
-            if not isinstance(have_audio_field, bool):
-                raise ValueError('Invalid input({0} should be in bool)'.format(HardwareStream.HAVE_AUDIO_FIELD))
-            self.have_audio = have_audio_field
+        res, have_audio = IStream.check_optional_type(HardwareStream.HAVE_AUDIO_FIELD, bool, json)
+        if res:  # optional field
+            self.have_audio = have_audio
 
-        audio_select_field = json.get(HardwareStream.AUDIO_SELECT_FIELD, None)
-        if audio_select_field is not None:  # optional field
-            if not isinstance(audio_select_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.AUDIO_SELECT_FIELD))
-            self.audio_select = audio_select_field
+        res, audio_select = IStream.check_optional_type(HardwareStream.AUDIO_SELECT_FIELD, int, json)
+        if res:  # optional field
+            self.audio_select = audio_select
 
-        loop_field = json.get(HardwareStream.LOOP_FIELD, None)
-        if loop_field is not None:  # optional field
-            if not isinstance(loop_field, bool):
-                raise ValueError('Invalid input({0} should be in bool)'.format(HardwareStream.LOOP_FIELD))
-            self.loop = loop_field
+        res, loop = IStream.check_optional_type(HardwareStream.LOOP_FIELD, bool, json)
+        if res:  # optional field
+            self.loop = loop
 
-        restart_field = json.get(HardwareStream.RESTART_ATTEMPTS_FIELD, None)
-        if restart_field is not None:  # optional field
-            if not isinstance(restart_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.RESTART_ATTEMPTS_FIELD))
-            self.restart_attempts = restart_field
+        res, restart = IStream.check_optional_type(HardwareStream.RESTART_ATTEMPTS_FIELD, int, json)
+        if res:  # optional field
+            self.restart_attempts = restart
 
-        auto_exit_field = json.get(HardwareStream.AUTO_EXIT_TIME_FIELD, None)
-        if auto_exit_field is not None:  # optional field
-            if not isinstance(auto_exit_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.AUTO_EXIT_TIME_FIELD))
-            self.auto_exit_time = auto_exit_field
+        res, auto_exit = IStream.check_optional_type(HardwareStream.AUTO_EXIT_TIME_FIELD, int, json)
+        if res:  # optional field
+            self.auto_exit_time = auto_exit
 
-        extra_field = json.get(HardwareStream.EXTRA_CONFIG_FIELD, None)
-        if extra_field is not None:  # optional field
-            if not isinstance(extra_field, str):
-                raise ValueError('Invalid input({0} should be in int)'.format(HardwareStream.EXTRA_CONFIG_FIELD))
-            self.extra_config_fields = extra_field
+        res, extra = IStream.check_optional_type(HardwareStream.EXTRA_CONFIG_FIELD, str, json)
+        if res:  # optional field
+            self.extra_config_fields = extra
 
     def to_front_dict(self) -> dict:
         base = super(HardwareStream, self).to_front_dict()
@@ -416,17 +395,13 @@ class RelayStream(HardwareStream):
     def update_entry(self, json: dict):
         HardwareStream.update_entry(self, json)
 
-        video_parse_field = json.get(RelayStream.VIDEO_PARSER_FIELD, None)
-        if video_parse_field is not None:  # optional field
-            if not isinstance(video_parse_field, str):
-                raise ValueError('Invalid input({0} should be in int)'.format(RelayStream.VIDEO_PARSER_FIELD))
-            self.video_parser = video_parse_field
+        res, video = IStream.check_optional_type(RelayStream.VIDEO_PARSER_FIELD, str, json)
+        if res:  # optional field
+            self.video_parser = video
 
-        audio_parse_field = json.get(RelayStream.AUDIO_PARSER_FIELD, None)
-        if audio_parse_field is not None:  # optional field
-            if not isinstance(audio_parse_field, str):
-                raise ValueError('Invalid input({0} should be in int)'.format(RelayStream.AUDIO_PARSER_FIELD))
-            self.audio_parser = audio_parse_field
+        res, audio = IStream.check_optional_type(RelayStream.AUDIO_PARSER_FIELD, str, json)
+        if res:  # optional field
+            self.audio_parser = audio
 
     def to_front_dict(self) -> dict:
         base = super(RelayStream, self).to_front_dict()
@@ -484,83 +459,57 @@ class EncodeStream(HardwareStream):
     def update_entry(self, json: dict):
         HardwareStream.update_entry(self, json)
 
-        relay_video_field = json.get(EncodeStream.RELAY_VIDEO_FIELD, None)
-        if relay_video_field is not None:  # optional field
-            if not isinstance(relay_video_field, bool):
-                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.RELAY_VIDEO_FIELD))
-            self.relay_video = relay_video_field
+        res, video = IStream.check_optional_type(EncodeStream.RELAY_VIDEO_FIELD, bool, json)
+        if res:  # optional field
+            self.relay_video = video
 
-        relay_audio_field = json.get(EncodeStream.RELAY_AUDIO_FIELD, None)
-        if relay_audio_field is not None:  # optional field
-            if not isinstance(relay_audio_field, bool):
-                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.RELAY_AUDIO_FIELD))
-            self.relay_audio = relay_audio_field
+        res, audio = IStream.check_optional_type(EncodeStream.RELAY_AUDIO_FIELD, bool, json)
+        if res:  # optional field
+            self.relay_audio = audio
 
-        deinterlace_field = json.get(EncodeStream.DEINTERLACE_FIELD, None)
-        if deinterlace_field is not None:  # optional field
-            if not isinstance(deinterlace_field, bool):
-                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.DEINTERLACE_FIELD))
-            self.deinterlace = deinterlace_field
+        res, deinter = IStream.check_optional_type(EncodeStream.DEINTERLACE_FIELD, bool, json)
+        if res:  # optional field
+            self.deinterlace = deinter
 
-        frame_rate_field = json.get(EncodeStream.FRAME_RATE_FIELD, None)
-        if frame_rate_field is not None:  # optional field
-            if not isinstance(frame_rate_field, bool):
-                raise ValueError('Invalid input({0} should be in bool)'.format(EncodeStream.FRAME_RATE_FIELD))
-            self.frame_rate = frame_rate_field
+        res, frame_rate = IStream.check_optional_type(EncodeStream.FRAME_RATE_FIELD, int, json)
+        if res:  # optional field
+            self.frame_rate = frame_rate
 
-        volume_field = json.get(EncodeStream.VOLUME_FIELD, None)
-        if volume_field is not None:  # optional field
-            if not isinstance(volume_field, float):
-                raise ValueError('Invalid input({0} should be in float)'.format(EncodeStream.VOLUME_FIELD))
-            self.volume = volume_field
+        res, volume = IStream.check_optional_type(EncodeStream.VOLUME_FIELD, float, json)
+        if res:  # optional field
+            self.volume = volume
 
-        video_codec_field = json.get(EncodeStream.VIDEO_CODEC_FIELD, None)
-        if video_codec_field is not None:  # optional field
-            if not isinstance(video_codec_field, str):
-                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.VIDEO_CODEC_FIELD))
-            self.video_codec = video_codec_field
+        res, video_codec = IStream.check_optional_type(EncodeStream.VIDEO_CODEC_FIELD, str, json)
+        if res:  # optional field
+            self.video_codec = video_codec
 
-        audio_codec_field = json.get(EncodeStream.AUDIO_CODEC_FIELD, None)
-        if audio_codec_field is not None:  # optional field
-            if not isinstance(audio_codec_field, str):
-                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.AUDIO_CODEC_FIELD))
-            self.audio_codec = audio_codec_field
+        res, audio_codec = IStream.check_optional_type(EncodeStream.AUDIO_CODEC_FIELD, str, json)
+        if res:  # optional field
+            self.audio_codec = audio_codec
 
-        size_field = json.get(EncodeStream.SIZE_FIELD, None)
-        if size_field is not None:  # optional field
-            if not isinstance(size_field, dict):
-                raise ValueError('Invalid input({0} should be in dict)'.format(EncodeStream.SIZE_FIELD))
-            self.size = Size.make_entry(size_field)
+        res, size = IStream.check_optional_type(EncodeStream.SIZE_FIELD, dict, json)
+        if res:  # optional field
+            self.size = Size.make_entry(size)
 
-        video_bit_rate_field = json.get(EncodeStream.VIDEO_BITRATE_FIELD, None)
-        if video_bit_rate_field is not None:  # optional field
-            if not isinstance(video_bit_rate_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(EncodeStream.VIDEO_BITRATE_FIELD))
-            self.video_bit_rate = video_bit_rate_field
+        res, video_bit_rate = IStream.check_optional_type(EncodeStream.VIDEO_BITRATE_FIELD, int, json)
+        if res:  # optional field
+            self.video_bit_rate = video_bit_rate
 
-        audio_bit_rate_field = json.get(EncodeStream.AUDIO_BITRATE_FIELD, None)
-        if audio_bit_rate_field is not None:  # optional field
-            if not isinstance(audio_bit_rate_field, int):
-                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.AUDIO_BITRATE_FIELD))
-            self.audio_bit_rate = audio_bit_rate_field
+        res, audio_bit_rate = IStream.check_optional_type(EncodeStream.AUDIO_BITRATE_FIELD, int, json)
+        if res:  # optional field
+            self.audio_bit_rate = audio_bit_rate
 
-        logo_field = json.get(EncodeStream.LOGO_FIELD, None)
-        if logo_field is not None:  # optional field
-            if not isinstance(logo_field, dict):
-                raise ValueError('Invalid input({0} should be in dict)'.format(EncodeStream.LOGO_FIELD))
-            self.logo = Logo.make_entry(logo_field)
+        res, logo = IStream.check_optional_type(EncodeStream.LOGO_FIELD, dict, json)
+        if res:  # optional field
+            self.logo = Logo.make_entry(logo)
 
-        rlogo_field = json.get(EncodeStream.RSVG_LOGO_FIELD, None)
-        if rlogo_field is not None:  # optional field
-            if not isinstance(rlogo_field, dict):
-                raise ValueError('Invalid input({0} should be in dict)'.format(EncodeStream.RSVG_LOGO_FIELD))
-            self.rsvg_logo = Logo.make_entry(rlogo_field)
+        res, rlogo = IStream.check_optional_type(EncodeStream.RSVG_LOGO_FIELD, dict, json)
+        if res:  # optional field
+            self.rsvg_logo = RSVGLogo.make_entry(rlogo)
 
-        aspect_field = json.get(EncodeStream.ASPECT_RATIO_FIELD, None)
-        if aspect_field is not None:  # optional field
-            if not isinstance(aspect_field, dict):
-                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.ASPECT_RATIO_FIELD))
-            self.aspect_ratio = Rational.make_entry(aspect_field)
+        res, aspect = IStream.check_optional_type(EncodeStream.ASPECT_RATIO_FIELD, dict, json)
+        if res:  # optional field
+            self.aspect_ratio = Rational.make_entry(aspect)
 
     def to_front_dict(self) -> dict:
         base = super(EncodeStream, self).to_front_dict()
@@ -629,19 +578,13 @@ class TimeshiftRecorderStream(RelayStream):
     def update_entry(self, json: dict):
         RelayStream.update_entry(self, json)
 
-        chunk_duration_field = json.get(TimeshiftRecorderStream.TIMESHIFT_CHUNK_DURATION, None)
-        if chunk_duration_field is not None:  # optional field
-            if not isinstance(chunk_duration_field, int):
-                raise ValueError(
-                    'Invalid input({0} should be in int)'.format(TimeshiftRecorderStream.TIMESHIFT_CHUNK_DURATION))
-            self.timeshift_chunk_duration = chunk_duration_field
+        res, chunk_duration = IStream.check_optional_type(TimeshiftRecorderStream.TIMESHIFT_CHUNK_DURATION, int, json)
+        if res:  # optional field
+            self.timeshift_chunk_duration = chunk_duration
 
-        chunk_life_field = json.get(TimeshiftRecorderStream.TIMESHIFT_CHUNK_LIFE_TIME, None)
-        if chunk_life_field is not None:  # optional field
-            if not isinstance(chunk_life_field, int):
-                raise ValueError(
-                    'Invalid input({0} should be in int)'.format(TimeshiftRecorderStream.TIMESHIFT_CHUNK_LIFE_TIME))
-            self.timeshift_chunk_life_time = chunk_life_field
+        res, chunk_life = IStream.check_optional_type(TimeshiftRecorderStream.TIMESHIFT_CHUNK_LIFE_TIME, int, json)
+        if res:  # optional field
+            self.timeshift_chunk_life_time = chunk_life
 
     def to_front_dict(self) -> dict:
         base = super(TimeshiftRecorderStream, self).to_front_dict()
@@ -678,19 +621,14 @@ class CatchupStream(TimeshiftRecorderStream):
 
     def update_entry(self, json: dict):
         TimeshiftRecorderStream.update_entry(self, json)
-        start_field = json.get(CatchupStream.START_RECORD_FIELD, None)
-        if start_field is None:
-            raise ValueError('Invalid input({0} required)'.format(CatchupStream.START_RECORD_FIELD))
-        if not isinstance(start_field, int):
-            raise ValueError('Invalid input({0} should be in int)'.format(CatchupStream.START_RECORD_FIELD))
-        self.start = datetime.utcfromtimestamp(start_field / 1000)
 
-        stop_field = json.get(CatchupStream.STOP_RECORD_FIELD, None)
-        if stop_field is None:
-            raise ValueError('Invalid input({0} required)'.format(CatchupStream.STOP_RECORD_FIELD))
-        if not isinstance(stop_field, int):
-            raise ValueError('Invalid input({0} should be in int)'.format(CatchupStream.STOP_RECORD_FIELD))
-        self.stop = datetime.utcfromtimestamp(stop_field / 1000)
+        res, start = self.check_required_type(CatchupStream.START_RECORD_FIELD, int, json)
+        if res:
+            self.start = datetime.utcfromtimestamp(start / 1000)
+
+        res, stop = self.check_required_type(CatchupStream.STOP_RECORD_FIELD, int, json)
+        if res:
+            self.stop = datetime.utcfromtimestamp(stop / 1000)
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.CATCHUP
@@ -803,47 +741,33 @@ class VodBasedStream(EmbeddedMongoModel):
         if not json:
             raise ValueError('Invalid input')
 
-        vod_type_field = json.get(VodBasedStream.VOD_TYPE_FIELD, None)
-        if vod_type_field is not None:  # optional field
-            if not isinstance(vod_type_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(VodBasedStream.VOD_TYPE_FIELD))
-            self.vod_type = vod_type_field
+        res, vod_type = Maker.check_optional_type(VodBasedStream.VOD_TYPE_FIELD, int, json)
+        if res:
+            self.vod_type = vod_type
 
-        description_field = json.get(VodBasedStream.DESCRIPTION_FIELD, None)
-        if description_field is not None:  # optional field
-            if not isinstance(vod_type_field, str):
-                raise ValueError('Invalid input({0} should be in String)'.format(VodBasedStream.DESCRIPTION_FIELD))
-            self.description = description_field
+        res, description = Maker.check_optional_type(VodBasedStream.DESCRIPTION_FIELD, str, json)
+        if res:
+            self.description = description
 
-        trailer_field = json.get(VodBasedStream.TRAILER_URL_FIELD, None)
-        if trailer_field is not None:  # optional field
-            if not isinstance(vod_type_field, str):
-                raise ValueError('Invalid input({0} should be in String)'.format(VodBasedStream.TRAILER_URL_FIELD))
-            self.trailer_url = trailer_field
+        res, trailer = Maker.check_optional_type(VodBasedStream.TRAILER_URL_FIELD, str, json)
+        if res:
+            self.trailer_url = trailer
 
-        user_score_field = json.get(VodBasedStream.TRAILER_URL_FIELD, None)
-        if user_score_field is not None:  # optional field
-            if not isinstance(user_score_field, float):
-                raise ValueError('Invalid input({0} should be in float)'.format(VodBasedStream.USER_SCORE_FIELD))
-            self.user_score = user_score_field
+        res, score = Maker.check_optional_type(VodBasedStream.USER_SCORE_FIELD, float, json)
+        if res:
+            self.user_score = score
 
-        prime_date_field = json.get(VodBasedStream.PRIME_DATE_FIELD, None)
-        if prime_date_field is not None:  # optional field
-            if not isinstance(prime_date_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(VodBasedStream.PRIME_DATE_FIELD))
-            self.prime_date = datetime.utcfromtimestamp(prime_date_field / 1000)
+        res, prime_date = self.check_required_type(VodBasedStream.PRIME_DATE_FIELD, int, json)
+        if res:
+            self.prime_date = datetime.utcfromtimestamp(prime_date / 1000)
 
-        country_field = json.get(VodBasedStream.COUNTRY_FIELD, None)
-        if country_field is not None:  # optional field
-            if not isinstance(country_field, str):
-                raise ValueError('Invalid input({0} should be in String)'.format(VodBasedStream.COUNTRY_FIELD))
-            self.country = country_field
+        res, country = Maker.check_optional_type(VodBasedStream.COUNTRY_FIELD, str, json)
+        if res:
+            self.country = country
 
-        duration_field = json.get(VodBasedStream.DURATION_FIELD, None)
-        if duration_field is not None:  # optional field
-            if not isinstance(duration_field, int):
-                raise ValueError('Invalid input({0} should be in int)'.format(VodBasedStream.DURATION_FIELD))
-            self.duration = duration_field
+        res, duration = Maker.check_optional_type(VodBasedStream.DURATION_FIELD, int, json)
+        if res:
+            self.duration = duration
 
     def to_front_dict(self):
         return {VodBasedStream.DESCRIPTION_FIELD: self.description,

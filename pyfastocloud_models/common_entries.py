@@ -14,6 +14,11 @@ class Maker:
         if not json:
             raise ValueError('Invalid input')
 
+    def throw_invalid_input(self, field: str, invalid_value):
+        raise ValueError(
+            'Invalid input field({0}) type: {1}, expected: {2}'.format(field, type(invalid_value),
+                                                                       type(getattr(self, field))))
+
 
 class Url(EmbeddedMongoModel, Maker):
     ID_FIELD = 'id'

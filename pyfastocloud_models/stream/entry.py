@@ -205,7 +205,7 @@ class IStream(MongoModel, Maker):
         price_field = json.get(IStream.PRICE_FIELD, None)
         if price_field is not None:  # optional field
             if not isinstance(price_field, float):
-                raise ValueError('Invalid input({0} should be in int)'.format(IStream.PRICE_FIELD))
+                self.throw_invalid_input(IStream.PRICE_FIELD, price_field)
             self.price = price_field
 
         visible_field = json.get(IStream.VISIBLE_FIELD, None)

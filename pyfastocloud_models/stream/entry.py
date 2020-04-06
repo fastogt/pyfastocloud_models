@@ -799,6 +799,52 @@ class VodBasedStream(EmbeddedMongoModel):
     def prime_date_utc_msec(self):
         return date_to_utc_msec(self.prime_date)
 
+    def update_entry(self, json: dict):
+        if not json:
+            raise ValueError('Invalid input')
+
+        vod_type_field = json.get(VodBasedStream.VOD_TYPE_FIELD, None)
+        if vod_type_field is not None:  # optional field
+            if not isinstance(vod_type_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(VodBasedStream.VOD_TYPE_FIELD))
+            self.vod_type = vod_type_field
+
+        description_field = json.get(VodBasedStream.DESCRIPTION_FIELD, None)
+        if description_field is not None:  # optional field
+            if not isinstance(vod_type_field, str):
+                raise ValueError('Invalid input({0} should be in String)'.format(VodBasedStream.DESCRIPTION_FIELD))
+            self.description = description_field
+
+        trailer_field = json.get(VodBasedStream.TRAILER_URL_FIELD, None)
+        if trailer_field is not None:  # optional field
+            if not isinstance(vod_type_field, str):
+                raise ValueError('Invalid input({0} should be in String)'.format(VodBasedStream.TRAILER_URL_FIELD))
+            self.trailer_url = trailer_field
+
+        user_score_field = json.get(VodBasedStream.TRAILER_URL_FIELD, None)
+        if user_score_field is not None:  # optional field
+            if not isinstance(user_score_field, float):
+                raise ValueError('Invalid input({0} should be in float)'.format(VodBasedStream.USER_SCORE_FIELD))
+            self.user_score = user_score_field
+
+        prime_date_field = json.get(VodBasedStream.PRIME_DATE_FIELD, None)
+        if prime_date_field is not None:  # optional field
+            if not isinstance(prime_date_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(VodBasedStream.PRIME_DATE_FIELD))
+            self.prime_date = datetime.utcfromtimestamp(prime_date_field / 1000)
+
+        country_field = json.get(VodBasedStream.COUNTRY_FIELD, None)
+        if country_field is not None:  # optional field
+            if not isinstance(country_field, str):
+                raise ValueError('Invalid input({0} should be in String)'.format(VodBasedStream.COUNTRY_FIELD))
+            self.country = country_field
+
+        duration_field = json.get(VodBasedStream.DURATION_FIELD, None)
+        if duration_field is not None:  # optional field
+            if not isinstance(duration_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(VodBasedStream.DURATION_FIELD))
+            self.duration = duration_field
+
     def to_front_dict(self):
         return {VodBasedStream.DESCRIPTION_FIELD: self.description,
                 VodBasedStream.TRAILER_URL_FIELD: self.trailer_url,
@@ -812,6 +858,10 @@ class ProxyVodStream(ProxyStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
         super(ProxyVodStream, self).__init__(*args, **kwargs)
         self.tvg_logo = constants.DEFAULT_STREAM_PREVIEW_ICON_URL
+
+    def update_entry(self, json: dict):
+        ProxyStream.update_entry(self, json)
+        VodBasedStream.update_entry(self, json)
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.VOD_PROXY
@@ -827,11 +877,15 @@ class VodRelayStream(RelayStream, VodBasedStream):
         super(VodRelayStream, self).__init__(*args, **kwargs)
         self.tvg_logo = constants.DEFAULT_STREAM_PREVIEW_ICON_URL
 
+    def update_entry(self, json: dict):
+        RelayStream.update_entry(self, json)
+        VodBasedStream.update_entry(self, json)
+
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.VOD_RELAY
 
     def to_front_dict(self) -> dict:
-        front = ProxyStream.to_front_dict(self)
+        front = RelayStream.to_front_dict(self)
         base = VodBasedStream.to_front_dict(self)
         return {**front, **base}
 
@@ -840,6 +894,10 @@ class VodEncodeStream(EncodeStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
         super(VodEncodeStream, self).__init__(*args, **kwargs)
         self.tvg_logo = constants.DEFAULT_STREAM_PREVIEW_ICON_URL
+
+    def update_entry(self, json: dict):
+        EncodeStream.update_entry(self, json)
+        VodBasedStream.update_entry(self, json)
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.VOD_ENCODE

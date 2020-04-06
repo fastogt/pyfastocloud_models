@@ -61,17 +61,20 @@ class IStream(MongoModel, Maker):
         collection_name = 'streams'
         allow_inheritance = True
 
-    name = fields.CharField(max_length=constants.MAX_STREAM_NAME_LENGTH, min_length=constants.MIN_STREAM_NAME_LENGTH,
+    name = fields.CharField(min_length=constants.MIN_STREAM_NAME_LENGTH, max_length=constants.MAX_STREAM_NAME_LENGTH,
                             required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)
     group = fields.CharField(default=constants.DEFAULT_STREAM_GROUP_TITLE,
+                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH,
                              max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
-                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
+                             blank=True)
 
-    tvg_id = fields.CharField(default=constants.DEFAULT_STREAM_TVG_ID, max_length=constants.MAX_STREAM_TVG_ID_LENGTH,
-                              min_length=constants.MIN_STREAM_TVG_ID_LENGTH, blank=True)
-    tvg_name = fields.CharField(default=constants.DEFAULT_STREAM_TVG_NAME, max_length=constants.MAX_STREAM_NAME_LENGTH,
-                                min_length=constants.MIN_STREAM_NAME_LENGTH, blank=True)  # for inner use
+    tvg_id = fields.CharField(default=constants.DEFAULT_STREAM_TVG_ID, min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
+                              max_length=constants.MAX_STREAM_TVG_ID_LENGTH, blank=True)
+    tvg_name = fields.CharField(default=constants.DEFAULT_STREAM_TVG_NAME,
+                                min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
+                                max_length=constants.MAX_STREAM_TVG_NAME_LENGTH,
+                                blank=True)  # for inner use
     tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
                                 min_length=constants.MIN_URI_LENGTH, required=True)
 
@@ -178,39 +181,47 @@ class IStream(MongoModel, Maker):
         self.name = name_field
 
         created_date_field = json.get(IStream.CREATED_DATE_FIELD, None)
-        if created_date_field:  # optional field
+        if created_date_field is not None:  # optional field
+            if not isinstance(created_date_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(IStream.CREATED_DATE_FIELD))
             self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
 
         group_field = json.get(IStream.GROUP_FIELD, None)
-        if group_field:  # optional field
+        if group_field is not None:  # optional field
             self.group = group_field
 
         tvg_id_field = json.get(IStream.TVG_ID_FIELD, None)
-        if tvg_id_field:  # optional field
+        if tvg_id_field is not None:  # optional field
             self.tvg_id = tvg_id_field
 
         tvg_name_field = json.get(IStream.TVG_NAME_FIELD, None)
-        if tvg_name_field:  # optional field
+        if tvg_name_field is not None:  # optional field
             self.tvg_name = tvg_name_field
 
         tvg_logo_field = json.get(IStream.ICON_FIELD, None)
-        if tvg_logo_field:  # optional field
+        if tvg_logo_field is not None:  # optional field
             self.tvg_logo = tvg_logo_field
 
         price_field = json.get(IStream.PRICE_FIELD, None)
-        if price_field:  # optional field
+        if price_field is not None:  # optional field
+            if not isinstance(price_field, float):
+                raise ValueError('Invalid input({0} should be in int)'.format(IStream.PRICE_FIELD))
             self.price = price_field
 
         visible_field = json.get(IStream.VISIBLE_FIELD, None)
-        if visible_field:  # optional field
+        if visible_field is not None:  # optional field
+            if not isinstance(price_field, float):
+                raise ValueError('Invalid input({0} should be in bool)'.format(IStream.VISIBLE_FIELD))
             self.visible = visible_field
 
         iarc_field = json.get(IStream.IARC_FIELD, None)
-        if iarc_field:  # optional field
+        if iarc_field is not None:  # optional field
+            if not isinstance(price_field, int):
+                raise ValueError('Invalid input({0} should be in int)'.format(IStream.IARC_FIELD))
             self.iarc = iarc_field
 
         output_field = json.get(IStream.OUTPUT_FIELD, None)
-        if output_field:  # optional field
+        if output_field is not None:  # optional field
             for url in output_field:
                 self.output.append(OutputUrl.make_entry(url))
 
@@ -243,6 +254,8 @@ class IStream(MongoModel, Maker):
 
 
 class ProxyStream(IStream):
+    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
+
     def __init__(self, *args, **kwargs):
         super(ProxyStream, self).__init__(*args, **kwargs)
 

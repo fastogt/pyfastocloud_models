@@ -2,7 +2,7 @@ import json
 import os
 import ssl
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
@@ -11,7 +11,9 @@ from validate_email import validate_email
 
 
 def date_to_utc_msec(date: datetime):
-    return int(date.timestamp() * 1000)
+    date = date.replace(tzinfo=timezone.utc)
+    seconds = date.timestamp()
+    return int(seconds * 1000)
 
 
 def remove_port_from_url(url: str) -> str:

@@ -39,7 +39,7 @@ class Url(EmbeddedMongoModel, Maker):
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
         id_field = json.get(Url.ID_FIELD, None)
-        if id_field:
+        if id_field is not None:
             self.id = id_field
 
         uri_field = json.get(Url.URI_FIELD, None)
@@ -103,15 +103,15 @@ class InputUrl(Url):
         Url.update_entry(self, json)
 
         user_agent_field = json.get(InputUrl.USER_AGENT_FIELD, None)
-        if user_agent_field:  # optional field
+        if user_agent_field is not None:  # optional field
             self.user_agent = user_agent_field
 
         stream_link_field = json.get(InputUrl.STREAM_LINK_FIELD, None)
-        if stream_link_field:  # optional field
+        if stream_link_field is not None:  # optional field
             self.stream_link = stream_link_field
 
         proxy_field = json.get(InputUrl.PROXY_FIELD, None)
-        if proxy_field:  # optional field
+        if proxy_field is not None:  # optional field
             self.proxy = HttpProxy.make_entry(proxy_field)
 
 
@@ -136,7 +136,7 @@ class OutputUrl(Url):
             self.http_root = http_root_field
 
         hls_type_field = json.get(OutputUrl.HLS_TYPE_FIELD, None)
-        if hls_type_field:  # optional field
+        if hls_type_field is not None:  # optional field
             self.hls_type = hls_type_field
 
 

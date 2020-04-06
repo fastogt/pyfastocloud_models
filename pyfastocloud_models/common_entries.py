@@ -205,6 +205,9 @@ class Size(EmbeddedMongoModel, Maker):
         if height_field is not None:
             self.height = height_field
 
+    def to_front_dict(self) -> dict:
+        return {Size.WIDTH_FIELD: self.width, Size.HEIGHT_FIELD: self.height}
+
     def __str__(self):
         return '{0}x{1}'.format(self.width, self.height)
 
@@ -216,11 +219,14 @@ class Logo(EmbeddedMongoModel, Maker):
     SIZE_FIELD = 'size'
 
     INVALID_LOGO_PATH = str()
-    DEFAULT_LOGO_ALPHA = 1.0
+    MIN_LOGO_ALPHA = 0.0
+    MAX_LOGO_ALPHA = 1.0
+    DEFAULT_LOGO_ALPHA = MAX_LOGO_ALPHA
 
     path = fields.CharField(default=INVALID_LOGO_PATH, blank=True)
     position = fields.EmbeddedDocumentField(Point, default=Point(), required=True)
-    alpha = fields.FloatField(default=DEFAULT_LOGO_ALPHA, required=True)
+    alpha = fields.FloatField(default=DEFAULT_LOGO_ALPHA, min_value=MIN_LOGO_ALPHA, max_value=MAX_LOGO_ALPHA,
+                              required=True)
     size = fields.EmbeddedDocumentField(Size, default=Size())
 
     def __init__(self, *args, **kwargs):

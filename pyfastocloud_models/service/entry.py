@@ -218,9 +218,10 @@ class ServiceSettings(MongoModel):
 
     def to_front_dict(self) -> dict:
         return {ServiceSettings.ID_FIELD: self.get_id(), ServiceSettings.NAME_FIELD: self.name,
-                ServiceSettings.HOST_FIELD: str(self.host), ServiceSettings.HTTP_HOST_FIELD: str(self.http_host),
-                ServiceSettings.VODS_HOST_FIELD: str(self.vods_host),
-                ServiceSettings.CODS_HOST_FIELD: str(self.cods_host),
+                ServiceSettings.HOST_FIELD: self.host.to_front_dict(),
+                ServiceSettings.HTTP_HOST_FIELD: self.http_host.to_front_dict(),
+                ServiceSettings.VODS_HOST_FIELD: self.vods_host.to_front_dict(),
+                ServiceSettings.CODS_HOST_FIELD: self.cods_host.to_front_dict(),
                 ServiceSettings.FEEDBACK_DIRECOTRY_FIELD: self.feedback_directory,
                 ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: self.timeshifts_directory,
                 ServiceSettings.HLS_DIRECTORY_FIELD: self.hls_directory,

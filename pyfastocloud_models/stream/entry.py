@@ -528,8 +528,8 @@ class EncodeStream(HardwareStream):
 
         size_field = json.get(EncodeStream.SIZE_FIELD, None)
         if size_field is not None:  # optional field
-            if not isinstance(size_field, str):
-                raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.SIZE_FIELD))
+            if not isinstance(size_field, dict):
+                raise ValueError('Invalid input({0} should be in dict)'.format(EncodeStream.SIZE_FIELD))
             self.size = Size.make_entry(size_field)
 
         video_bit_rate_field = json.get(EncodeStream.VIDEO_BITRATE_FIELD, None)
@@ -558,7 +558,7 @@ class EncodeStream(HardwareStream):
 
         aspect_field = json.get(EncodeStream.ASPECT_RATIO_FIELD, None)
         if aspect_field is not None:  # optional field
-            if not isinstance(aspect_field, str):
+            if not isinstance(aspect_field, dict):
                 raise ValueError('Invalid input({0} should be in str)'.format(EncodeStream.ASPECT_RATIO_FIELD))
             self.aspect_ratio = Rational.make_entry(aspect_field)
 
@@ -572,12 +572,12 @@ class EncodeStream(HardwareStream):
         base[EncodeStream.VIDEO_CODEC_FIELD] = self.video_codec
         base[EncodeStream.AUDIO_CODEC_FIELD] = self.audio_codec
         base[EncodeStream.AUDIO_CHANNELS_COUNT_FIELD] = self.audio_channels_count
-        base[EncodeStream.SIZE_FIELD] = str(self.size)
+        base[EncodeStream.SIZE_FIELD] = self.size.to_front_dict()
         base[EncodeStream.VIDEO_BITRATE_FIELD] = self.video_bit_rate
         base[EncodeStream.AUDIO_BITRATE_FIELD] = self.audio_bit_rate
         base[EncodeStream.LOGO_FIELD] = self.logo.to_front_dict()
         base[EncodeStream.RSVG_LOGO_FIELD] = self.rsvg_logo.to_front_dict()
-        base[EncodeStream.ASPECT_RATIO_FIELD] = str(self.aspect_ratio)
+        base[EncodeStream.ASPECT_RATIO_FIELD] = self.aspect_ratio.to_front_dict()
         return base
 
     def get_type(self) -> constants.StreamType:

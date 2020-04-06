@@ -1,9 +1,9 @@
 from bson import ObjectId
 from pymodm import MongoModel, fields
 
+import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort
 from pyfastocloud_models.provider.entry_pair import ProviderPair
-import pyfastocloud_models.constants as constants
 
 
 class LoadBalanceSettings(MongoModel):
@@ -104,7 +104,7 @@ class LoadBalanceSettings(MongoModel):
 
     def to_front_dict(self) -> dict:
         return {LoadBalanceSettings.ID_FIELD: self.get_id(), LoadBalanceSettings.NAME_FIELD: self.name,
-                LoadBalanceSettings.HOST_FIELD: str(self.host),
-                LoadBalanceSettings.CLIENTS_HOST: str(self.clients_host),
-                LoadBalanceSettings.CATCHUPS_HOST_FIELD: str(self.catchups_http_host),
-                LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: str(self.catchups_hls_directory)}
+                LoadBalanceSettings.HOST_FIELD: self.host.to_front_dict(),
+                LoadBalanceSettings.CLIENTS_HOST: self.clients_host.to_front_dict(),
+                LoadBalanceSettings.CATCHUPS_HOST_FIELD: self.catchups_http_host.to_front_dict(),
+                LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: self.catchups_hls_directory}

@@ -27,6 +27,9 @@ class Url(EmbeddedMongoModel, Maker):
     id = fields.IntegerField(default=lambda: Url.generate_id(), required=True)
     uri = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=True)
 
+    def __init__(self, *args, **kwargs):
+        super(Url, self).__init__(*args, **kwargs)
+
     def to_front_dict(self) -> dict:
         return {Url.ID_FIELD: self.id, Url.URI_FIELD: self.uri}
 
@@ -61,6 +64,9 @@ class HttpProxy(EmbeddedMongoModel, Maker):
     user = fields.CharField(default=DEFAULT_USER, required=False, blank=True)
     password = fields.CharField(default=DEFAULT_PASSWORD, required=False, blank=True)
 
+    def __init__(self, *args, **kwargs):
+        super(HttpProxy, self).__init__(*args, **kwargs)
+
     def to_front_dict(self) -> dict:
         return {HttpProxy.URI_FIELD: self.uri, HttpProxy.USER_FIELD: self.user, HttpProxy.PASSWORD_FIELD: self.password}
 
@@ -90,6 +96,9 @@ class InputUrl(Url):
     user_agent = fields.IntegerField(default=constants.UserAgent.GSTREAMER, required=True)
     stream_link = fields.BooleanField(default=False, required=True)
     proxy = fields.EmbeddedDocumentField(HttpProxy, blank=True)
+
+    def __init__(self, *args, **kwargs):
+        super(InputUrl, self).__init__(*args, **kwargs)
 
     def to_front_dict(self) -> dict:
         base = super(InputUrl, self).to_front_dict()
@@ -122,6 +131,9 @@ class OutputUrl(Url):
     http_root = fields.CharField(default='/', max_length=constants.MAX_PATH_LENGTH, required=False)
     hls_type = fields.IntegerField(default=constants.HlsType.HLS_PULL, required=False)
 
+    def __init__(self, *args, **kwargs):
+        super(OutputUrl, self).__init__(*args, **kwargs)
+
     def to_front_dict(self) -> dict:
         base = super(OutputUrl, self).to_front_dict()
         base[OutputUrl.HTTP_ROOT_FIELD] = self.http_root
@@ -140,22 +152,58 @@ class OutputUrl(Url):
             self.hls_type = hls_type_field
 
 
-class Size(EmbeddedMongoModel):
-    width = fields.IntegerField(default=constants.INVALID_WIDTH, required=True)
-    height = fields.IntegerField(default=constants.INVALID_HEIGHT, required=True)
+class Point(EmbeddedMongoModel, Maker):
+    X_FIELD = 'x'
+    Y_FIELD = 'y'
+
+    x = fields.IntegerField(default=0, required=True)
+    y = fields.IntegerField(default=0, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Point, self).__init__(*args, **kwargs)
+
+    def to_front_dict(self) -> dict:
+        return {Point.X_FIELD: self.x, Point.Y_FIELD: self.y}
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        x_field = json.get(Point.X_FIELD, None)
+        if x_field is not None:
+            self.x = x_field
+
+        y_field = json.get(Point.Y_FIELD, None)
+        if y_field is not None:
+            self.x = y_field
+
+    def __str__(self):
+        return '{0},{1}'.format(self.x, self.y)
+
+
+class Size(EmbeddedMongoModel, Maker):
+    WIDTH_FIELD = 'width'
+    HEIGHT_FIELD = 'height'
+
+    INVALID_WIDTH = -1
+    INVALID_HEIGHT = -1
+
+    width = fields.IntegerField(default=INVALID_WIDTH, required=True)
+    height = fields.IntegerField(default=INVALID_HEIGHT, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Size, self).__init__(*args, **kwargs)
 
     def is_valid(self):
-        return self.width != constants.INVALID_WIDTH and self.height != constants.INVALID_HEIGHT
+        return self.width >= Size.INVALID_WIDTH and self.height >= Size.INVALID_HEIGHT
 
-    @classmethod
-    def make_entry(cls, size: str):
-        if not size:
-            raise ValueError('Size invalid input({0})'.format(size))
-        parts = size.split('x')
-        if len(parts) != 2:
-            raise ValueError('Size invalid input({0})'.format(size))
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        width_field = json.get(Size.WIDTH_FIELD, None)
+        if width_field is not None:
+            self.width = width_field
 
-        return cls(width=int(parts[0]), height=int(parts[1]))
+        height_field = json.get(Size.HEIGHT_FIELD, None)
+        if height_field is not None:
+            self.height = height_field
 
     def __str__(self):
         return '{0}x{1}'.format(self.width, self.height)
@@ -163,34 +211,35 @@ class Size(EmbeddedMongoModel):
 
 class Logo(EmbeddedMongoModel, Maker):
     PATH_FIELD = 'path'
-    X_FIELD = 'x'
-    Y_FIELD = 'y'
+    POSITION_FIELD = 'position'
     ALPHA_FIELD = 'alpha'
     SIZE_FIELD = 'size'
 
-    path = fields.CharField(default=constants.INVALID_LOGO_PATH, blank=True)
-    x = fields.IntegerField(default=constants.DEFAULT_LOGO_X, required=True)
-    y = fields.IntegerField(default=constants.DEFAULT_LOGO_Y, required=True)
-    alpha = fields.FloatField(default=constants.DEFAULT_LOGO_ALPHA, required=True)
+    INVALID_LOGO_PATH = str()
+    DEFAULT_LOGO_ALPHA = 1.0
+
+    path = fields.CharField(default=INVALID_LOGO_PATH, blank=True)
+    position = fields.EmbeddedDocumentField(Point, default=Point(), required=True)
+    alpha = fields.FloatField(default=DEFAULT_LOGO_ALPHA, required=True)
     size = fields.EmbeddedDocumentField(Size, default=Size())
 
+    def __init__(self, *args, **kwargs):
+        super(Logo, self).__init__(*args, **kwargs)
+
     def is_valid(self):
-        return self.path != constants.INVALID_LOGO_PATH
+        return self.path != Logo.INVALID_LOGO_PATH and self.size.is_valid()
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
         path_field = json.get(Logo.PATH_FIELD, None)
-        if not path_field:
-            raise ValueError('Invalid input({0} required)'.format(HttpProxy.PATH_FIELD))
+        if path_field is None:
+            raise ValueError('Invalid input({0} required)'.format(Logo.PATH_FIELD))
+        self.path = path_field
 
-        x_field = json.get(Logo.X_FIELD, None)
-        if x_field is not None:  # optional field
-            self.x = x_field
-
-        y_field = json.get(Logo.X_FIELD, None)
-        if y_field is not None:  # optional field
-            self.x = y_field
+        point_field = json.get(Logo.POSITION_FIELD, None)
+        if point_field is not None:  # optional field
+            self.position = point_field
 
         alpha_field = json.get(Logo.ALPHA_FIELD, None)
         if alpha_field is not None:  # optional field
@@ -201,84 +250,106 @@ class Logo(EmbeddedMongoModel, Maker):
             self.size = Size.make_entry(size_field)
 
     def to_front_dict(self) -> dict:
-        return {Logo.PATH_FIELD: self.path, 'position': '{0},{1}'.format(self.x, self.y), Logo.ALPHA_FIELD: self.alpha,
-                Logo.SIZE_FIELD: str(self.size)}
+        return {Logo.PATH_FIELD: self.path, Logo.POSITION_FIELD: self.position.to_front_dict(),
+                Logo.ALPHA_FIELD: self.alpha, Logo.SIZE_FIELD: self.size.to_front_dict()}
 
 
-class RSVGLogo(EmbeddedMongoModel):
+class RSVGLogo(EmbeddedMongoModel, Maker):
     PATH_FIELD = 'path'
-    X_FIELD = 'x'
-    Y_FIELD = 'y'
+    POSITION_FIELD = 'position'
     SIZE_FIELD = 'size'
 
-    path = fields.CharField(default=constants.INVALID_LOGO_PATH, blank=True)
-    x = fields.IntegerField(default=constants.DEFAULT_LOGO_X, required=True)
-    y = fields.IntegerField(default=constants.DEFAULT_LOGO_Y, required=True)
+    INVALID_LOGO_PATH = str()
+
+    path = fields.CharField(default=INVALID_LOGO_PATH, blank=True)
+    position = fields.EmbeddedDocumentField(Point, default=Point(), required=True)
     size = fields.EmbeddedDocumentField(Size, default=Size())
 
+    def __init__(self, *args, **kwargs):
+        super(RSVGLogo, self).__init__(*args, **kwargs)
+
     def is_valid(self):
-        return self.path != constants.INVALID_LOGO_PATH
+        return self.path != RSVGLogo.INVALID_LOGO_PATH and self.size.is_valid()
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
         path_field = json.get(RSVGLogo.PATH_FIELD, None)
-        if not path_field:
-            raise ValueError('Invalid input({0} required)'.format(HttpProxy.PATH_FIELD))
+        if path_field is None:
+            raise ValueError('Invalid input({0} required)'.format(RSVGLogo.PATH_FIELD))
+        self.path = path_field
 
-        x_field = json.get(RSVGLogo.X_FIELD, None)
-        if x_field is not None:  # optional field
-            self.x = x_field
-
-        y_field = json.get(RSVGLogo.X_FIELD, None)
-        if y_field is not None:  # optional field
-            self.x = y_field
+        point_field = json.get(RSVGLogo.POSITION_FIELD, None)
+        if point_field is not None:  # optional field
+            self.position = point_field
 
         size_field = json.get(RSVGLogo.SIZE_FIELD, None)
         if size_field is not None:  # optional field
             self.size = Size.make_entry(size_field)
 
     def to_front_dict(self) -> dict:
-        return {RSVGLogo.PATH_FIELD: self.path, 'position': '{0},{1}'.format(self.x, self.y),
-                RSVGLogo.SIZE_FIELD: str(self.size)}
+        return {RSVGLogo.PATH_FIELD: self.path, RSVGLogo.POSITION_FIELD: self.position.to_front_dict(),
+                RSVGLogo.SIZE_FIELD: self.size.to_front_dict()}
 
 
-class Rational(EmbeddedMongoModel):
-    num = fields.IntegerField(default=constants.INVALID_RATIO_NUM, required=True)
-    den = fields.IntegerField(default=constants.INVALID_RATIO_DEN, required=True)
+class Rational(EmbeddedMongoModel, Maker):
+    NUM_FIELD = 'num'
+    DEN_FIELD = 'den'
+
+    INVALID_RATIO_NUM = 0
+    INVALID_RATIO_DEN = 0
+
+    num = fields.IntegerField(default=INVALID_RATIO_NUM, required=True)
+    den = fields.IntegerField(default=INVALID_RATIO_DEN, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Rational, self).__init__(*args, **kwargs)
 
     def is_valid(self):
-        return self.num != constants.INVALID_RATIO_NUM and self.den != constants.INVALID_RATIO_DEN
+        return self.num != Rational.INVALID_RATIO_NUM and self.den != Rational.INVALID_RATIO_DEN
 
-    @classmethod
-    def make_entry(cls, ratio: str):
-        if not ratio:
-            raise ValueError('Rational invalid input({0})'.format(ratio))
-        parts = ratio.split(':')
-        if len(parts) != 2:
-            raise ValueError('Rational invalid input({0})'.format(ratio))
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        num_field = json.get(Rational.NUM_FIELD, None)
+        if num_field is not None:
+            self.num = num_field
 
-        return cls(num=int(parts[0]), den=int(parts[1]))
+        den_field = json.get(Rational.DEN_FIELD, None)
+        if den_field is not None:
+            self.den = den_field
+
+    def to_front_dict(self) -> dict:
+        return {Rational.NUM_FIELD: self.num, Rational.DEN_FIELD: self.den}
 
     def __str__(self):
         return '{0}:{1}'.format(self.num, self.den)
 
 
-class HostAndPort(EmbeddedMongoModel):
+class HostAndPort(EmbeddedMongoModel, Maker):
+    HOST_FIELD = 'host'
+    PORT_FIELD = 'port'
+
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 6317
+
     host = fields.CharField(default=DEFAULT_HOST, required=True)
     port = fields.IntegerField(default=DEFAULT_PORT, required=True)
 
-    @classmethod
-    def make_entry(cls, host: str):
-        if not host:
-            raise ValueError('HostAndPort invalid input({0})'.format(host))
-        parts = host.split(':')
-        if len(parts) != 2:
-            raise ValueError('HostAndPort invalid input({0})'.format(host))
+    def __init__(self, *args, **kwargs):
+        super(HostAndPort, self).__init__(*args, **kwargs)
 
-        return cls(host=parts[0], port=int(parts[1]))
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        host_field = json.get(HostAndPort.HOST_FIELD, None)
+        if host_field is not None:
+            self.host = host_field
+
+        port_field = json.get(HostAndPort.PORT_FIELD, None)
+        if port_field is not None:
+            self.port = port_field
+
+    def to_front_dict(self) -> dict:
+        return {HostAndPort.HOST_FIELD: self.host, HostAndPort.PORT_FIELD: self.port}
 
     def __str__(self):
         return '{0}:{1}'.format(self.host, self.port)

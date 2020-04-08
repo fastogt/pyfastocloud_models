@@ -233,6 +233,9 @@ class Subscriber(MongoModel):
         result = '#EXTM3U\n'
         sid = str(self.id)
         for stream in self.streams:
+            if stream.locked:  # FIXME should play stab video
+                continue
+
             if stream.private:
                 result += stream.sid.generate_playlist(False)
             else:

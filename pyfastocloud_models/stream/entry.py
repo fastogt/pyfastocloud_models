@@ -39,6 +39,7 @@ class IStream(MongoModel, Maker):
     PRICE_FIELD = 'price'
     GROUP_FIELD = 'group'
     VISIBLE_FIELD = 'visible'
+    LOCKED_FILED = 'locked'
     IARC_FIELD = 'iarc'
     VIEW_COUNT_FIELD = 'view_count'
     TYPE_FIELD = 'type'
@@ -80,6 +81,7 @@ class IStream(MongoModel, Maker):
 
     price = fields.FloatField(default=0.0, min_value=constants.MIN_PRICE, max_value=constants.MAX_PRICE, required=True)
     visible = fields.BooleanField(default=True, required=True)
+    locked = fields.BooleanField(default=True, required=False)
     iarc = fields.IntegerField(default=21, min_value=0,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
 
@@ -96,7 +98,8 @@ class IStream(MongoModel, Maker):
                 IStream.CREATED_DATE_FIELD: self.created_date_utc_msec(), IStream.GROUP_FIELD: self.group,
                 IStream.TYPE_FIELD: self.get_type(), IStream.TVG_ID_FIELD: self.tvg_id,
                 IStream.TVG_NAME_FIELD: self.tvg_name, IStream.ICON_FIELD: self.tvg_logo,
-                IStream.PRICE_FIELD: self.price, IStream.VISIBLE_FIELD: self.visible, IStream.IARC_FIELD: self.iarc,
+                IStream.PRICE_FIELD: self.price, IStream.VISIBLE_FIELD: self.visible, IStream.LOCKED_FILED: self.locked,
+                IStream.IARC_FIELD: self.iarc,
                 IStream.VIEW_COUNT_FIELD: self.view_count, IStream.OUTPUT_FIELD: output}
 
     def created_date_utc_msec(self):
@@ -206,6 +209,10 @@ class IStream(MongoModel, Maker):
         res, visible = self.check_optional_type(IStream.VISIBLE_FIELD, bool, json)
         if res:  # optional field
             self.visible = visible
+
+        res, locked = self.check_optional_type(IStream.LOCKED_FILED, bool, json)
+        if res:  # optional field
+            self.locked = locked
 
         res, iarc = self.check_optional_type(IStream.IARC_FIELD, int, json)
         if res:  # optional field

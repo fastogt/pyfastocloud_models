@@ -133,6 +133,7 @@ class Subscriber(MongoModel):
     MAX_DEVICE_COUNT_FIELD = 'max_devices_count'
     LANGUAGE_FIELD = 'language'
     COUNTRY_FIELD = 'country'
+    SERVERS_FIELD = 'servers'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -583,4 +584,5 @@ class Subscriber(MongoModel):
                 Subscriber.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 Subscriber.EXP_DATE_FIELD: self.expiration_date_utc_msec(), Subscriber.STATUS_FIELD: self.status,
                 Subscriber.MAX_DEVICE_COUNT_FIELD: self.max_devices_count,
-                Subscriber.LANGUAGE_FIELD: self.language, Subscriber.COUNTRY_FIELD: self.country}
+                Subscriber.LANGUAGE_FIELD: self.language, Subscriber.COUNTRY_FIELD: self.country,
+                Subscriber.SERVERS_FIELD: self.servers}

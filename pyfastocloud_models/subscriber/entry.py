@@ -578,6 +578,9 @@ class Subscriber(MongoModel):
         self.language = language_field
 
     def to_front_dict(self) -> dict:
+        servers = []
+        for server in self.servers:
+            servers.append(server.get_id())
         return {Subscriber.FIRST_NAME_FIELD: self.first_name, Subscriber.LAST_NAME_FIELD: self.last_name,
                 Subscriber.EMAIL_FIELD: self.email, Subscriber.ID_FIELD: self.get_id(),
                 Subscriber.PASSWORD_FIELD: self.password,
@@ -585,4 +588,4 @@ class Subscriber(MongoModel):
                 Subscriber.EXP_DATE_FIELD: self.expiration_date_utc_msec(), Subscriber.STATUS_FIELD: self.status,
                 Subscriber.MAX_DEVICE_COUNT_FIELD: self.max_devices_count,
                 Subscriber.LANGUAGE_FIELD: self.language, Subscriber.COUNTRY_FIELD: self.country,
-                Subscriber.SERVERS_FIELD: self.servers}
+                Subscriber.SERVERS_FIELD: servers}

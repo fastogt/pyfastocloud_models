@@ -26,6 +26,7 @@ def is_valid_locale_code(code: str) -> bool:
 
 
 INVALID_AUDIO_SELECT = -1
+INVALID_PROGRAM_NUMBER = -1
 DEFAULT_LOOP = False
 DEFAULT_HAVE_VIDEO = True
 DEFAULT_HAVE_AUDIO = True

@@ -123,10 +123,12 @@ class InputUrl(Url):
     USER_AGENT_FIELD = 'user_agent'
     STREAM_LINK_FIELD = 'stream_link'
     PROXY_FIELD = 'proxy'
+    PROGRAM_NUMBER_FIELD = 'program_number'
 
     user_agent = fields.IntegerField(default=constants.UserAgent.GSTREAMER, required=True)
     stream_link = fields.BooleanField(default=False, required=True)
     proxy = fields.EmbeddedDocumentField(HttpProxy, blank=True)
+    program_number = fields.IntegerField(blank=True)
 
     def __init__(self, *args, **kwargs):
         super(InputUrl, self).__init__(*args, **kwargs)
@@ -137,6 +139,8 @@ class InputUrl(Url):
         base[InputUrl.STREAM_LINK_FIELD] = self.stream_link
         if self.proxy:
             base[InputUrl.PROXY_FIELD] = self.proxy.to_front_dict()
+        if self.program_number:
+            base[InputUrl.PROGRAM_NUMBER_FIELD] = self.program_number
         return base
 
     def update_entry(self, json: dict):
@@ -153,6 +157,10 @@ class InputUrl(Url):
         proxy_field = json.get(InputUrl.PROXY_FIELD, None)
         if proxy_field is not None:  # optional field
             self.proxy = HttpProxy.make_entry(proxy_field)
+
+        program_number_field = json.get(InputUrl.PROGRAM_NUMBER_FIELD, None)
+        if program_number_field is not None:  # optional field
+            self.program_number = program_number_field
 
 
 class OutputUrl(Url):

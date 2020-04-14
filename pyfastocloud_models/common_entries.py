@@ -91,7 +91,7 @@ class HttpProxy(EmbeddedMongoModel, Maker):
     DEFAULT_USER = str()
     DEFAULT_PASSWORD = str()
 
-    uri = fields.CharField(required=True, blank=True)
+    uri = fields.CharField(required=True)
     user = fields.CharField(default=DEFAULT_USER, required=False, blank=True)
     password = fields.CharField(default=DEFAULT_PASSWORD, required=False, blank=True)
 
@@ -99,7 +99,12 @@ class HttpProxy(EmbeddedMongoModel, Maker):
         super(HttpProxy, self).__init__(*args, **kwargs)
 
     def to_front_dict(self) -> dict:
-        return {HttpProxy.URI_FIELD: self.uri, HttpProxy.USER_FIELD: self.user, HttpProxy.PASSWORD_FIELD: self.password}
+        result = {HttpProxy.URI_FIELD: self.uri}
+        if self.user and self.password:
+            result[HttpProxy.USER_FIELD] = self.user
+            result[HttpProxy.PASSWORD_FIELD] = self.password
+
+        return result
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
@@ -111,11 +116,9 @@ class HttpProxy(EmbeddedMongoModel, Maker):
         self.uri = uri_field
 
         user_field = json.get(HttpProxy.USER_FIELD, None)
-        if user_field is not None:  # optional field
-            self.user = user_field
-
         password_field = json.get(HttpProxy.PASSWORD_FIELD, None)
-        if password_field is not None:  # optional field
+        if user_field is not None and password_field is not None:  # optional field
+            self.user = user_field
             self.password = password_field
 
 
@@ -124,11 +127,13 @@ class InputUrl(Url):
     STREAM_LINK_FIELD = 'stream_link'
     PROXY_FIELD = 'proxy'
     PROGRAM_NUMBER_FIELD = 'program_number'
+    MULTICAST_IFACE_FIELD = 'multicast_iface'
 
     user_agent = fields.IntegerField(default=constants.UserAgent.GSTREAMER, required=True)
     stream_link = fields.BooleanField(default=False, required=True)
     proxy = fields.EmbeddedDocumentField(HttpProxy, blank=True)
-    program_number = fields.IntegerField(default=constants.INVALID_PROGRAM_NUMBER, required=True)
+    program_number = fields.IntegerField(blank=True)
+    multicast_iface = fields.CharField(blank=True)
 
     def __init__(self, *args, **kwargs):
         super(InputUrl, self).__init__(*args, **kwargs)
@@ -139,7 +144,10 @@ class InputUrl(Url):
         base[InputUrl.STREAM_LINK_FIELD] = self.stream_link
         if self.proxy:
             base[InputUrl.PROXY_FIELD] = self.proxy.to_front_dict()
-        base[InputUrl.PROGRAM_NUMBER_FIELD] = self.program_number
+        if self.program_number:
+            base[InputUrl.PROGRAM_NUMBER_FIELD] = self.program_number
+        if self.multicast_iface:
+            base[InputUrl.MULTICAST_IFACE_FIELD] = self.multicast_iface
         return base
 
     def update_entry(self, json: dict):
@@ -160,6 +168,10 @@ class InputUrl(Url):
         program_number_field = json.get(InputUrl.PROGRAM_NUMBER_FIELD, None)
         if program_number_field is not None:  # optional field
             self.program_number = program_number_field
+
+        iface_field = json.get(InputUrl.MULTICAST_IFACE_FIELD, None)
+        if iface_field is not None:  # optional field
+            self.multicast_iface = iface_field
 
 
 class OutputUrl(Url):

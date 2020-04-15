@@ -20,7 +20,7 @@ class Maker:
             raise ValueError('Invalid input')
 
         value_field = json.get(field, None)
-        if not value_field:
+        if value_field is None:
             raise ValueError('Invalid input({0} required)'.format(field))
 
         actual = type(value_field)

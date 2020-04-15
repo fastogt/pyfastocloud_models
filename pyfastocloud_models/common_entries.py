@@ -233,8 +233,8 @@ class Size(EmbeddedMongoModel, Maker):
     WIDTH_FIELD = 'width'
     HEIGHT_FIELD = 'height'
 
-    INVALID_WIDTH = -1
-    INVALID_HEIGHT = -1
+    INVALID_WIDTH = 0
+    INVALID_HEIGHT = 0
 
     width = fields.IntegerField(default=INVALID_WIDTH, required=True)
     height = fields.IntegerField(default=INVALID_HEIGHT, required=True)

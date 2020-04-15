@@ -728,7 +728,7 @@ class VodBasedStream(EmbeddedMongoModel):
                                    max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
                                    required=True)
     trailer_url = fields.CharField(default=constants.INVALID_TRAILER_URL, max_length=constants.MAX_URI_LENGTH,
-                                   min_length=constants.MIN_URI_LENGTH, required=True)
+                                   min_length=constants.MIN_URI_LENGTH, required=True, blank=True)
     user_score = fields.FloatField(default=0, min_value=0, max_value=100, required=True)
     prime_date = fields.DateTimeField(default=MIN_DATE, required=True)
     country = fields.CharField(default=DEFAULT_COUNTRY, required=True)

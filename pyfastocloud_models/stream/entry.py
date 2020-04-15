@@ -741,7 +741,7 @@ class VodBasedStream(EmbeddedMongoModel):
         if not json:
             raise ValueError('Invalid input')
 
-        res, vod_type = Maker.check_optional_type(VodBasedStream.VOD_TYPE_FIELD, int, json)
+        res, vod_type = Maker.check_required_type(VodBasedStream.VOD_TYPE_FIELD, int, json)
         if res:
             self.vod_type = vod_type
 

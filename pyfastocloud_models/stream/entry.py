@@ -78,14 +78,16 @@ class IStream(MongoModel, Maker):
     tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
                                 min_length=constants.MIN_URI_LENGTH, required=True)
 
-    price = fields.FloatField(default=0.0, min_value=constants.MIN_PRICE, max_value=constants.MAX_PRICE, required=True)
+    price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
+                              max_value=constants.MAX_PRICE, required=True)
     visible = fields.BooleanField(default=True, required=True)
-    iarc = fields.IntegerField(default=21, min_value=0,
+    iarc = fields.IntegerField(default=constants.DEFAULT_IARC, min_value=constants.MIN_IARC,
+                               max_value=constants.MAX_IARC,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
 
     view_count = fields.IntegerField(default=0, required=True)
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[])
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)  #
+    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)  #
 
     def to_front_dict(self) -> dict:
         output = []
@@ -211,7 +213,7 @@ class IStream(MongoModel, Maker):
         if res:  # optional field
             self.iarc = iarc
 
-        res, output = self.check_optional_type(IStream.OUTPUT_FIELD, list, json)
+        res, output = self.check_required_type(IStream.OUTPUT_FIELD, list, json)
         if res:  # optional field
             stabled = []
             for url in output:
@@ -268,17 +270,23 @@ class HardwareStream(IStream):
     LOOP_FIELD = 'loop'
     RESTART_ATTEMPTS_FIELD = 'restart_attempts'
     AUTO_EXIT_TIME_FIELD = 'auto_exit_time'
-    EXTRA_CONFIG_FIELD = 'extra_config_fields'
+    EXTRA_CONFIG_FIELD = 'extra_config'
 
-    log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, required=True)
-    input = fields.EmbeddedDocumentListField(InputUrl, default=[], blank=True)
+    log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, min_value=StreamLogLevel.LOG_LEVEL_EMERG,
+                                    max_value=StreamLogLevel.LOG_LEVEL_EMERG, required=True)
+    restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS,
+                                           min_value=constants.MIN_RESTART_ATTEMPTS,
+                                           max_value=constants.MAX_RESTART_ATTEMPTS, required=True)
+    auto_exit_time = fields.IntegerField(default=constants.DEFAULT_AUTO_EXIT_TIME,
+                                         min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
+                                         required=True)
+    audio_select = fields.IntegerField(default=constants.INVALID_AUDIO_SELECT, min_value=constants.MIN_AUDIO_SELECT,
+                                       max_value=constants.MAX_AUDIO_SELECT, required=True)
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
-    audio_select = fields.IntegerField(default=constants.INVALID_AUDIO_SELECT, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
-    restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS, required=True)
-    auto_exit_time = fields.IntegerField(default=constants.DEFAULT_AUTO_EXIT_TIME, required=True)
-    extra_config_fields = fields.CharField(default='', blank=True)
+    input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True)
+    extra_config_fields = fields.CharField(default='{}', required=True)
 
     def __init__(self, *args, **kwargs):
         super(HardwareStream, self).__init__(*args, **kwargs)
@@ -290,7 +298,7 @@ class HardwareStream(IStream):
         if res:  # optional field
             self.log_level = log_level
 
-        res, inp = IStream.check_optional_type(HardwareStream.INPUT_FIELD, list, json)
+        res, inp = IStream.check_required_type(HardwareStream.INPUT_FIELD, list, json)
         if res:  # optional field
             stabled = []
             for url in inp:
@@ -338,8 +346,7 @@ class HardwareStream(IStream):
         base[HardwareStream.LOOP_FIELD] = self.loop
         base[HardwareStream.RESTART_ATTEMPTS_FIELD] = self.restart_attempts
         base[HardwareStream.AUTO_EXIT_TIME_FIELD] = self.auto_exit_time
-        if self.extra_config_fields:
-            base[HardwareStream.EXTRA_CONFIG_FIELD] = self.extra_config_fields
+        base[HardwareStream.EXTRA_CONFIG_FIELD] = self.extra_config_fields
         return base
 
     def get_type(self) -> constants.StreamType:
@@ -441,17 +448,21 @@ class EncodeStream(HardwareStream):
     relay_video = fields.BooleanField(default=constants.DEFAULT_RELAY_VIDEO, required=True)
     relay_audio = fields.BooleanField(default=constants.DEFAULT_RELAY_AUDIO, required=True)
     deinterlace = fields.BooleanField(default=constants.DEFAULT_DEINTERLACE, required=True)
-    frame_rate = fields.IntegerField(default=constants.INVALID_FRAME_RATE, required=True)
-    volume = fields.FloatField(default=constants.DEFAULT_VOLUME, required=True)
+    frame_rate = fields.IntegerField(default=constants.INVALID_FRAME_RATE, min_value=constants.MIN_FRAME_RATE,
+                                     max_value=constants.MAX_FRAME_RATE, required=True)
+    volume = fields.FloatField(default=constants.DEFAULT_VOLUME, min_value=constants.MIN_VOLUME,
+                               max_value=constants.MAX_VOLUME, required=True)
     video_codec = fields.CharField(default=constants.DEFAULT_VIDEO_CODEC, required=True)
     audio_codec = fields.CharField(default=constants.DEFAULT_AUDIO_CODEC, required=True)
-    audio_channels_count = fields.IntegerField(default=constants.INVALID_AUDIO_CHANNELS_COUNT, required=True)
-    size = fields.EmbeddedDocumentField(Size, default=Size())
+    audio_channels_count = fields.IntegerField(default=constants.INVALID_AUDIO_CHANNELS_COUNT,
+                                               min_value=constants.MIN_AUDIO_CHANNELS_COUNT,
+                                               max_value=constants.MAX_AUDIO_CHANNELS_COUNT, required=True)
+    size = fields.EmbeddedDocumentField(Size, default=Size(), required=True)
     video_bit_rate = fields.IntegerField(default=constants.INVALID_VIDEO_BIT_RATE, required=True)
     audio_bit_rate = fields.IntegerField(default=constants.INVALID_AUDIO_BIT_RATE, required=True)
-    logo = fields.EmbeddedDocumentField(Logo, default=Logo())
-    rsvg_logo = fields.EmbeddedDocumentField(RSVGLogo, default=RSVGLogo())
-    aspect_ratio = fields.EmbeddedDocumentField(Rational, default=Rational())
+    logo = fields.EmbeddedDocumentField(Logo, default=Logo(), required=True)
+    rsvg_logo = fields.EmbeddedDocumentField(RSVGLogo, default=RSVGLogo(), required=True)
+    aspect_ratio = fields.EmbeddedDocumentField(Rational, default=Rational(), required=True)
 
     def __init__(self, *args, **kwargs):
         super(EncodeStream, self).__init__(*args, **kwargs)
@@ -567,10 +578,12 @@ class TimeshiftRecorderStream(RelayStream):
     TIMESHIFT_CHUNK_DURATION = 'timeshift_chunk_duration'
     TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
 
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], blank=True)  #
+    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)  #
 
-    timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION, required=True)
-    timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME, required=True)
+    timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION,
+                                                   min_value=constants.MIN_TIMESHIFT_CHUNK_DURATION, required=True)
+    timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME,
+                                                    min_value=constants.MIN_TIMESHIFT_CHUNK_LIFE_TIME, required=True)
 
     def __init__(self, *args, **kwargs):
         super(TimeshiftRecorderStream, self).__init__(*args, **kwargs)
@@ -644,10 +657,12 @@ class TimeshiftPlayerStream(RelayStream):
     TIMESHIFT_DIR_FIELD = 'timeshift_dir'
     TIMESHIFT_DELAY = 'timeshift_delay'
 
-    input = fields.EmbeddedDocumentListField(InputUrl, default=[], blank=True)  #
+    input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True)  #
 
     timeshift_dir = fields.CharField(required=True)  # FIXME default
-    timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY, required=True)
+    timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY,
+                                          min_value=constants.MIN_TIMESHIFT_DELAY,
+                                          max_value=constants.MAX_TIMESHIFT_DELAY, required=True)
 
     def __init__(self, *args, **kwargs):
         super(TimeshiftPlayerStream, self).__init__(*args, **kwargs)

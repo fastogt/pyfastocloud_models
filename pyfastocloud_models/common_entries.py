@@ -129,10 +129,15 @@ class InputUrl(Url):
     PROGRAM_NUMBER_FIELD = 'program_number'
     MULTICAST_IFACE_FIELD = 'multicast_iface'
 
+    INVALID_PROGRAM_NUMBER = -1
+    MIN_PROGRAM_NUMBER = INVALID_PROGRAM_NUMBER
+    MAX_PROGRAM_NUMBER = constants.MAX_INTEGER_NUMBER
+
     user_agent = fields.IntegerField(default=constants.UserAgent.GSTREAMER, required=True)
     stream_link = fields.BooleanField(default=False, required=True)
     proxy = fields.EmbeddedDocumentField(HttpProxy, blank=True)
-    program_number = fields.IntegerField(default=constants.INVALID_PROGRAM_NUMBER, blank=True)
+    program_number = fields.IntegerField(default=INVALID_PROGRAM_NUMBER, min_value=MIN_PROGRAM_NUMBER,
+                                         max_value=MAX_PROGRAM_NUMBER)
     multicast_iface = fields.CharField(blank=True)
 
     def __init__(self, *args, **kwargs):

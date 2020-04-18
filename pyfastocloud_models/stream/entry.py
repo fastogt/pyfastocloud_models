@@ -578,7 +578,7 @@ class TimeshiftRecorderStream(RelayStream):
     TIMESHIFT_CHUNK_DURATION = 'timeshift_chunk_duration'
     TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
 
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)  #
+    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True, blank=True)  #
 
     timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION,
                                                    min_value=constants.MIN_TIMESHIFT_CHUNK_DURATION, required=True)

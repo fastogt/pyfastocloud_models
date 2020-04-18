@@ -657,7 +657,7 @@ class TimeshiftPlayerStream(RelayStream):
     TIMESHIFT_DIR_FIELD = 'timeshift_dir'
     TIMESHIFT_DELAY = 'timeshift_delay'
 
-    input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True)  #
+    input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True, blank=True)  #
 
     timeshift_dir = fields.CharField(required=True)  # FIXME default
     timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY,

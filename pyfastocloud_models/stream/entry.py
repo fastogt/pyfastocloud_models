@@ -695,6 +695,8 @@ class TimeshiftPlayerStream(RelayStream):
 
 
 class TestLifeStream(RelayStream):
+    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True, blank=True)  #
+
     def __init__(self, *args, **kwargs):
         super(TestLifeStream, self).__init__(*args, **kwargs)
 

@@ -273,7 +273,7 @@ class HardwareStream(IStream):
     EXTRA_CONFIG_FIELD = 'extra_config'
 
     log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, min_value=StreamLogLevel.LOG_LEVEL_EMERG,
-                                    max_value=StreamLogLevel.LOG_LEVEL_EMERG, required=True)
+                                    max_value=StreamLogLevel.LOG_LEVEL_DEBUG, required=True)
     restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS,
                                            min_value=constants.MIN_RESTART_ATTEMPTS,
                                            max_value=constants.MAX_RESTART_ATTEMPTS, required=True)

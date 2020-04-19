@@ -14,7 +14,7 @@ class StreamsTest(unittest.TestCase):
         stable = int(now.microsecond / 1000) * 1000
         now = now.replace(microsecond=stable)
         msec = int(now.timestamp() * 1000)
-        output_url = OutputUrl(uri='test')  # required
+        output_url = OutputUrl(id=OutputUrl.generate_id(), uri='test')  # required
         name = 'Test'  # required
         proxy_data = {ProxyStream.NAME_FIELD: name, ProxyStream.GROUP_FIELD: 'Movies;USA', ProxyStream.PRICE_FIELD: 1.1,
                       ProxyStream.CREATED_DATE_FIELD: msec, ProxyStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
@@ -26,8 +26,8 @@ class StreamsTest(unittest.TestCase):
         self.assertTrue(proxy.is_valid())
 
     def test_relay(self):
-        input_url = InputUrl(uri='test')  # required
-        output_url = OutputUrl(uri='test')  # required
+        input_url = InputUrl(id=InputUrl.generate_id(), uri='test')  # required
+        output_url = OutputUrl(id=OutputUrl.generate_id(), uri='test')  # required
         name = 'Relay'  # required
         relay_data = {RelayStream.NAME_FIELD: name, RelayStream.INPUT_FIELD: [input_url.to_front_dict()],
                       RelayStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
@@ -38,8 +38,8 @@ class StreamsTest(unittest.TestCase):
         self.assertTrue(relay.is_valid())
 
     def test_encode(self):
-        input_url = InputUrl(uri='test')  # required
-        output_url = OutputUrl(uri='test')  # required
+        input_url = InputUrl(id=InputUrl.generate_id(), uri='test')  # required
+        output_url = OutputUrl(id=OutputUrl.generate_id(), uri='test')  # required
         name = 'Encode'  # required
         encode_data = {EncodeStream.NAME_FIELD: name, EncodeStream.INPUT_FIELD: [input_url.to_front_dict()],
                        EncodeStream.OUTPUT_FIELD: [output_url.to_front_dict()]}

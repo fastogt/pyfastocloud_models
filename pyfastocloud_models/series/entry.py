@@ -9,7 +9,6 @@ class Serial(MongoModel):
     class Meta:
         collection_name = 'series'
 
-    DEFAULT_SERIES_NAME = 'Serial'
     MIN_SERIES_NAME_LENGTH = 3
     MAX_SERIES_NAME_LENGTH = 30
 
@@ -21,10 +20,8 @@ class Serial(MongoModel):
         return self.pk
 
     created_date = fields.DateTimeField(default=datetime.now)  # for inner use
-    name = fields.CharField(default=DEFAULT_SERIES_NAME, max_length=MAX_SERIES_NAME_LENGTH,
-                            min_length=MIN_SERIES_NAME_LENGTH)
-    group = fields.CharField(default=constants.DEFAULT_STREAM_GROUP_TITLE,
-                             max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
+    name = fields.CharField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH, required=True)
+    group = fields.CharField(max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
                              min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True)
     description = fields.CharField(default=constants.DEFAULT_SERIES_DESCRIPTION,
                                    min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,

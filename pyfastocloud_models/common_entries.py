@@ -1,4 +1,5 @@
 from pymodm import EmbeddedMongoModel, fields
+from pymodm.errors import ValidationError
 
 import pyfastocloud_models.constants as constants
 
@@ -62,7 +63,16 @@ class Url(EmbeddedMongoModel, Maker):
         super(Url, self).__init__(*args, **kwargs)
 
     def to_front_dict(self) -> dict:
-        return {Url.ID_FIELD: self.id, Url.URI_FIELD: self.uri}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
 
     @staticmethod
     def generate_id():
@@ -72,15 +82,13 @@ class Url(EmbeddedMongoModel, Maker):
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
-        id_field = json.get(Url.ID_FIELD, None)
-        if id_field is not None:
+        res, id_field = self.check_required_type(Url.ID_FIELD, int, json)
+        if res:
             self.id = id_field
 
-        uri_field = json.get(Url.URI_FIELD, None)
-        if not uri_field:
-            raise ValueError('Invalid input({0} required)'.format(Url.URI_FIELD))
-
-        self.uri = uri_field
+        res, uri = self.check_required_type(Url.URI_FIELD, str, json)
+        if res:
+            self.uri = uri
 
 
 class HttpProxy(EmbeddedMongoModel, Maker):
@@ -88,38 +96,31 @@ class HttpProxy(EmbeddedMongoModel, Maker):
     USER_FIELD = 'user'
     PASSWORD_FIELD = 'password'
 
-    DEFAULT_USER = str()
-    DEFAULT_PASSWORD = str()
-
-    uri = fields.CharField(required=True)
-    user = fields.CharField(default=DEFAULT_USER, required=False, blank=True)
-    password = fields.CharField(default=DEFAULT_PASSWORD, required=False, blank=True)
+    uri = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=True)
+    user = fields.CharField(required=False)
+    password = fields.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(HttpProxy, self).__init__(*args, **kwargs)
 
     def to_front_dict(self) -> dict:
-        result = {HttpProxy.URI_FIELD: self.uri}
-        if self.user and self.password:
-            result[HttpProxy.USER_FIELD] = self.user
-            result[HttpProxy.PASSWORD_FIELD] = self.password
-
-        return result
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
-        uri_field = json.get(HttpProxy.URI_FIELD, None)
-        if not uri_field:
-            raise ValueError('Invalid input({0} required)'.format(HttpProxy.URI_FIELD))
+        res, uri = self.check_required_type(HttpProxy.URI_FIELD, str, json)
+        if res:
+            self.uri = uri
 
-        self.uri = uri_field
+        res_user, user = self.check_optional_type(HttpProxy.USER_FIELD, str, json)
+        res_password, password = self.check_optional_type(HttpProxy.PASSWORD_FIELD, str, json)
 
-        user_field = json.get(HttpProxy.USER_FIELD, None)
-        password_field = json.get(HttpProxy.PASSWORD_FIELD, None)
-        if user_field is not None and password_field is not None:  # optional field
-            self.user = user_field
-            self.password = password_field
+        if res_user and res_password:  # optional field
+            self.user = user
+            self.password = password
 
 
 class InputUrl(Url):
@@ -129,106 +130,88 @@ class InputUrl(Url):
     PROGRAM_NUMBER_FIELD = 'program_number'
     MULTICAST_IFACE_FIELD = 'multicast_iface'
 
-    INVALID_PROGRAM_NUMBER = -1
-    MIN_PROGRAM_NUMBER = INVALID_PROGRAM_NUMBER
+    MIN_PROGRAM_NUMBER = 0
     MAX_PROGRAM_NUMBER = constants.MAX_INTEGER_NUMBER
 
-    user_agent = fields.IntegerField(default=constants.UserAgent.GSTREAMER, required=True)
-    stream_link = fields.BooleanField(default=False, required=True)
+    user_agent = fields.IntegerField(choices=constants.UserAgent.choices(), required=False)
+    stream_link = fields.BooleanField(required=False)
     proxy = fields.EmbeddedDocumentField(HttpProxy, blank=True)
-    program_number = fields.IntegerField(default=INVALID_PROGRAM_NUMBER, min_value=MIN_PROGRAM_NUMBER,
-                                         max_value=MAX_PROGRAM_NUMBER)
-    multicast_iface = fields.CharField(blank=True)
+    program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER,
+                                         max_value=MAX_PROGRAM_NUMBER, required=False)
+    multicast_iface = fields.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(InputUrl, self).__init__(*args, **kwargs)
 
-    def to_front_dict(self) -> dict:
-        base = super(InputUrl, self).to_front_dict()
-        base[InputUrl.USER_AGENT_FIELD] = self.user_agent
-        base[InputUrl.STREAM_LINK_FIELD] = self.stream_link
-        if self.proxy:
-            base[InputUrl.PROXY_FIELD] = self.proxy.to_front_dict()
-        if self.program_number:
-            base[InputUrl.PROGRAM_NUMBER_FIELD] = self.program_number
-        if self.multicast_iface:
-            base[InputUrl.MULTICAST_IFACE_FIELD] = self.multicast_iface
-        return base
-
     def update_entry(self, json: dict):
         Url.update_entry(self, json)
 
-        user_agent_field = json.get(InputUrl.USER_AGENT_FIELD, None)
-        if user_agent_field is not None:  # optional field
-            self.user_agent = user_agent_field
+        res, user_agent = self.check_optional_type(InputUrl.USER_AGENT_FIELD, int, json)
+        if res:  # optional field
+            self.user_agent = user_agent
 
-        stream_link_field = json.get(InputUrl.STREAM_LINK_FIELD, None)
-        if stream_link_field is not None:  # optional field
-            self.stream_link = stream_link_field
+        res, stream_link = self.check_optional_type(InputUrl.STREAM_LINK_FIELD, bool, json)
+        if res:  # optional field
+            self.stream_link = stream_link
 
-        proxy_field = json.get(InputUrl.PROXY_FIELD, None)
-        if proxy_field is not None:  # optional field
-            self.proxy = HttpProxy.make_entry(proxy_field)
+        res, proxy = self.check_optional_type(InputUrl.PROXY_FIELD, dict, json)
+        if res:  # optional field
+            self.proxy = HttpProxy.make_entry(proxy)
 
-        program_number_field = json.get(InputUrl.PROGRAM_NUMBER_FIELD, None)
-        if program_number_field is not None:  # optional field
-            self.program_number = program_number_field
+        res, program_number = self.check_optional_type(InputUrl.PROGRAM_NUMBER_FIELD, int, json)
+        if res:  # optional field
+            self.program_number = program_number
 
-        iface_field = json.get(InputUrl.MULTICAST_IFACE_FIELD, None)
-        if iface_field is not None:  # optional field
-            self.multicast_iface = iface_field
+        res, multicast_iface = self.check_optional_type(InputUrl.MULTICAST_IFACE_FIELD, str, json)
+        if res:  # optional field
+            self.multicast_iface = multicast_iface
 
 
 class OutputUrl(Url):
     HTTP_ROOT_FIELD = 'http_root'
     HLS_TYPE_FIELD = 'hls_type'
 
-    http_root = fields.CharField(default='/', max_length=constants.MAX_PATH_LENGTH, required=False)
-    hls_type = fields.IntegerField(default=constants.HlsType.HLS_PULL, required=False)
+    http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
+                                 required=False)
+    hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(OutputUrl, self).__init__(*args, **kwargs)
 
-    def to_front_dict(self) -> dict:
-        base = super(OutputUrl, self).to_front_dict()
-        base[OutputUrl.HTTP_ROOT_FIELD] = self.http_root
-        base[OutputUrl.HLS_TYPE_FIELD] = self.hls_type
-        return base
-
     def update_entry(self, json: dict):
         Url.update_entry(self, json)
 
-        http_root_field = json.get(OutputUrl.HTTP_ROOT_FIELD, None)
-        if http_root_field:  # optional field
-            self.http_root = http_root_field
-
-        hls_type_field = json.get(OutputUrl.HLS_TYPE_FIELD, None)
-        if hls_type_field is not None:  # optional field
-            self.hls_type = hls_type_field
+        res_root, http_root = self.check_optional_type(OutputUrl.HTTP_ROOT_FIELD, str, json)
+        res_type, hls_type = self.check_optional_type(OutputUrl.HLS_TYPE_FIELD, int, json)
+        if res_root and res_type:  # optional field
+            self.http_root = http_root
+            self.hls_type = hls_type
 
 
 class Point(EmbeddedMongoModel, Maker):
     X_FIELD = 'x'
     Y_FIELD = 'y'
 
-    x = fields.IntegerField(default=0, required=True)
-    y = fields.IntegerField(default=0, required=True)
+    x = fields.IntegerField(required=True)
+    y = fields.IntegerField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Point, self).__init__(*args, **kwargs)
 
     def to_front_dict(self) -> dict:
-        return {Point.X_FIELD: self.x, Point.Y_FIELD: self.y}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
-        x_field = json.get(Point.X_FIELD, None)
-        if x_field is not None:
-            self.x = x_field
+        res, x = self.check_required_type(Point.X_FIELD, int, json)
+        if res:
+            self.x = x
 
-        y_field = json.get(Point.Y_FIELD, None)
-        if y_field is not None:
-            self.x = y_field
+        res, y = self.check_required_type(Point.Y_FIELD, int, json)
+        if res:
+            self.y = y
 
     def __str__(self):
         return '{0},{1}'.format(self.x, self.y)
@@ -238,11 +221,8 @@ class Size(EmbeddedMongoModel, Maker):
     WIDTH_FIELD = 'width'
     HEIGHT_FIELD = 'height'
 
-    INVALID_WIDTH = 0
-    INVALID_HEIGHT = 0
-
-    width = fields.IntegerField(default=INVALID_WIDTH, required=True)
-    height = fields.IntegerField(default=INVALID_HEIGHT, required=True)
+    width = fields.IntegerField(required=True)
+    height = fields.IntegerField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Size, self).__init__(*args, **kwargs)
@@ -252,16 +232,18 @@ class Size(EmbeddedMongoModel, Maker):
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
-        width_field = json.get(Size.WIDTH_FIELD, None)
-        if width_field is not None:
-            self.width = width_field
+        res, width = self.check_required_type(Size.WIDTH_FIELD, int, json)
+        if res:
+            self.width = width
 
-        height_field = json.get(Size.HEIGHT_FIELD, None)
-        if height_field is not None:
-            self.height = height_field
+        res, height = self.check_required_type(Size.HEIGHT_FIELD, int, json)
+        if res:
+            self.height = height
 
     def to_front_dict(self) -> dict:
-        return {Size.WIDTH_FIELD: self.width, Size.HEIGHT_FIELD: self.height}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
     def __str__(self):
         return '{0}x{1}'.format(self.width, self.height)
@@ -278,11 +260,11 @@ class Logo(EmbeddedMongoModel, Maker):
     MAX_LOGO_ALPHA = 1.0
     DEFAULT_LOGO_ALPHA = MAX_LOGO_ALPHA
 
-    path = fields.CharField(default=INVALID_LOGO_PATH, blank=True)
-    position = fields.EmbeddedDocumentField(Point, default=Point(), required=True)
-    alpha = fields.FloatField(default=DEFAULT_LOGO_ALPHA, min_value=MIN_LOGO_ALPHA, max_value=MAX_LOGO_ALPHA,
+    path = fields.CharField(required=True)
+    position = fields.EmbeddedDocumentField(Point, required=True)
+    alpha = fields.FloatField(min_value=MIN_LOGO_ALPHA, max_value=MAX_LOGO_ALPHA,
                               required=True)
-    size = fields.EmbeddedDocumentField(Size, default=Size())
+    size = fields.EmbeddedDocumentField(Size, required=True)
 
     def __init__(self, *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
@@ -293,26 +275,26 @@ class Logo(EmbeddedMongoModel, Maker):
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
-        path_field = json.get(Logo.PATH_FIELD, None)
-        if path_field is None:
-            raise ValueError('Invalid input({0} required)'.format(Logo.PATH_FIELD))
-        self.path = path_field
+        res, path = self.check_required_type(Logo.PATH_FIELD, str, json)
+        if res:
+            self.path = path
 
-        point_field = json.get(Logo.POSITION_FIELD, None)
-        if point_field is not None:  # optional field
-            self.position = point_field
+        res, point = self.check_required_type(Logo.POSITION_FIELD, dict, json)
+        if res:  # optional field
+            self.position = point
 
-        alpha_field = json.get(Logo.ALPHA_FIELD, None)
-        if alpha_field is not None:  # optional field
-            self.alpha = alpha_field
+        res, alpha = self.check_required_type(Logo.ALPHA_FIELD, float, json)
+        if res:  # optional field
+            self.alpha = alpha
 
-        size_field = json.get(Logo.SIZE_FIELD, None)
-        if size_field is not None:  # optional field
-            self.size = Size.make_entry(size_field)
+        res, size = self.check_required_type(Logo.SIZE_FIELD, dict, json)
+        if res:  # optional field
+            self.size = Size.make_entry(size)
 
     def to_front_dict(self) -> dict:
-        return {Logo.PATH_FIELD: self.path, Logo.POSITION_FIELD: self.position.to_front_dict(),
-                Logo.ALPHA_FIELD: self.alpha, Logo.SIZE_FIELD: self.size.to_front_dict()}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
 
 class RSVGLogo(EmbeddedMongoModel, Maker):
@@ -349,8 +331,9 @@ class RSVGLogo(EmbeddedMongoModel, Maker):
             self.size = Size.make_entry(size_field)
 
     def to_front_dict(self) -> dict:
-        return {RSVGLogo.PATH_FIELD: self.path, RSVGLogo.POSITION_FIELD: self.position.to_front_dict(),
-                RSVGLogo.SIZE_FIELD: self.size.to_front_dict()}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
 
 class Rational(EmbeddedMongoModel, Maker):
@@ -380,7 +363,9 @@ class Rational(EmbeddedMongoModel, Maker):
             self.den = den_field
 
     def to_front_dict(self) -> dict:
-        return {Rational.NUM_FIELD: self.num, Rational.DEN_FIELD: self.den}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
     def __str__(self):
         return '{0}:{1}'.format(self.num, self.den)

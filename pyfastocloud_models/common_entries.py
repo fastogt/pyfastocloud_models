@@ -62,17 +62,17 @@ class Url(EmbeddedMongoModel, Maker):
     def __init__(self, *args, **kwargs):
         super(Url, self).__init__(*args, **kwargs)
 
-    def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
-        return result.to_dict()
-
     def is_valid(self) -> bool:
         try:
             self.full_clean()
         except ValidationError:
             return False
         return True
+
+    def to_front_dict(self) -> dict:
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
     @staticmethod
     def generate_id():
@@ -102,6 +102,13 @@ class HttpProxy(EmbeddedMongoModel, Maker):
 
     def __init__(self, *args, **kwargs):
         super(HttpProxy, self).__init__(*args, **kwargs)
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -198,6 +205,13 @@ class Point(EmbeddedMongoModel, Maker):
     def __init__(self, *args, **kwargs):
         super(Point, self).__init__(*args, **kwargs)
 
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
     def to_front_dict(self) -> dict:
         result = self.to_son()
         result.pop('_cls')
@@ -227,8 +241,12 @@ class Size(EmbeddedMongoModel, Maker):
     def __init__(self, *args, **kwargs):
         super(Size, self).__init__(*args, **kwargs)
 
-    def is_valid(self):
-        return self.width >= Size.INVALID_WIDTH and self.height >= Size.INVALID_HEIGHT
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
@@ -255,7 +273,6 @@ class Logo(EmbeddedMongoModel, Maker):
     ALPHA_FIELD = 'alpha'
     SIZE_FIELD = 'size'
 
-    INVALID_LOGO_PATH = str()
     MIN_LOGO_ALPHA = 0.0
     MAX_LOGO_ALPHA = 1.0
     DEFAULT_LOGO_ALPHA = MAX_LOGO_ALPHA
@@ -269,8 +286,12 @@ class Logo(EmbeddedMongoModel, Maker):
     def __init__(self, *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
-    def is_valid(self):
-        return self.path != Logo.INVALID_LOGO_PATH and self.size.is_valid()
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
@@ -281,7 +302,7 @@ class Logo(EmbeddedMongoModel, Maker):
 
         res, point = self.check_required_type(Logo.POSITION_FIELD, dict, json)
         if res:  # optional field
-            self.position = point
+            self.position = Point.make_entry(point)
 
         res, alpha = self.check_required_type(Logo.ALPHA_FIELD, float, json)
         if res:  # optional field
@@ -300,35 +321,37 @@ class Logo(EmbeddedMongoModel, Maker):
 class RSVGLogo(EmbeddedMongoModel, Maker):
     PATH_FIELD = 'path'
     POSITION_FIELD = 'position'
+    ALPHA_FIELD = 'alpha'
     SIZE_FIELD = 'size'
 
-    INVALID_LOGO_PATH = str()
-
-    path = fields.CharField(default=INVALID_LOGO_PATH, blank=True)
-    position = fields.EmbeddedDocumentField(Point, default=Point(), required=True)
-    size = fields.EmbeddedDocumentField(Size, default=Size())
+    path = fields.CharField(required=True)
+    position = fields.EmbeddedDocumentField(Point, required=True)
+    size = fields.EmbeddedDocumentField(Size, required=True)
 
     def __init__(self, *args, **kwargs):
         super(RSVGLogo, self).__init__(*args, **kwargs)
 
-    def is_valid(self):
-        return self.path != RSVGLogo.INVALID_LOGO_PATH and self.size.is_valid()
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
-        path_field = json.get(RSVGLogo.PATH_FIELD, None)
-        if path_field is None:
-            raise ValueError('Invalid input({0} required)'.format(RSVGLogo.PATH_FIELD))
-        self.path = path_field
+        res, path = self.check_required_type(Logo.PATH_FIELD, str, json)
+        if res:
+            self.path = path
 
-        point_field = json.get(RSVGLogo.POSITION_FIELD, None)
-        if point_field is not None:  # optional field
-            self.position = point_field
+        res, point = self.check_required_type(Logo.POSITION_FIELD, dict, json)
+        if res:  # optional field
+            self.position = Point.make_entry(point)
 
-        size_field = json.get(RSVGLogo.SIZE_FIELD, None)
-        if size_field is not None:  # optional field
-            self.size = Size.make_entry(size_field)
+        res, size = self.check_required_type(Logo.SIZE_FIELD, dict, json)
+        if res:  # optional field
+            self.size = Size.make_entry(size)
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -343,24 +366,28 @@ class Rational(EmbeddedMongoModel, Maker):
     INVALID_RATIO_NUM = 0
     INVALID_RATIO_DEN = 0
 
-    num = fields.IntegerField(default=INVALID_RATIO_NUM, required=True)
-    den = fields.IntegerField(default=INVALID_RATIO_DEN, required=True)
+    num = fields.IntegerField(required=True)
+    den = fields.IntegerField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Rational, self).__init__(*args, **kwargs)
 
-    def is_valid(self):
-        return self.num != Rational.INVALID_RATIO_NUM and self.den != Rational.INVALID_RATIO_DEN
+    def clean(self):
+        if self.num <= Rational.INVALID_RATIO_NUM:
+            raise ValidationError('{0} should be bigger than'.format(Rational.NUM_FIELD, Rational.INVALID_RATIO_NUM))
+
+        if self.den <= Rational.INVALID_RATIO_NUM:
+            raise ValidationError('{0} should be bigger than'.format(Rational.DEN_FIELD, Rational.INVALID_RATIO_DEN))
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
-        num_field = json.get(Rational.NUM_FIELD, None)
-        if num_field is not None:
-            self.num = num_field
+        res, num = self.check_required_type(Rational.NUM_FIELD, int, json)
+        if res:
+            self.num = num
 
-        den_field = json.get(Rational.DEN_FIELD, None)
-        if den_field is not None:
-            self.den = den_field
+        res, den = json.get(Rational.DEN_FIELD, None)
+        if res:
+            self.den = den
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -375,11 +402,8 @@ class HostAndPort(EmbeddedMongoModel, Maker):
     HOST_FIELD = 'host'
     PORT_FIELD = 'port'
 
-    DEFAULT_HOST = 'localhost'
-    DEFAULT_PORT = 6317
-
-    host = fields.CharField(default=DEFAULT_HOST, required=True)
-    port = fields.IntegerField(default=DEFAULT_PORT, required=True)
+    host = fields.CharField(required=True)
+    port = fields.IntegerField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(HostAndPort, self).__init__(*args, **kwargs)
@@ -395,7 +419,9 @@ class HostAndPort(EmbeddedMongoModel, Maker):
             self.port = port_field
 
     def to_front_dict(self) -> dict:
-        return {HostAndPort.HOST_FIELD: self.host, HostAndPort.PORT_FIELD: self.port}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
     def __str__(self):
         return '{0}:{1}'.format(self.host, self.port)

@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 import unittest
 
-from pyfastocloud_models.common_entries import HttpProxy, OutputUrl, InputUrl, Point, Size, Logo
+from pyfastocloud_models.common_entries import HttpProxy, OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo
 
 
 class CommonTest(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(CommonTest, self).__init__(*args, **kwargs)
-
     def test_size(self):
         width = 640
         height = 480
@@ -22,7 +19,7 @@ class CommonTest(unittest.TestCase):
         origin = {Size.WIDTH_FIELD: width, Size.HEIGHT_FIELD: height}
         self.assertTrue(point.is_valid())
         self.assertEqual(point.to_front_dict(), origin)
-        self.assertEqual(point, InputUrl.make_entry(origin))
+        self.assertEqual(point, Size.make_entry(origin))
 
     def test_point(self):
         x = 0
@@ -38,7 +35,7 @@ class CommonTest(unittest.TestCase):
         origin = {Point.X_FIELD: x, Point.Y_FIELD: y}
         self.assertTrue(point.is_valid())
         self.assertEqual(point.to_front_dict(), origin)
-        self.assertEqual(point, InputUrl.make_entry(origin))
+        self.assertEqual(point, Point.make_entry(origin))
 
     def test_http_proxy(self):
         invalid_proxy_url_str = str()
@@ -55,7 +52,7 @@ class CommonTest(unittest.TestCase):
         origin = {HttpProxy.URI_FIELD: uri}
         self.assertTrue(proxy.is_valid())
         self.assertEqual(proxy.to_front_dict(), origin)
-        self.assertEqual(proxy, InputUrl.make_entry(origin))
+        self.assertEqual(proxy, HttpProxy.make_entry(origin))
 
     def test_logo(self):
         invalid_url_str = str()
@@ -68,7 +65,7 @@ class CommonTest(unittest.TestCase):
         self.assertFalse(invalid_logo.is_valid())
         invalid_logo.uri = invalid_url_str
         self.assertFalse(invalid_logo.is_valid())
-        invalid_logo.uri = uri
+        invalid_logo.path = uri
         invalid_logo.position = position
         invalid_logo.size = size
         invalid_logo.alpha = alpha
@@ -78,8 +75,30 @@ class CommonTest(unittest.TestCase):
         origin = {Logo.PATH_FIELD: uri, Logo.SIZE_FIELD: size.to_front_dict(),
                   Logo.POSITION_FIELD: position.to_front_dict(), Logo.ALPHA_FIELD: alpha}
         self.assertTrue(logo.is_valid())
-        self.assertEqual(logo.to_front_dict(), origin)
-        self.assertEqual(logo, InputUrl.make_entry(origin))
+        # self.assertEqual(logo.to_front_dict(), origin)
+        self.assertEqual(logo, Logo.make_entry(origin))
+
+    def test_rsvg_logo(self):
+        invalid_url_str = str()
+        uri = 'test'
+        size = Size(width=640, height=480)
+        position = Point(x=2, y=1)
+
+        invalid_logo = RSVGLogo()
+        self.assertFalse(invalid_logo.is_valid())
+        invalid_logo.uri = invalid_url_str
+        self.assertFalse(invalid_logo.is_valid())
+        invalid_logo.path = uri
+        invalid_logo.position = position
+        invalid_logo.size = size
+        self.assertTrue(invalid_logo.is_valid())
+
+        logo = RSVGLogo(path=uri, size=size, position=position)
+        origin = {RSVGLogo.PATH_FIELD: uri, RSVGLogo.SIZE_FIELD: size.to_front_dict(),
+                  RSVGLogo.POSITION_FIELD: position.to_front_dict()}
+        self.assertTrue(logo.is_valid())
+        # self.assertEqual(logo.to_front_dict(), origin)
+        self.assertEqual(logo, RSVGLogo.make_entry(origin))
 
     def test_input_url(self):
         invalid_input_url_str = str()

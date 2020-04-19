@@ -126,8 +126,9 @@ class HttpProxy(EmbeddedMongoModel, Maker):
         res_password, password = self.check_optional_type(HttpProxy.PASSWORD_FIELD, str, json)
 
         if res_user and res_password:  # optional field
-            self.user = user
-            self.password = password
+            if user and password:
+                self.user = user
+                self.password = password
 
 
 class InputUrl(Url):
@@ -142,13 +143,17 @@ class InputUrl(Url):
 
     user_agent = fields.IntegerField(choices=constants.UserAgent.choices(), required=False)
     stream_link = fields.BooleanField(required=False)
-    proxy = fields.EmbeddedDocumentField(HttpProxy, blank=True)
+    proxy = fields.EmbeddedDocumentField(HttpProxy, required=False)
     program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER,
                                          max_value=MAX_PROGRAM_NUMBER, required=False)
     multicast_iface = fields.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(InputUrl, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def make_stub(cls):
+        return cls(id=Url.generate_id())
 
     def update_entry(self, json: dict):
         Url.update_entry(self, json)
@@ -185,14 +190,27 @@ class OutputUrl(Url):
     def __init__(self, *args, **kwargs):
         super(OutputUrl, self).__init__(*args, **kwargs)
 
+    @classmethod
+    def make_stub(cls):
+        return cls(id=Url.generate_id())
+
+    @classmethod
+    def make_default_http(cls):
+        return cls(id=Url.generate_id(), http_root='/', hls_type=constants.HlsType.HLS_PULL)
+
+    @classmethod
+    def make_test(cls):
+        return cls(id=Url.generate_id(), uri=constants.DEFAULT_TEST_URL)
+
     def update_entry(self, json: dict):
         Url.update_entry(self, json)
 
         res_root, http_root = self.check_optional_type(OutputUrl.HTTP_ROOT_FIELD, str, json)
         res_type, hls_type = self.check_optional_type(OutputUrl.HLS_TYPE_FIELD, int, json)
         if res_root and res_type:  # optional field
-            self.http_root = http_root
-            self.hls_type = hls_type
+            if http_root and hls_type is not None:
+                self.http_root = http_root
+                self.hls_type = hls_type
 
 
 class Point(EmbeddedMongoModel, Maker):

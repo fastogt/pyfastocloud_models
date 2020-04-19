@@ -44,7 +44,7 @@ class IStream(MongoModel, Maker):
     TYPE_FIELD = 'type'
     CREATED_DATE_FIELD = 'created_date'
     OUTPUT_FIELD = 'output'
-    ICON_FIELD = 'icon'
+    ICON_FIELD = 'tvg_logo'
     TVG_ID_FIELD = 'tvg_id'
     TVG_NAME_FIELD = 'tvg_name'
 
@@ -86,16 +86,17 @@ class IStream(MongoModel, Maker):
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)  #
 
     def to_front_dict(self) -> dict:
+        result = self.to_son()
+        result.pop('_cls')
+        result.pop('_id')
+        result[IStream.CREATED_DATE_FIELD] = self.created_date_utc_msec()
+        result[IStream.TYPE_FIELD] = self.get_type()
+        result[IStream.ID_FIELD] = self.get_id()
         output = []
         for out in self.output:
             output.append(out.to_front_dict())
-
-        return {IStream.ID_FIELD: self.get_id(), IStream.NAME_FIELD: self.name,
-                IStream.CREATED_DATE_FIELD: self.created_date_utc_msec(), IStream.GROUP_FIELD: self.group,
-                IStream.TYPE_FIELD: self.get_type(), IStream.TVG_ID_FIELD: self.tvg_id,
-                IStream.TVG_NAME_FIELD: self.tvg_name, IStream.ICON_FIELD: self.tvg_logo,
-                IStream.PRICE_FIELD: self.price, IStream.VISIBLE_FIELD: self.visible, IStream.IARC_FIELD: self.iarc,
-                IStream.VIEW_COUNT_FIELD: self.view_count, IStream.OUTPUT_FIELD: output}
+        result[IStream.OUTPUT_FIELD] = output
+        return result.to_dict()
 
     def created_date_utc_msec(self):
         return date_to_utc_msec(self.created_date)
@@ -287,6 +288,14 @@ class HardwareStream(IStream):
     def __init__(self, *args, **kwargs):
         super(HardwareStream, self).__init__(*args, **kwargs)
 
+    def to_front_dict(self) -> dict:
+        base = super(HardwareStream, self).to_front_dict()
+        input = []
+        for inp in self.input:
+            input.append(inp.to_front_dict())
+        base[HardwareStream.INPUT_FIELD] = input
+        return base
+
     def update_entry(self, json: dict):
         IStream.update_entry(self, json)
 
@@ -328,22 +337,6 @@ class HardwareStream(IStream):
         res, extra = IStream.check_optional_type(HardwareStream.EXTRA_CONFIG_FIELD, str, json)
         if res:  # optional field
             self.extra_config_fields = extra
-
-    def to_front_dict(self) -> dict:
-        base = super(HardwareStream, self).to_front_dict()
-        input = []
-        for inp in self.input:
-            input.append(inp.to_front_dict())
-        base[HardwareStream.LOG_LEVEL_FIELD] = self.log_level
-        base[HardwareStream.INPUT_FIELD] = input
-        base[HardwareStream.HAVE_VIDEO_FIELD] = self.have_video
-        base[HardwareStream.HAVE_AUDIO_FIELD] = self.have_audio
-        base[HardwareStream.AUDIO_SELECT_FIELD] = self.audio_select
-        base[HardwareStream.LOOP_FIELD] = self.loop
-        base[HardwareStream.RESTART_ATTEMPTS_FIELD] = self.restart_attempts
-        base[HardwareStream.AUTO_EXIT_TIME_FIELD] = self.auto_exit_time
-        base[HardwareStream.EXTRA_CONFIG_FIELD] = self.extra_config_fields
-        return base
 
     def get_type(self) -> constants.StreamType:
         raise NotImplementedError('subclasses must override get_type()!')
@@ -405,12 +398,6 @@ class RelayStream(HardwareStream):
         res, audio = IStream.check_optional_type(RelayStream.AUDIO_PARSER_FIELD, str, json)
         if res:  # optional field
             self.audio_parser = audio
-
-    def to_front_dict(self) -> dict:
-        base = super(RelayStream, self).to_front_dict()
-        base[RelayStream.VIDEO_PARSER_FIELD] = self.video_parser
-        base[RelayStream.AUDIO_PARSER_FIELD] = self.audio_parser
-        return base
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.RELAY
@@ -517,24 +504,6 @@ class EncodeStream(HardwareStream):
         if res:  # optional field
             self.aspect_ratio = Rational.make_entry(aspect)
 
-    def to_front_dict(self) -> dict:
-        base = super(EncodeStream, self).to_front_dict()
-        base[EncodeStream.RELAY_AUDIO_FIELD] = self.relay_audio
-        base[EncodeStream.RELAY_VIDEO_FIELD] = self.relay_video
-        base[EncodeStream.DEINTERLACE_FIELD] = self.deinterlace
-        base[EncodeStream.FRAME_RATE_FIELD] = self.frame_rate
-        base[EncodeStream.VOLUME_FIELD] = self.volume
-        base[EncodeStream.VIDEO_CODEC_FIELD] = self.video_codec
-        base[EncodeStream.AUDIO_CODEC_FIELD] = self.audio_codec
-        base[EncodeStream.AUDIO_CHANNELS_COUNT_FIELD] = self.audio_channels_count
-        base[EncodeStream.SIZE_FIELD] = self.size.to_front_dict()
-        base[EncodeStream.VIDEO_BITRATE_FIELD] = self.video_bit_rate
-        base[EncodeStream.AUDIO_BITRATE_FIELD] = self.audio_bit_rate
-        base[EncodeStream.LOGO_FIELD] = self.logo.to_front_dict()
-        base[EncodeStream.RSVG_LOGO_FIELD] = self.rsvg_logo.to_front_dict()
-        base[EncodeStream.ASPECT_RATIO_FIELD] = self.aspect_ratio.to_front_dict()
-        return base
-
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.ENCODE
 
@@ -594,12 +563,6 @@ class TimeshiftRecorderStream(RelayStream):
         if res:  # optional field
             self.timeshift_chunk_life_time = chunk_life
 
-    def to_front_dict(self) -> dict:
-        base = super(TimeshiftRecorderStream, self).to_front_dict()
-        base[TimeshiftRecorderStream.TIMESHIFT_CHUNK_DURATION] = self.timeshift_chunk_duration
-        base[TimeshiftRecorderStream.TIMESHIFT_CHUNK_LIFE_TIME] = self.timeshift_chunk_life_time
-        return base
-
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.TIMESHIFT_RECORDER
 
@@ -642,7 +605,7 @@ class CatchupStream(TimeshiftRecorderStream):
         return constants.StreamType.CATCHUP
 
     def to_front_dict(self) -> dict:
-        base = super(CatchupStream, self).to_front_dict()
+        base = super(HardwareStream, self).to_front_dict()
         base[CatchupStream.START_RECORD_FIELD] = self.start_utc_msec()
         base[CatchupStream.STOP_RECORD_FIELD] = self.stop_utc_msec()
         return base
@@ -672,12 +635,6 @@ class TimeshiftPlayerStream(RelayStream):
         timeshift_delay_field = self.check_optional_type(TimeshiftPlayerStream.TIMESHIFT_DELAY, int, json)
         if timeshift_delay_field is not None:  # optional field
             self.timeshift_chunk_life_time = timeshift_delay_field
-
-    def to_front_dict(self) -> dict:
-        base = super(TimeshiftPlayerStream, self).to_front_dict()
-        base[TimeshiftPlayerStream.TIMESHIFT_DIR_FIELD] = self.timeshift_dir
-        base[TimeshiftPlayerStream.TIMESHIFT_DELAY] = self.timeshift_delay
-        return base
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.TIMESHIFT_PLAYER
@@ -717,7 +674,7 @@ class VodBasedStream(EmbeddedMongoModel):
     VOD_TYPE_FIELD = 'vod_type'
     TRAILER_URL_FIELD = 'trailer_url'
     USER_SCORE_FIELD = 'user_score'
-    PRIME_DATE_FIELD = 'date'
+    PRIME_DATE_FIELD = 'prime_date'
     COUNTRY_FIELD = 'country'
     DURATION_FIELD = 'duration'
 
@@ -775,14 +732,6 @@ class VodBasedStream(EmbeddedMongoModel):
         if res:
             self.duration = duration
 
-    def to_front_dict(self):
-        return {VodBasedStream.DESCRIPTION_FIELD: self.description,
-                VodBasedStream.TRAILER_URL_FIELD: self.trailer_url,
-                VodBasedStream.USER_SCORE_FIELD: self.user_score,
-                VodBasedStream.PRIME_DATE_FIELD: self.prime_date_utc_msec(),
-                VodBasedStream.COUNTRY_FIELD: self.country,
-                VodBasedStream.DURATION_FIELD: self.duration}
-
 
 class ProxyVodStream(ProxyStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
@@ -798,8 +747,8 @@ class ProxyVodStream(ProxyStream, VodBasedStream):
 
     def to_front_dict(self) -> dict:
         front = ProxyStream.to_front_dict(self)
-        base = VodBasedStream.to_front_dict(self)
-        return {**front, **base}
+        front[VodBasedStream.PRIME_DATE_FIELD] = self.prime_date_utc_msec()
+        return front
 
 
 class VodRelayStream(RelayStream, VodBasedStream):
@@ -815,9 +764,9 @@ class VodRelayStream(RelayStream, VodBasedStream):
         return constants.StreamType.VOD_RELAY
 
     def to_front_dict(self) -> dict:
-        front = RelayStream.to_front_dict(self)
-        base = VodBasedStream.to_front_dict(self)
-        return {**front, **base}
+        front = ProxyStream.to_front_dict(self)
+        front[VodBasedStream.PRIME_DATE_FIELD] = self.prime_date_utc_msec()
+        return front
 
 
 class VodEncodeStream(EncodeStream, VodBasedStream):
@@ -834,8 +783,8 @@ class VodEncodeStream(EncodeStream, VodBasedStream):
 
     def to_front_dict(self) -> dict:
         front = ProxyStream.to_front_dict(self)
-        base = VodBasedStream.to_front_dict(self)
-        return {**front, **base}
+        front[VodBasedStream.PRIME_DATE_FIELD] = self.prime_date_utc_msec()
+        return front
 
 
 class EventStream(VodEncodeStream):

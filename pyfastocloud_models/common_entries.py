@@ -235,11 +235,21 @@ class Size(EmbeddedMongoModel, Maker):
     WIDTH_FIELD = 'width'
     HEIGHT_FIELD = 'height'
 
+    INVALID_WIDTH = 0
+    INVALID_HEIGHT = 0
+
     width = fields.IntegerField(required=True)
     height = fields.IntegerField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Size, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.width <= Size.INVALID_WIDTH:
+            raise ValidationError('{0} should be bigger than'.format(Size.WIDTH_FIELD, Size.INVALID_WIDTH))
+
+        if self.height <= Size.INVALID_HEIGHT:
+            raise ValidationError('{0} should be bigger than'.format(Size.HEIGHT_FIELD, Size.INVALID_HEIGHT))
 
     def is_valid(self) -> bool:
         try:
@@ -372,6 +382,13 @@ class Rational(EmbeddedMongoModel, Maker):
     def __init__(self, *args, **kwargs):
         super(Rational, self).__init__(*args, **kwargs)
 
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
     def clean(self):
         if self.num <= Rational.INVALID_RATIO_NUM:
             raise ValidationError('{0} should be bigger than'.format(Rational.NUM_FIELD, Rational.INVALID_RATIO_NUM))
@@ -385,7 +402,7 @@ class Rational(EmbeddedMongoModel, Maker):
         if res:
             self.num = num
 
-        res, den = json.get(Rational.DEN_FIELD, None)
+        res, den = self.check_required_type(Rational.DEN_FIELD, int, json)
         if res:
             self.den = den
 
@@ -408,15 +425,22 @@ class HostAndPort(EmbeddedMongoModel, Maker):
     def __init__(self, *args, **kwargs):
         super(HostAndPort, self).__init__(*args, **kwargs)
 
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
-        host_field = json.get(HostAndPort.HOST_FIELD, None)
-        if host_field is not None:
-            self.host = host_field
+        res, host = self.check_required_type(HostAndPort.HOST_FIELD, str, json)
+        if res:
+            self.host = host
 
-        port_field = json.get(HostAndPort.PORT_FIELD, None)
-        if port_field is not None:
-            self.port = port_field
+        res, port = self.check_required_type(HostAndPort.PORT_FIELD, int, json)
+        if res:
+            self.port = port
 
     def to_front_dict(self) -> dict:
         result = self.to_son()

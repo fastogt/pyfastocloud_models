@@ -1,10 +1,46 @@
 #!/usr/bin/env python3
 import unittest
 
-from pyfastocloud_models.common_entries import HttpProxy, OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo
+from pyfastocloud_models.common_entries import HttpProxy, OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo, HostAndPort, \
+    Rational
 
 
 class CommonTest(unittest.TestCase):
+    def test_rational(self):
+        num = 1
+        den = 25
+        invalid_rational = Rational()
+        self.assertFalse(invalid_rational.is_valid())
+        invalid_rational.num = num
+        self.assertFalse(invalid_rational.is_valid())
+        invalid_rational.den = den
+        self.assertTrue(invalid_rational.is_valid())
+
+        self.assertFalse(Rational(num=0, den=25).is_valid())
+        self.assertFalse(Rational(num=21, den=0).is_valid())
+
+        host = Rational(num=num, den=den)
+        origin = {Rational.NUM_FIELD: num, Rational.DEN_FIELD: den}
+        self.assertTrue(host.is_valid())
+        self.assertEqual(host.to_front_dict(), origin)
+        self.assertEqual(host, Rational.make_entry(origin))
+
+    def test_host_and_port(self):
+        host_str = 'localhost'
+        port = 1235
+        invalid_host = HostAndPort()
+        self.assertFalse(invalid_host.is_valid())
+        invalid_host.host = host_str
+        self.assertFalse(invalid_host.is_valid())
+        invalid_host.port = port
+        self.assertTrue(invalid_host.is_valid())
+
+        host = HostAndPort(host=host_str, port=port)
+        origin = {HostAndPort.HOST_FIELD: host_str, HostAndPort.PORT_FIELD: port}
+        self.assertTrue(host.is_valid())
+        self.assertEqual(host.to_front_dict(), origin)
+        self.assertEqual(host, HostAndPort.make_entry(origin))
+
     def test_size(self):
         width = 640
         height = 480

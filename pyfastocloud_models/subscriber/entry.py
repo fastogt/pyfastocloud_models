@@ -572,6 +572,10 @@ class Subscriber(MongoModel, Maker):
                 raise ValueError('Invalid language')
             self.language = language
 
+        res, servers = self.check_optional_type(Subscriber.SERVERS_FIELD, list, json)
+        if res:
+            self.servers = servers
+
     def to_front_dict(self) -> dict:
         servers = []
         for server in self.servers:

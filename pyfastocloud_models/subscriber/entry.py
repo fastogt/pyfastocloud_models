@@ -447,9 +447,9 @@ class Subscriber(MongoModel, Maker):
         ustreams = []
         for stream in self.all_available_official_streams():
             user_stream = UserStream(sid=stream.id)
-            for stream in self.streams:
-                if not stream.private and stream.sid == user_stream.sid:
-                    user_stream = stream
+            for _stream in self.streams:
+                if not _stream.private and _stream.sid == user_stream.sid:
+                    user_stream = _stream
                     break
             ustreams.append(user_stream)
 
@@ -460,16 +460,16 @@ class Subscriber(MongoModel, Maker):
             self.vods = []
             return
 
-        ustreams = []
+        vods = []
         for ovod in self.all_available_official_vods():
             user_vod = UserStream(sid=ovod.id)
-            for vod in self.vods:
-                if not vod.private and vod.sid == user_vod.sid:
-                    user_vod = vod
+            for _vod in self.vods:
+                if not _vod.private and _vod.sid == user_vod.sid:
+                    user_vod = _vod
                     break
-            ustreams.append(user_vod)
+            vods.append(user_vod)
 
-        self.vods = ustreams
+        self.vods = vods
 
     def select_all_catchups(self, select: bool):
         if not select:
@@ -560,19 +560,17 @@ class Subscriber(MongoModel, Maker):
         if res:
             self.max_devices_count = max_dev
 
-        country_field = json.get(Subscriber.COUNTRY_FIELD, None)
-        if not country_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.COUNTRY_FIELD))
-        if not isinstance(country_field, str) or not constants.is_valid_country_code(country_field):
-            ValueError('Invalid country')
-        self.country = country_field
+        res, country = self.check_required_type(Subscriber.COUNTRY_FIELD, str, json)
+        if res:
+            if not constants.is_valid_country_code(country):
+                ValueError('Invalid country')
+            self.country = country
 
-        language_field = json.get(Subscriber.LANGUAGE_FIELD, None)
-        if not language_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.LANGUAGE_FIELD))
-        if not isinstance(language_field, str) or not constants.is_valid_locale_code(language_field):
-            raise ValueError('Invalid language')
-        self.language = language_field
+        res, language = self.check_required_type(Subscriber.COUNTRY_FIELD, str, json)
+        if res:
+            if constants.is_valid_locale_code(language):
+                raise ValueError('Invalid language')
+            self.language = language
 
     def to_front_dict(self) -> dict:
         servers = []

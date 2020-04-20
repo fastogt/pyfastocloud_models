@@ -7,6 +7,7 @@ from pymodm import MongoModel, fields, EmbeddedMongoModel
 from pymongo.operations import IndexModel
 
 import pyfastocloud_models.constants as constants
+from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.stream.entry import IStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec, is_valid_email
@@ -121,7 +122,7 @@ class UserStream(EmbeddedMongoModel):
         return res
 
 
-class Subscriber(MongoModel):
+class Subscriber(MongoModel, Maker):
     ID_FIELD = 'id'
     EMAIL_FIELD = 'email'
     FIRST_NAME_FIELD = 'first_name'
@@ -196,6 +197,9 @@ class Subscriber(MongoModel):
     streams = fields.EmbeddedDocumentListField(UserStream, default=[], blank=True, required=False)
     vods = fields.EmbeddedDocumentListField(UserStream, default=[], blank=True, required=False)
     catchups = fields.EmbeddedDocumentListField(UserStream, default=[], blank=True, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(Subscriber, self).__init__(*args, **kwargs)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -519,49 +523,42 @@ class Subscriber(MongoModel):
         return cl
 
     def update_entry(self, json: dict):
-        if not json:
-            raise ValueError('Invalid input')
+        Maker.update_entry(self, json)
 
-        email_field = json.get(Subscriber.EMAIL_FIELD, None)
-        if not email_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.EMAIL_FIELD))
-        email = email_field.lower()
-        if not is_valid_email(email, False):
-            raise ValueError('Invalid email')
-        self.email = email
+        res, email_field = self.check_required_type(Subscriber.EMAIL_FIELD, str, json)
+        if res:
+            email = email_field.lower()
+            if not is_valid_email(email, False):
+                raise ValueError('Invalid email')
+            self.email = email
 
-        password_field = json.get(Subscriber.PASSWORD_FIELD, None)
-        if not password_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.PASSWORD_FIELD))
-        self.password = Subscriber.generate_password_hash(password_field)
+        res, password = self.check_required_type(Subscriber.PASSWORD_FIELD, str, json)
+        if res:
+            self.password = Subscriber.generate_password_hash(password)
 
-        first_name_field = json.get(Subscriber.FIRST_NAME_FIELD, None)
-        if not first_name_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.FIRST_NAME_FIELD))
-        self.first_name = first_name_field
+        res, first_name = Subscriber.check_required_type(Subscriber.FIRST_NAME_FIELD, str, json)
+        if res:
+            self.first_name = first_name
 
-        last_name_field = json.get(Subscriber.LAST_NAME_FIELD, None)
-        if not last_name_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.LAST_NAME_FIELD))
-        self.last_name = last_name_field
+        res, last_name = Subscriber.check_required_type(Subscriber.LAST_NAME_FIELD, str, json)
+        if res:
+            self.last_name = last_name
 
-        created_date_field = json.get(Subscriber.CREATED_DATE_FIELD, None)
-        if created_date_field:  # optional field
-            self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
+        res, created_date_msec = self.check_optional_type(Subscriber.CREATED_DATE_FIELD, int, json)
+        if res:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
-        exp_date_field = json.get(Subscriber.EXP_DATE_FIELD, None)
-        if not exp_date_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.EXP_DATE_FIELD))
-        self.exp_date = datetime.utcfromtimestamp(exp_date_field / 1000)
+        res, exp_date_msec = self.check_required_type(Subscriber.EXP_DATE_FIELD, int, json)
+        if res:
+            self.exp_date = datetime.utcfromtimestamp(exp_date_msec / 1000)
 
-        status_field = json.get(Subscriber.STATUS_FIELD, None)
-        if not status_field:
-            self.status = status_field
+        res, status = self.check_required_type(Subscriber.STATUS_FIELD, int, json)
+        if res:
+            self.status = status
 
-        max_dev_field = json.get(Subscriber.MAX_DEVICE_COUNT_FIELD, None)
-        if not max_dev_field:
-            raise ValueError('Invalid input({0} required)'.format(Subscriber.MAX_DEVICE_COUNT_FIELD))
-        self.max_devices_count = max_dev_field
+        res, max_dev = self.check_required_type(Subscriber.MAX_DEVICE_COUNT_FIELD, int, json)
+        if res:
+            self.max_devices_count = max_dev
 
         country_field = json.get(Subscriber.COUNTRY_FIELD, None)
         if not country_field:

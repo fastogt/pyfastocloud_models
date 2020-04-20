@@ -82,7 +82,7 @@ class IStream(MongoModel, Maker):
                              max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
     tvg_id = fields.CharField(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
                               max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True, blank=True)
-    tvg_name = fields.CharField(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
+    tvg_name = fields.CharField(default='', min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
                                 max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True,
                                 blank=True)  # for inner use
     # optional

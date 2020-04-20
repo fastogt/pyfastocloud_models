@@ -574,7 +574,10 @@ class Subscriber(MongoModel, Maker):
 
         res, servers = self.check_optional_type(Subscriber.SERVERS_FIELD, list, json)
         if res:
-            self.servers = servers
+            object_servers = []
+            for server in servers:
+                object_servers.append(ObjectId(server))
+            self.servers = object_servers
 
     def to_front_dict(self) -> dict:
         servers = []

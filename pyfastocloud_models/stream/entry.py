@@ -61,16 +61,10 @@ class IStream(MongoModel, Maker):
         collection_name = 'streams'
         allow_inheritance = True
 
+    # required
     name = fields.CharField(min_length=constants.MIN_STREAM_NAME_LENGTH, max_length=constants.MAX_STREAM_NAME_LENGTH,
                             required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)
-    group = fields.CharField(min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH,
-                             max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH, required=False)
-
-    tvg_id = fields.CharField(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
-                              max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=False)
-    tvg_name = fields.CharField(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
-                                max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=False)  # for inner use
     tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
                                 min_length=constants.MIN_URI_LENGTH, required=True)
 
@@ -80,10 +74,19 @@ class IStream(MongoModel, Maker):
     iarc = fields.IntegerField(default=constants.DEFAULT_IARC, min_value=constants.MIN_IARC,
                                max_value=constants.MAX_IARC,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
-
     view_count = fields.IntegerField(default=0, required=True)
-    parts = fields.ListField(fields.ReferenceField('IStream'), default=[])
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)  #
+    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)
+
+    # blanks
+    group = fields.CharField(min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH,
+                             max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
+    tvg_id = fields.CharField(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
+                              max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True, blank=True)
+    tvg_name = fields.CharField(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
+                                max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True,
+                                blank=True)  # for inner use
+    # optional
+    parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -269,6 +272,7 @@ class HardwareStream(IStream):
     AUTO_EXIT_TIME_FIELD = 'auto_exit_time'
     EXTRA_CONFIG_FIELD = 'extra_config'
 
+    # required
     log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, min_value=StreamLogLevel.LOG_LEVEL_EMERG,
                                     max_value=StreamLogLevel.LOG_LEVEL_DEBUG, required=True)
     restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS,
@@ -277,13 +281,14 @@ class HardwareStream(IStream):
     auto_exit_time = fields.IntegerField(default=constants.DEFAULT_AUTO_EXIT_TIME,
                                          min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
                                          required=True)
-    audio_select = fields.IntegerField(min_value=constants.MIN_AUDIO_SELECT,
-                                       max_value=constants.MAX_AUDIO_SELECT, required=False)
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
     input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True)
     extra_config_fields = fields.CharField(default='{}', required=True)
+    # optional
+    audio_select = fields.IntegerField(min_value=constants.MIN_AUDIO_SELECT,
+                                       max_value=constants.MAX_AUDIO_SELECT, required=False)
 
     def __init__(self, *args, **kwargs):
         super(HardwareStream, self).__init__(*args, **kwargs)
@@ -425,18 +430,19 @@ class EncodeStream(HardwareStream):
     RSVG_LOGO_FIELD = 'rsvg_logo'
     ASPECT_RATIO_FIELD = 'aspect_ratio'
 
+    # required
     output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
     input = fields.EmbeddedDocumentListField(InputUrl, required=True)
-
     relay_video = fields.BooleanField(default=constants.DEFAULT_RELAY_VIDEO, required=True)
     relay_audio = fields.BooleanField(default=constants.DEFAULT_RELAY_AUDIO, required=True)
     deinterlace = fields.BooleanField(default=constants.DEFAULT_DEINTERLACE, required=True)
-    frame_rate = fields.IntegerField(min_value=constants.MIN_FRAME_RATE,
-                                     max_value=constants.MAX_FRAME_RATE, required=False)
     volume = fields.FloatField(default=constants.DEFAULT_VOLUME, min_value=constants.MIN_VOLUME,
                                max_value=constants.MAX_VOLUME, required=True)
     video_codec = fields.CharField(default=constants.DEFAULT_VIDEO_CODEC, required=True)
     audio_codec = fields.CharField(default=constants.DEFAULT_AUDIO_CODEC, required=True)
+    # optional
+    frame_rate = fields.IntegerField(min_value=constants.MIN_FRAME_RATE,
+                                     max_value=constants.MAX_FRAME_RATE, required=False)
     audio_channels_count = fields.IntegerField(min_value=constants.MIN_AUDIO_CHANNELS_COUNT,
                                                max_value=constants.MAX_AUDIO_CHANNELS_COUNT, required=False)
     size = fields.EmbeddedDocumentField(Size, required=False)
@@ -542,8 +548,8 @@ class TimeshiftRecorderStream(RelayStream):
     TIMESHIFT_CHUNK_DURATION = 'timeshift_chunk_duration'
     TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
 
+    # required
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True, blank=True)  #
-
     timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION,
                                                    min_value=constants.MIN_TIMESHIFT_CHUNK_DURATION, required=True)
     timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME,
@@ -574,8 +580,8 @@ class CatchupStream(TimeshiftRecorderStream):
     START_RECORD_FIELD = 'start'
     STOP_RECORD_FIELD = 'stop'
 
+    # required
     output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
-
     start = fields.DateTimeField(default=datetime.utcfromtimestamp(0), required=True)
     stop = fields.DateTimeField(default=datetime.utcfromtimestamp(0), required=True)
 
@@ -615,8 +621,8 @@ class TimeshiftPlayerStream(RelayStream):
     TIMESHIFT_DIR_FIELD = 'timeshift_dir'
     TIMESHIFT_DELAY = 'timeshift_delay'
 
+    # required
     input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True, blank=True)  #
-
     timeshift_dir = fields.CharField(required=True)  # FIXME default
     timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY,
                                           min_value=constants.MIN_TIMESHIFT_DELAY,
@@ -685,17 +691,19 @@ class VodBasedStream(EmbeddedMongoModel):
     def __init__(self, *args, **kwargs):
         super(VodBasedStream, self).__init__(*args, **kwargs)
 
+    # required
     vod_type = fields.IntegerField(default=constants.VodType.VODS, required=True)
     description = fields.CharField(default=constants.DEFAULT_VOD_DESCRIPTION,
                                    min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
                                    max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
                                    required=True)
-    trailer_url = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                   required=False)
     user_score = fields.FloatField(default=0, min_value=0, max_value=100, required=True)
     prime_date = fields.DateTimeField(default=MIN_DATE, required=True)
     country = fields.CharField(default=DEFAULT_COUNTRY, required=True)
     duration = fields.IntegerField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC, required=True)
+    # blanks
+    trailer_url = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                   required=True, blank=True)
 
     def prime_date_utc_msec(self):
         return date_to_utc_msec(self.prime_date)

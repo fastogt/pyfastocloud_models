@@ -467,3 +467,14 @@ class HostAndPort(EmbeddedMongoModel, Maker):
 
     def __str__(self):
         return '{0}:{1}'.format(self.host, self.port)
+
+
+class BlankStringOK(fields.CharField):
+    def __init__(self, *args, **kwargs):
+        super(BlankStringOK, self).__init__(*args, **kwargs, blank=True)
+
+    def value_from_object(self, instance):
+        result = getattr(instance, self.attname)
+        if result is None:
+            setattr(instance, self.attname, '')
+        return super(BlankStringOK, self).value_from_object(instance)

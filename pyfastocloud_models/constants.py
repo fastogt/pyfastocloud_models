@@ -121,8 +121,8 @@ DEFAULT_STREAM_PIPELINE_PATH_TEMPLATE_3SIS = 'http://{0}:{1}/stream/pipeline/{2}
 
 DEFAULT_TEST_URL = 'test'
 
-DEFAULT_STREAM_ICON_URL = 'https://fastocloud.com/static/images/unknown_channel.png'
-DEFAULT_STREAM_PREVIEW_ICON_URL = 'https://fastocloud.com/static/images/unknown_preview.png'
+DEFAULT_STREAM_ICON_URL = 'https://fastocloud.com/images/unknown_channel.png'
+DEFAULT_STREAM_PREVIEW_ICON_URL = 'https://fastocloud.com/images/unknown_preview.png'
 
 DEFAULT_VOD_DESCRIPTION = 'Some description'
 DEFAULT_SERIES_DESCRIPTION = 'Some description'

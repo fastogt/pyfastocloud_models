@@ -280,9 +280,8 @@ class HardwareStream(IStream):
     restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS,
                                            min_value=constants.MIN_RESTART_ATTEMPTS,
                                            max_value=constants.MAX_RESTART_ATTEMPTS, required=True)
-    auto_exit_time = fields.IntegerField(default=constants.DEFAULT_AUTO_EXIT_TIME,
-                                         min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
-                                         required=True)
+    auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
+                                         required=False)
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)

@@ -34,6 +34,8 @@ class StreamLogLevel(IntEnum):
 
 
 class IStream(MongoModel, Maker):
+    INVALID_BLANK_STRING = str()
+
     NAME_FIELD = 'name'
     ID_FIELD = 'id'
     PRICE_FIELD = 'price'
@@ -65,8 +67,6 @@ class IStream(MongoModel, Maker):
     name = fields.CharField(min_length=constants.MIN_STREAM_NAME_LENGTH, max_length=constants.MAX_STREAM_NAME_LENGTH,
                             required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)
-    tvg_logo = fields.CharField(default=constants.DEFAULT_STREAM_ICON_URL, max_length=constants.MAX_URI_LENGTH,
-                                min_length=constants.MIN_URI_LENGTH, required=True)
 
     price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                               max_value=constants.MAX_PRICE, required=True)
@@ -78,6 +78,8 @@ class IStream(MongoModel, Maker):
     output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)
 
     # blanks
+    tvg_logo = fields.CharField(max_length=constants.MAX_URI_LENGTH,
+                                min_length=constants.MIN_URI_LENGTH, required=True, blank=True)
     group = fields.CharField(min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH,
                              max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH, required=True, blank=True)
     tvg_id = fields.CharField(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
@@ -188,20 +190,26 @@ class IStream(MongoModel, Maker):
         res, group = self.check_optional_type(IStream.GROUP_FIELD, str, json)
         if res:  # optional field
             self.group = group
+        else:
+            self.group = IStream.INVALID_BLANK_STRING
 
         res, tvg_id = self.check_optional_type(IStream.TVG_ID_FIELD, str, json)
         if res:  # optional field
             self.tvg_id = tvg_id
+        else:
+            self.tvg_id = IStream.INVALID_BLANK_STRING
 
         res, tvg_name = self.check_optional_type(IStream.TVG_NAME_FIELD, str, json)
         if res:  # optional field
             self.tvg_name = tvg_name
         else:
-            self.tvg_name = ''
+            self.tvg_name = IStream.INVALID_BLANK_STRING
 
         res, icon = self.check_optional_type(IStream.ICON_FIELD, str, json)
         if res:  # optional field
             self.tvg_logo = icon
+        else:
+            self.tvg_logo = IStream.INVALID_BLANK_STRING
 
         res, price = self.check_optional_type(IStream.PRICE_FIELD, float, json)
         if res:  # optional field
@@ -724,6 +732,8 @@ class VodBasedStream(EmbeddedMongoModel):
         res, trailer = Maker.check_optional_type(VodBasedStream.TRAILER_URL_FIELD, str, json)
         if res:
             self.trailer_url = trailer
+        else:
+            self.trailer_url = IStream.INVALID_BLANK_STRING
 
         res, score = Maker.check_optional_type(VodBasedStream.USER_SCORE_FIELD, float, json)
         if res:
@@ -745,7 +755,6 @@ class VodBasedStream(EmbeddedMongoModel):
 class ProxyVodStream(ProxyStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
         super(ProxyVodStream, self).__init__(*args, **kwargs)
-        self.tvg_logo = constants.DEFAULT_STREAM_PREVIEW_ICON_URL
 
     def update_entry(self, json: dict):
         ProxyStream.update_entry(self, json)
@@ -763,7 +772,6 @@ class ProxyVodStream(ProxyStream, VodBasedStream):
 class VodRelayStream(RelayStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
         super(VodRelayStream, self).__init__(*args, **kwargs)
-        self.tvg_logo = constants.DEFAULT_STREAM_PREVIEW_ICON_URL
 
     def update_entry(self, json: dict):
         RelayStream.update_entry(self, json)
@@ -781,7 +789,6 @@ class VodRelayStream(RelayStream, VodBasedStream):
 class VodEncodeStream(EncodeStream, VodBasedStream):
     def __init__(self, *args, **kwargs):
         super(VodEncodeStream, self).__init__(*args, **kwargs)
-        self.tvg_logo = constants.DEFAULT_STREAM_PREVIEW_ICON_URL
 
     def update_entry(self, json: dict):
         EncodeStream.update_entry(self, json)

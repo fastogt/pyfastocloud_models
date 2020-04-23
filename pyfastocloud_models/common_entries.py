@@ -185,7 +185,7 @@ class OutputUrl(Url):
 
     http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                  required=False)
-    hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False)
+    hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(OutputUrl, self).__init__(*args, **kwargs)

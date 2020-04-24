@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 from pymodm import MongoModel, fields, EmbeddedMongoModel
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker
+from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, BlankStringOK
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -76,14 +76,13 @@ class IStream(MongoModel, Maker):
     output = fields.EmbeddedModelListField(OutputUrl, default=[], required=True)
 
     # blanks
-    tvg_logo = fields.CharField(default='', max_length=constants.MAX_URI_LENGTH,
-                                min_length=constants.MIN_URI_LENGTH, required=True, blank=True)
-    groups = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
-    tvg_id = fields.CharField(default='', min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
-                              max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True, blank=True)
-    tvg_name = fields.CharField(default='', min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
-                                max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True,
-                                blank=True)  # for inner use
+    tvg_logo = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
+                             min_length=constants.MIN_URI_LENGTH, required=True)
+    groups = fields.ListField(fields.CharField(), default=[], required=True)
+    tvg_id = BlankStringOK(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
+                           max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True)
+    tvg_name = BlankStringOK(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
+                             max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True)  # for inner use
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
 
@@ -704,11 +703,11 @@ class VodBasedStream(EmbeddedMongoModel):
     country = fields.CharField(default=DEFAULT_COUNTRY, required=True)
     duration = fields.IntegerField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC, required=True)
     # blanks
-    trailer_url = fields.CharField(default='', min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                   required=True, blank=True)
-    description = fields.CharField(default='', min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
-                                   max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
-                                   required=True, blank=True)
+    trailer_url = BlankStringOK(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                required=True)
+    description = BlankStringOK(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
+                                max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
+                                required=True)
 
     def prime_date_utc_msec(self):
         return date_to_utc_msec(self.prime_date)

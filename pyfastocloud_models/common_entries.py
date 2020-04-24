@@ -25,7 +25,7 @@ class Maker:
             raise ValueError('Invalid input({0} required)'.format(field))
 
         actual = type(value_field)
-        if actual is not expected:
+        if not Maker._check_is_same_types(actual, expected):
             raise ValueError('Invalid input field({0}) actual type: {1}, expected: {2}'.format(field, actual, expected))
 
         return True, value_field
@@ -38,13 +38,23 @@ class Maker:
         value_field = json.get(field, None)
         if value_field is not None:  # optional field
             actual = type(value_field)
-            if actual is not expected:
+            if not Maker._check_is_same_types(actual, expected):
                 raise ValueError(
                     'Invalid input field({0}) actual type: {1}, expected: {2}'.format(field, actual, expected))
 
             return True, value_field
 
         return False, None
+
+    @staticmethod
+    def _check_is_same_types(actual, expected) -> bool:
+        if actual is expected:
+            return True
+
+        if (type(int) == actual or type(int) == expected) and (type(float) == actual or type(float) == expected):
+            return True
+
+        return False
 
 
 class Url(EmbeddedMongoModel, Maker):

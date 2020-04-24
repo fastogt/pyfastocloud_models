@@ -153,7 +153,7 @@ class InputUrl(Url):
 
     user_agent = fields.IntegerField(choices=constants.UserAgent.choices(), required=False)
     stream_link = fields.BooleanField(required=False)
-    proxy = fields.EmbeddedDocumentField(HttpProxy, required=False)
+    proxy = fields.EmbeddedModelField(HttpProxy, required=False)
     program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER,
                                          max_value=MAX_PROGRAM_NUMBER, required=False)
     multicast_iface = fields.CharField(required=False)
@@ -316,10 +316,10 @@ class Logo(EmbeddedMongoModel, Maker):
     DEFAULT_LOGO_ALPHA = MAX_LOGO_ALPHA
 
     path = fields.CharField(required=True)
-    position = fields.EmbeddedDocumentField(Point, required=True)
+    position = fields.EmbeddedModelField(Point, required=True)
     alpha = fields.FloatField(min_value=MIN_LOGO_ALPHA, max_value=MAX_LOGO_ALPHA,
                               required=True)
-    size = fields.EmbeddedDocumentField(Size, required=True)
+    size = fields.EmbeddedModelField(Size, required=True)
 
     def __init__(self, *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
@@ -363,8 +363,8 @@ class RSVGLogo(EmbeddedMongoModel, Maker):
     SIZE_FIELD = 'size'
 
     path = fields.CharField(required=True)
-    position = fields.EmbeddedDocumentField(Point, required=True)
-    size = fields.EmbeddedDocumentField(Size, required=True)
+    position = fields.EmbeddedModelField(Point, required=True)
+    size = fields.EmbeddedModelField(Size, required=True)
 
     def __init__(self, *args, **kwargs):
         super(RSVGLogo, self).__init__(*args, **kwargs)
@@ -477,14 +477,3 @@ class HostAndPort(EmbeddedMongoModel, Maker):
 
     def __str__(self):
         return '{0}:{1}'.format(self.host, self.port)
-
-
-class BlankStringOK(fields.CharField):
-    def __init__(self, *args, **kwargs):
-        super(BlankStringOK, self).__init__(*args, **kwargs, blank=True)
-
-    def value_from_object(self, instance):
-        result = getattr(instance, self.attname)
-        if result is None:
-            setattr(instance, self.attname, '')
-        return super(BlankStringOK, self).value_from_object(instance)

@@ -39,16 +39,16 @@ class LoadBalanceSettings(MongoModel):
     DEFAULT_CATCHUPS_HTTP_HOST = 'localhost'
     DEFAULT_CATCHUPS_HTTP_PORT = 8000
 
-    providers = fields.EmbeddedDocumentListField(ProviderPair, default=[], blank=True)
+    providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
                             min_length=MIN_SERVICE_NAME_LENGTH)
-    host = fields.EmbeddedDocumentField(HostAndPort,
-                                        default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
-    clients_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CLIENTS_HOST,
-                                                                                 port=DEFAULT_SERVICE_CLIENTS_PORT))
-    catchups_http_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_CATCHUPS_HTTP_HOST,
-                                                                                       port=DEFAULT_CATCHUPS_HTTP_PORT))
+    host = fields.EmbeddedModelField(HostAndPort,
+                                     default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+    clients_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CLIENTS_HOST,
+                                                                              port=DEFAULT_SERVICE_CLIENTS_PORT))
+    catchups_http_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_CATCHUPS_HTTP_HOST,
+                                                                                    port=DEFAULT_CATCHUPS_HTTP_PORT))
     catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
 
     def get_id(self) -> str:

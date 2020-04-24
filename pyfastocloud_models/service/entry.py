@@ -57,18 +57,18 @@ class ServiceSettings(MongoModel):
     streams = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
     series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), default=[],
                               blank=True)
-    providers = fields.EmbeddedDocumentListField(ProviderPair, default=[], blank=True)
+    providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
                             min_length=MIN_SERVICE_NAME_LENGTH)
-    host = fields.EmbeddedDocumentField(HostAndPort,
-                                        default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
-    http_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_HTTP_HOST,
-                                                                              port=DEFAULT_SERVICE_HTTP_PORT))
-    vods_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_VODS_HOST,
-                                                                              port=DEFAULT_SERVICE_VODS_PORT))
-    cods_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CODS_HOST,
-                                                                              port=DEFAULT_SERVICE_CODS_PORT))
+    host = fields.EmbeddedModelField(HostAndPort,
+                                     default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+    http_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_HTTP_HOST,
+                                                                           port=DEFAULT_SERVICE_HTTP_PORT))
+    vods_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_VODS_HOST,
+                                                                           port=DEFAULT_SERVICE_VODS_PORT))
+    cods_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CODS_HOST,
+                                                                           port=DEFAULT_SERVICE_CODS_PORT))
 
     feedback_directory = fields.CharField(default=DEFAULT_FEEDBACK_DIR_PATH)
     timeshifts_directory = fields.CharField(default=DEFAULT_TIMESHIFTS_DIR_PATH)

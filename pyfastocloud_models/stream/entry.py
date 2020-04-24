@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 from pymodm import MongoModel, fields, EmbeddedMongoModel
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, BlankStringOK
+from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -73,16 +73,17 @@ class IStream(MongoModel, Maker):
                                max_value=constants.MAX_IARC,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
     view_count = fields.IntegerField(default=0, required=True)
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True)
+    output = fields.EmbeddedModelListField(OutputUrl, default=[], required=True)
 
     # blanks
-    tvg_logo = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
-                             min_length=constants.MIN_URI_LENGTH, required=True)
+    tvg_logo = fields.CharField(default='', max_length=constants.MAX_URI_LENGTH,
+                                min_length=constants.MIN_URI_LENGTH, required=True, blank=True)
     groups = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
-    tvg_id = BlankStringOK(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
-                           max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True)
-    tvg_name = BlankStringOK(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
-                             max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True)  # for inner use
+    tvg_id = fields.CharField(default='', min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
+                              max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True, blank=True)
+    tvg_name = fields.CharField(default='', min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
+                                max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True,
+                                blank=True)  # for inner use
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
 
@@ -251,7 +252,7 @@ class IStream(MongoModel, Maker):
 
 
 class ProxyStream(IStream):
-    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
+    output = fields.EmbeddedModelListField(OutputUrl, required=True)
 
     def __init__(self, *args, **kwargs):
         super(ProxyStream, self).__init__(*args, **kwargs)
@@ -285,7 +286,7 @@ class HardwareStream(IStream):
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
-    input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True)
+    input = fields.EmbeddedModelListField(InputUrl, default=[], required=True)
     extra_config_fields = fields.CharField(default='{}', required=True)
     # optional
     audio_select = fields.IntegerField(min_value=constants.MIN_AUDIO_SELECT,
@@ -389,8 +390,8 @@ class RelayStream(HardwareStream):
     VIDEO_PARSER_FIELD = 'video_parser'
     AUDIO_PARSER_FIELD = 'audio_parser'
 
-    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
-    input = fields.EmbeddedDocumentListField(InputUrl, required=True)
+    output = fields.EmbeddedModelListField(OutputUrl, required=True)
+    input = fields.EmbeddedModelListField(InputUrl, required=True)
 
     video_parser = fields.CharField(default=constants.DEFAULT_VIDEO_PARSER, required=True)
     audio_parser = fields.CharField(default=constants.DEFAULT_AUDIO_PARSER, required=True)
@@ -436,8 +437,8 @@ class EncodeStream(HardwareStream):
     ASPECT_RATIO_FIELD = 'aspect_ratio'
 
     # required
-    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
-    input = fields.EmbeddedDocumentListField(InputUrl, required=True)
+    output = fields.EmbeddedModelListField(OutputUrl, required=True)
+    input = fields.EmbeddedModelListField(InputUrl, required=True)
     relay_video = fields.BooleanField(default=constants.DEFAULT_RELAY_VIDEO, required=True)
     relay_audio = fields.BooleanField(default=constants.DEFAULT_RELAY_AUDIO, required=True)
     deinterlace = fields.BooleanField(default=constants.DEFAULT_DEINTERLACE, required=True)
@@ -450,12 +451,12 @@ class EncodeStream(HardwareStream):
                                      max_value=constants.MAX_FRAME_RATE, required=False)
     audio_channels_count = fields.IntegerField(min_value=constants.MIN_AUDIO_CHANNELS_COUNT,
                                                max_value=constants.MAX_AUDIO_CHANNELS_COUNT, required=False)
-    size = fields.EmbeddedDocumentField(Size, required=False)
+    size = fields.EmbeddedModelField(Size, required=False)
     video_bit_rate = fields.IntegerField(required=False)
     audio_bit_rate = fields.IntegerField(required=False)
-    logo = fields.EmbeddedDocumentField(Logo, required=False)
-    rsvg_logo = fields.EmbeddedDocumentField(RSVGLogo, required=False)
-    aspect_ratio = fields.EmbeddedDocumentField(Rational, required=False)
+    logo = fields.EmbeddedModelField(Logo, required=False)
+    rsvg_logo = fields.EmbeddedModelField(RSVGLogo, required=False)
+    aspect_ratio = fields.EmbeddedModelField(Rational, required=False)
 
     def __init__(self, *args, **kwargs):
         super(EncodeStream, self).__init__(*args, **kwargs)
@@ -554,7 +555,7 @@ class TimeshiftRecorderStream(RelayStream):
     TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
 
     # required
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True, blank=True)  #
+    output = fields.EmbeddedModelListField(OutputUrl, default=[], required=True, blank=True)  #
     timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION,
                                                    min_value=constants.MIN_TIMESHIFT_CHUNK_DURATION, required=True)
     timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME,
@@ -586,7 +587,7 @@ class CatchupStream(TimeshiftRecorderStream):
     STOP_RECORD_FIELD = 'stop'
 
     # required
-    output = fields.EmbeddedDocumentListField(OutputUrl, required=True)
+    output = fields.EmbeddedModelListField(OutputUrl, required=True)
     start = fields.DateTimeField(default=datetime.utcfromtimestamp(0), required=True)
     stop = fields.DateTimeField(default=datetime.utcfromtimestamp(0), required=True)
 
@@ -627,7 +628,7 @@ class TimeshiftPlayerStream(RelayStream):
     TIMESHIFT_DELAY = 'timeshift_delay'
 
     # required
-    input = fields.EmbeddedDocumentListField(InputUrl, default=[], required=True, blank=True)  #
+    input = fields.EmbeddedModelListField(InputUrl, default=[], required=True, blank=True)  #
     timeshift_dir = fields.CharField(required=True)  # FIXME default
     timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY,
                                           min_value=constants.MIN_TIMESHIFT_DELAY,
@@ -652,7 +653,7 @@ class TimeshiftPlayerStream(RelayStream):
 
 
 class TestLifeStream(RelayStream):
-    output = fields.EmbeddedDocumentListField(OutputUrl, default=[], required=True, blank=True)  #
+    output = fields.EmbeddedModelListField(OutputUrl, default=[], required=True, blank=True)  #
 
     def __init__(self, *args, **kwargs):
         super(TestLifeStream, self).__init__(*args, **kwargs)
@@ -703,11 +704,11 @@ class VodBasedStream(EmbeddedMongoModel):
     country = fields.CharField(default=DEFAULT_COUNTRY, required=True)
     duration = fields.IntegerField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC, required=True)
     # blanks
-    trailer_url = BlankStringOK(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                required=True)
-    description = BlankStringOK(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
-                                max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
-                                required=True)
+    trailer_url = fields.CharField(default='', min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                   required=True, blank=True)
+    description = fields.CharField(default='', min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
+                                   max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
+                                   required=True, blank=True)
 
     def prime_date_utc_msec(self):
         return date_to_utc_msec(self.prime_date)

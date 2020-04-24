@@ -191,12 +191,12 @@ class Subscriber(MongoModel, Maker):
 
     servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[],
                                blank=True, required=False)
-    devices = fields.EmbeddedDocumentListField(Device, default=[], blank=True, required=False)
+    devices = fields.EmbeddedModelListField(Device, default=[], blank=True, required=False)
     max_devices_count = fields.IntegerField(default=constants.DEFAULT_DEVICES_COUNT, required=False)
     # content
-    streams = fields.EmbeddedDocumentListField(UserStream, default=[], blank=True, required=False)
-    vods = fields.EmbeddedDocumentListField(UserStream, default=[], blank=True, required=False)
-    catchups = fields.EmbeddedDocumentListField(UserStream, default=[], blank=True, required=False)
+    streams = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
+    vods = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
+    catchups = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
 
     def __init__(self, *args, **kwargs):
         super(Subscriber, self).__init__(*args, **kwargs)

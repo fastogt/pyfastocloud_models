@@ -21,7 +21,7 @@ REQUIRES_PYTHON = '>=3.0.0'
 VERSION = '1.0.0'
 
 # What packages are required for this module to be executed?
-REQUIRED = ['pymodm']
+REQUIRED = ['pymodm @ git+git://github.com/fastogt/pymodm@master#egg=pymodm']
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
@@ -114,5 +114,5 @@ setup(
     # $ setup.py publish support.
     cmdclass={
         'upload': UploadCommand,
-    },
+    }
 )

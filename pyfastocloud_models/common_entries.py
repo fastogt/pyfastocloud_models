@@ -51,7 +51,7 @@ class Maker:
         if actual is expected:
             return True
 
-        if (type(int) == actual or type(int) == expected) and (type(float) == actual or type(float) == expected):
+        if (int == actual or int == expected) and (float == actual or float == expected):
             return True
 
         return False

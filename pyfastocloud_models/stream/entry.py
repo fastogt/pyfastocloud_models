@@ -78,8 +78,7 @@ class IStream(MongoModel, Maker):
     # blanks
     tvg_logo = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
                              min_length=constants.MIN_URI_LENGTH, required=True)
-    group = BlankStringOK(min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH,
-                          max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH, required=True)
+    group = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
     tvg_id = BlankStringOK(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
                            max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True)
     tvg_name = BlankStringOK(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
@@ -91,14 +90,14 @@ class IStream(MongoModel, Maker):
         if not group:
             return
 
-        if self.group is None:
-            self.group = str()
+        self.group.append(group)
 
-        if self.group:
-            self.group += ';'
+    def remove_group(self, group: str):
+        if not group:
+            return
 
-        self.group += group
-        
+        self.group.remove(group)
+
     def to_front_dict(self) -> dict:
         result = self.to_son()
         result.pop('_cls')
@@ -140,6 +139,9 @@ class IStream(MongoModel, Maker):
     def generate_playlist(self, header=True) -> str:
         result = '#EXTM3U\n' if header else ''
         stream_type = self.get_type()
+        main_group = str()
+        if self.group:
+            main_group = self.group[0]
         if stream_type == constants.StreamType.RELAY or stream_type == constants.StreamType.VOD_RELAY or \
                 stream_type == constants.StreamType.COD_RELAY or stream_type == constants.StreamType.ENCODE or \
                 stream_type == constants.StreamType.VOD_ENCODE or stream_type == constants.StreamType.COD_ENCODE or \
@@ -148,7 +150,7 @@ class IStream(MongoModel, Maker):
                 stream_type == constants.StreamType.TIMESHIFT_PLAYER or stream_type == constants.StreamType.CATCHUP:
             for out in self.output:
                 result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'.format(
-                    self.tvg_id, self.tvg_name, self.tvg_logo, self.group, self.name, out.uri)
+                    self.tvg_id, self.tvg_name, self.tvg_logo, main_group, self.name, out.uri)
 
         return result
 
@@ -156,6 +158,9 @@ class IStream(MongoModel, Maker):
                                  header=True) -> str:
         result = '#EXTM3U\n' if header else ''
         stream_type = self.get_type()
+        main_group = str()
+        if self.group:
+            main_group = self.group[0]
         if stream_type == constants.StreamType.RELAY or stream_type == constants.StreamType.VOD_RELAY or \
                 stream_type == constants.StreamType.COD_RELAY or stream_type == constants.StreamType.ENCODE or \
                 stream_type == constants.StreamType.VOD_ENCODE or stream_type == constants.StreamType.COD_ENCODE or \
@@ -170,7 +175,7 @@ class IStream(MongoModel, Maker):
                                                                       self.id,
                                                                       out.id, file_name)
                     result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'. \
-                        format(self.tvg_id, self.tvg_name, self.tvg_logo, self.group, self.name, url)
+                        format(self.tvg_id, self.tvg_name, self.tvg_logo, main_group, self.name, url)
 
         return result
 
@@ -197,7 +202,7 @@ class IStream(MongoModel, Maker):
         if res:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
-        res, group = self.check_optional_type(IStream.GROUP_FIELD, str, json)
+        res, group = self.check_optional_type(IStream.GROUP_FIELD, list, json)
         if res:  # optional field
             self.group = group
 
@@ -381,12 +386,16 @@ class HardwareStream(IStream):
     def generate_input_playlist(self, header=True) -> str:
         result = '#EXTM3U\n' if header else ''
         stream_type = self.get_type()
+        main_group = str()
+        if self.group:
+            main_group = self.group[0]
+
         if stream_type == constants.StreamType.RELAY or stream_type == constants.StreamType.ENCODE or \
                 stream_type == constants.StreamType.TIMESHIFT_PLAYER or \
                 stream_type == constants.StreamType.VOD_ENCODE or stream_type == constants.StreamType.VOD_RELAY:
             for out in self.input:
                 result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'.format(
-                    self.tvg_id, self.tvg_name, self.tvg_logo, self.group, self.name, out.uri)
+                    self.tvg_id, self.tvg_name, self.tvg_logo, main_group, self.name, out.uri)
 
         return result
 

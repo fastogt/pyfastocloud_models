@@ -22,8 +22,7 @@ class Serial(MongoModel):
 
     created_date = fields.DateTimeField(default=datetime.now)  # for inner use
     name = fields.CharField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH, required=True)
-    group = fields.CharField(max_length=constants.MAX_STREAM_GROUP_TITLE_LENGTH,
-                             min_length=constants.MIN_STREAM_GROUP_TITLE_LENGTH, required=True)
+    group = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
     description = BlankStringOK(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
                                 max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
                                 required=True)

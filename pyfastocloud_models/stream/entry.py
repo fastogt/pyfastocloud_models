@@ -190,9 +190,9 @@ class IStream(MongoModel, Maker):
         if res:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
-        res, group = self.check_optional_type(IStream.GROUPS_FIELD, list, json)
+        res, groups = self.check_optional_type(IStream.GROUPS_FIELD, list, json)
         if res:  # optional field
-            self.group = group
+            self.groups = groups
 
         res, tvg_id = self.check_optional_type(IStream.TVG_ID_FIELD, str, json)
         if res:  # optional field

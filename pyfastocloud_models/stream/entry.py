@@ -87,6 +87,18 @@ class IStream(MongoModel, Maker):
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
 
+    def add_group(self, group: str):
+        if not group:
+            return
+
+        if self.group is None:
+            self.group = str()
+
+        if self.group:
+            self.group += ';'
+
+        self.group += group
+        
     def to_front_dict(self) -> dict:
         result = self.to_son()
         result.pop('_cls')

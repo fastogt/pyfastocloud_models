@@ -37,7 +37,7 @@ class IStream(MongoModel, Maker):
     NAME_FIELD = 'name'
     ID_FIELD = 'id'
     PRICE_FIELD = 'price'
-    GROUP_FIELD = 'group'
+    GROUPS_FIELD = 'groups'
     VISIBLE_FIELD = 'visible'
     IARC_FIELD = 'iarc'
     VIEW_COUNT_FIELD = 'view_count'
@@ -78,25 +78,13 @@ class IStream(MongoModel, Maker):
     # blanks
     tvg_logo = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
                              min_length=constants.MIN_URI_LENGTH, required=True)
-    group = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
+    groups = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
     tvg_id = BlankStringOK(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
                            max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True)
     tvg_name = BlankStringOK(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
                              max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True)  # for inner use
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
-
-    def add_group(self, group: str):
-        if not group:
-            return
-
-        self.group.append(group)
-
-    def remove_group(self, group: str):
-        if not group:
-            return
-
-        self.group.remove(group)
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -202,7 +190,7 @@ class IStream(MongoModel, Maker):
         if res:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
-        res, group = self.check_optional_type(IStream.GROUP_FIELD, list, json)
+        res, group = self.check_optional_type(IStream.GROUPS_FIELD, list, json)
         if res:  # optional field
             self.group = group
 

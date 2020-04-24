@@ -111,9 +111,6 @@ class IStream(MongoModel, Maker):
         if stream:
             self.parts.remove(stream)
 
-    def get_groups(self) -> list:
-        return self.group.split(';')
-
     def get_type(self) -> constants.StreamType:
         raise NotImplementedError('subclasses must override get_type()!')
 
@@ -128,8 +125,8 @@ class IStream(MongoModel, Maker):
         result = '#EXTM3U\n' if header else ''
         stream_type = self.get_type()
         main_group = str()
-        if self.group:
-            main_group = self.group[0]
+        if self.groups:
+            main_group = self.groups[0]
         if stream_type == constants.StreamType.RELAY or stream_type == constants.StreamType.VOD_RELAY or \
                 stream_type == constants.StreamType.COD_RELAY or stream_type == constants.StreamType.ENCODE or \
                 stream_type == constants.StreamType.VOD_ENCODE or stream_type == constants.StreamType.COD_ENCODE or \
@@ -375,8 +372,8 @@ class HardwareStream(IStream):
         result = '#EXTM3U\n' if header else ''
         stream_type = self.get_type()
         main_group = str()
-        if self.group:
-            main_group = self.group[0]
+        if self.groups:
+            main_group = self.groups[0]
 
         if stream_type == constants.StreamType.RELAY or stream_type == constants.StreamType.ENCODE or \
                 stream_type == constants.StreamType.TIMESHIFT_PLAYER or \

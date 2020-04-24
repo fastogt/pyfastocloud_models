@@ -16,11 +16,11 @@ class StreamsTest(unittest.TestCase):
         msec = int(now.timestamp() * 1000)
         output_url = OutputUrl(id=OutputUrl.generate_id(), uri='test')  # required
         name = 'Test'  # required
-        proxy_data = {ProxyStream.NAME_FIELD: name, ProxyStream.GROUP_FIELD: 'Movies;USA', ProxyStream.PRICE_FIELD: 1.1,
+        proxy_data = {ProxyStream.NAME_FIELD: name, ProxyStream.GROUPS_FIELD: 'Movies;USA', ProxyStream.PRICE_FIELD: 1.1,
                       ProxyStream.CREATED_DATE_FIELD: msec, ProxyStream.OUTPUT_FIELD: [output_url.to_front_dict()]}
         proxy = ProxyStream.make_entry(proxy_data)
         self.assertEqual(proxy.name, proxy_data[ProxyStream.NAME_FIELD])
-        self.assertEqual(proxy.group, proxy_data[ProxyStream.GROUP_FIELD])
+        self.assertEqual(proxy.groups, proxy_data[ProxyStream.GROUPS_FIELD])
         self.assertEqual(proxy.created_date_utc_msec(), msec)
         self.assertEqual(proxy.output, [output_url])
         self.assertTrue(proxy.is_valid())

@@ -78,7 +78,7 @@ class IStream(MongoModel, Maker):
     # blanks
     tvg_logo = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
                              min_length=constants.MIN_URI_LENGTH, required=True)
-    groups = fields.ListField(fields.CharField(), default=[], required=True)
+    groups = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
     tvg_id = BlankStringOK(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
                            max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True)
     tvg_name = BlankStringOK(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,

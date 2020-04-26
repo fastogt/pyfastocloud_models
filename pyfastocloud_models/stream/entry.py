@@ -280,14 +280,14 @@ class HardwareStream(IStream):
     restart_attempts = fields.IntegerField(default=constants.DEFAULT_RESTART_ATTEMPTS,
                                            min_value=constants.MIN_RESTART_ATTEMPTS,
                                            max_value=constants.MAX_RESTART_ATTEMPTS, required=True)
-    auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
-                                         required=False)
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
     input = fields.EmbeddedModelListField(InputUrl, default=[], required=True)
     extra_config_fields = fields.CharField(default='{}', required=True)
     # optional
+    auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
+                                         required=False)
     audio_select = fields.IntegerField(min_value=constants.MIN_AUDIO_SELECT,
                                        max_value=constants.MAX_AUDIO_SELECT, required=False)
 
@@ -327,6 +327,8 @@ class HardwareStream(IStream):
         res, audio_select = IStream.check_optional_type(HardwareStream.AUDIO_SELECT_FIELD, int, json)
         if res:  # optional field
             self.audio_select = audio_select
+        else:
+            delattr(self, HardwareStream.AUDIO_SELECT_FIELD)
 
         res, loop = IStream.check_optional_type(HardwareStream.LOOP_FIELD, bool, json)
         if res:  # optional field
@@ -339,6 +341,8 @@ class HardwareStream(IStream):
         res, auto_exit = IStream.check_optional_type(HardwareStream.AUTO_EXIT_TIME_FIELD, int, json)
         if res:  # optional field
             self.auto_exit_time = auto_exit
+        else:
+            delattr(self, HardwareStream.AUTO_EXIT_TIME_FIELD)
 
         res, extra = IStream.check_optional_type(HardwareStream.EXTRA_CONFIG_FIELD, str, json)
         if res:  # optional field
@@ -478,6 +482,8 @@ class EncodeStream(HardwareStream):
         res, frame_rate = IStream.check_optional_type(EncodeStream.FRAME_RATE_FIELD, int, json)
         if res:  # optional field
             self.frame_rate = frame_rate
+        else:
+            delattr(self, EncodeStream.FRAME_RATE_FIELD)
 
         res, volume = IStream.check_optional_type(EncodeStream.VOLUME_FIELD, float, json)
         if res:  # optional field
@@ -491,29 +497,47 @@ class EncodeStream(HardwareStream):
         if res:  # optional field
             self.audio_codec = audio_codec
 
+        res, audio_channel_count = IStream.check_optional_type(EncodeStream.AUDIO_CHANNELS_COUNT_FIELD, str, json)
+        if res:  # optional field
+            self.audio_channels_count = audio_channel_count
+        else:
+            delattr(self, EncodeStream.AUDIO_CHANNELS_COUNT_FIELD)
+
         res, size = IStream.check_optional_type(EncodeStream.SIZE_FIELD, dict, json)
         if res:  # optional field
             self.size = Size.make_entry(size)
+        else:
+            delattr(self, EncodeStream.SIZE_FIELD)
 
         res, video_bit_rate = IStream.check_optional_type(EncodeStream.VIDEO_BITRATE_FIELD, int, json)
         if res:  # optional field
             self.video_bit_rate = video_bit_rate
+        else:
+            delattr(self, EncodeStream.VIDEO_BITRATE_FIELD)
 
         res, audio_bit_rate = IStream.check_optional_type(EncodeStream.AUDIO_BITRATE_FIELD, int, json)
         if res:  # optional field
             self.audio_bit_rate = audio_bit_rate
+        else:
+            delattr(self, EncodeStream.AUDIO_BITRATE_FIELD)
 
         res, logo = IStream.check_optional_type(EncodeStream.LOGO_FIELD, dict, json)
         if res:  # optional field
             self.logo = Logo.make_entry(logo)
+        else:
+            delattr(self, EncodeStream.LOGO_FIELD)
 
         res, rlogo = IStream.check_optional_type(EncodeStream.RSVG_LOGO_FIELD, dict, json)
         if res:  # optional field
             self.rsvg_logo = RSVGLogo.make_entry(rlogo)
+        else:
+            delattr(self, EncodeStream.RSVG_LOGO_FIELD)
 
         res, aspect = IStream.check_optional_type(EncodeStream.ASPECT_RATIO_FIELD, dict, json)
         if res:  # optional field
             self.aspect_ratio = Rational.make_entry(aspect)
+        else:
+            delattr(self, EncodeStream.ASPECT_RATIO_FIELD)
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.ENCODE

@@ -103,8 +103,12 @@ class LoadBalanceSettings(MongoModel):
         self.catchups_hls_directory = catchups_http_root_field
 
     def to_front_dict(self) -> dict:
+        providers = []
+        for prov in self.providers:
+            providers.append(prov.to_front_dict())
         return {LoadBalanceSettings.ID_FIELD: self.get_id(), LoadBalanceSettings.NAME_FIELD: self.name,
                 LoadBalanceSettings.HOST_FIELD: self.host.to_front_dict(),
                 LoadBalanceSettings.CLIENTS_HOST: self.clients_host.to_front_dict(),
                 LoadBalanceSettings.CATCHUPS_HOST_FIELD: self.catchups_http_host.to_front_dict(),
-                LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: self.catchups_hls_directory}
+                LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: self.catchups_hls_directory,
+                LoadBalanceSettings.PROVIDERS_FIELD: providers}

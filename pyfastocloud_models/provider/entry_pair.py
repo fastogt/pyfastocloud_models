@@ -4,6 +4,9 @@ from pymodm import EmbeddedMongoModel, fields
 
 
 class ProviderPair(EmbeddedMongoModel):
+    ID_FIELD = 'id'
+    ROLE_FIELD = 'role'
+
     class Roles(IntEnum):
         READ = 0
         WRITE = 1
@@ -23,3 +26,6 @@ class ProviderPair(EmbeddedMongoModel):
 
     user = fields.ReferenceField('Provider')
     role = fields.IntegerField(min_value=Roles.READ, max_value=Roles.ADMIN, default=Roles.ADMIN)
+
+    def to_front_dict(self) -> dict:
+        return {ProviderPair.ID_FIELD: str(self.user), ProviderPair.ROLE_FIELD: self.role}

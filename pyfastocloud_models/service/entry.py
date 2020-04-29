@@ -21,6 +21,7 @@ class ServiceSettings(MongoModel):
     VODS_IN_DIRECTORY_FIELD = 'vods_in_directory'
     VODS_DIRECTORY_FIELD = 'vods_directory'
     CODS_DIRECTORY_FIELD = 'cods_directory'
+    PROVIDERS_FIELD = 'providers'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -219,6 +220,9 @@ class ServiceSettings(MongoModel):
         self.cods_directory = cods_field
 
     def to_front_dict(self) -> dict:
+        providers = []
+        for prov in self.providers:
+            providers.append(prov.to_front_dict())
         return {ServiceSettings.ID_FIELD: self.get_id(), ServiceSettings.NAME_FIELD: self.name,
                 ServiceSettings.HOST_FIELD: self.host.to_front_dict(),
                 ServiceSettings.HTTP_HOST_FIELD: self.http_host.to_front_dict(),
@@ -229,4 +233,4 @@ class ServiceSettings(MongoModel):
                 ServiceSettings.HLS_DIRECTORY_FIELD: self.hls_directory,
                 ServiceSettings.VODS_IN_DIRECTORY_FIELD: self.vods_in_directory,
                 ServiceSettings.VODS_DIRECTORY_FIELD: self.vods_directory,
-                ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory}
+                ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory, ServiceSettings.PROVIDERS_FIELD: providers}

@@ -13,6 +13,7 @@ class LoadBalanceSettings(MongoModel):
     CLIENTS_HOST = 'clients_host'
     CATCHUPS_HOST_FIELD = 'catchups_host'
     CATCHUPS_HTTP_ROOT_FIELD = 'catchups_http_root'
+    PROVIDERS_FIELD = 'providers'
 
     @staticmethod
     def get_by_id(sid: ObjectId):

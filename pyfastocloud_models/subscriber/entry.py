@@ -342,12 +342,12 @@ class Subscriber(MongoModel, Maker):
         self.streams.append(user_stream)
 
     def remove_own_stream_by_id(self, sid: ObjectId):
-        stream = IStream.get_by_id(sid)
-        if stream:
+        istream = IStream.get_by_id(sid)
+        if istream:
             for stream in self.streams:
                 if stream.sid == sid:
                     self.stream.remove(stream)
-            stream.delete()
+            istream.delete()
 
     def remove_all_own_streams(self):
         for stream in self.streams:

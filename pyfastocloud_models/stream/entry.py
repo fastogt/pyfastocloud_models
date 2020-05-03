@@ -47,6 +47,7 @@ class IStream(MongoModel, Maker):
     ICON_FIELD = 'tvg_logo'
     TVG_ID_FIELD = 'tvg_id'
     TVG_NAME_FIELD = 'tvg_name'
+    PARTS_FIELD = 'parts'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -98,6 +99,11 @@ class IStream(MongoModel, Maker):
         for out in self.output:
             output.append(out.to_front_dict())
         result[IStream.OUTPUT_FIELD] = output
+
+        parts = []
+        for part in self.parts:
+            parts.append(str(part))
+        result[IStream.PARTS_FIELD] = parts
         return result.to_dict()
 
     def created_date_utc_msec(self):

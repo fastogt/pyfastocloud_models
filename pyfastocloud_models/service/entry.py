@@ -18,7 +18,6 @@ class ServiceSettings(MongoModel):
     FEEDBACK_DIRECOTRY_FIELD = 'feedback_directory'
     TIMESHIFTS_DIRECTORY_FIELD = 'timeshifts_directory'
     HLS_DIRECTORY_FIELD = 'hls_directory'
-    VODS_IN_DIRECTORY_FIELD = 'vods_in_directory'
     VODS_DIRECTORY_FIELD = 'vods_directory'
     CODS_DIRECTORY_FIELD = 'cods_directory'
     PROVIDERS_FIELD = 'providers'
@@ -42,7 +41,6 @@ class ServiceSettings(MongoModel):
     DEFAULT_FEEDBACK_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/feedback'
     DEFAULT_TIMESHIFTS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/timeshifts'
     DEFAULT_HLS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/hls'
-    DEFAULT_VODS_IN_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/vods_in'
     DEFAULT_VODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/vods'
     DEFAULT_CODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/cods'
 
@@ -74,7 +72,6 @@ class ServiceSettings(MongoModel):
     feedback_directory = fields.CharField(default=DEFAULT_FEEDBACK_DIR_PATH)
     timeshifts_directory = fields.CharField(default=DEFAULT_TIMESHIFTS_DIR_PATH)
     hls_directory = fields.CharField(default=DEFAULT_HLS_DIR_PATH)
-    vods_in_directory = fields.CharField(default=DEFAULT_VODS_IN_DIR_PATH)
     vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH)
     cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH)
 
@@ -204,11 +201,6 @@ class ServiceSettings(MongoModel):
             raise ValueError('Invalid input({0} required)'.format(ServiceSettings.HLS_DIRECTORY_FIELD))
         self.hls_directory = hls_field
 
-        vods_in_field = json.get(ServiceSettings.VODS_IN_DIRECTORY_FIELD, None)
-        if not vods_in_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.VODS_IN_DIRECTORY_FIELD))
-        self.vods_in_directory = vods_in_field
-
         vods_field = json.get(ServiceSettings.VODS_DIRECTORY_FIELD, None)
         if not vods_field:
             raise ValueError('Invalid input({0} required)'.format(ServiceSettings.VODS_DIRECTORY_FIELD))
@@ -231,6 +223,5 @@ class ServiceSettings(MongoModel):
                 ServiceSettings.FEEDBACK_DIRECOTRY_FIELD: self.feedback_directory,
                 ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: self.timeshifts_directory,
                 ServiceSettings.HLS_DIRECTORY_FIELD: self.hls_directory,
-                ServiceSettings.VODS_IN_DIRECTORY_FIELD: self.vods_in_directory,
                 ServiceSettings.VODS_DIRECTORY_FIELD: self.vods_directory,
                 ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory, ServiceSettings.PROVIDERS_FIELD: providers}

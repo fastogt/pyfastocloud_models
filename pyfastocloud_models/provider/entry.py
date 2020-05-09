@@ -1,9 +1,8 @@
 from datetime import datetime
 from enum import IntEnum
 
-from pyfastogt.utils import is_valid_email
-
 from bson.objectid import ObjectId
+from pyfastogt.utils import is_valid_email
 from pymodm import MongoModel, fields
 from pymongo.operations import IndexModel
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -66,9 +65,10 @@ class Provider(MongoModel):
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
-    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[])
+    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[],
+                               blank=True)
     load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL),
-                                      default=[])
+                                      default=[], blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)

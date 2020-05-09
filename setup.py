@@ -21,8 +21,8 @@ REQUIRES_PYTHON = '>=3.0.0'
 VERSION = '1.1.0'
 
 # What packages are required for this module to be executed?
-REQUIRED = ['pyfastogt @ git+git://github.com/fastogt/pyfastogt@master#egg=pyfastogt',
-            'pymodm @ git+git://github.com/fastogt/pymodm@master#egg=pymodm']
+REQUIRED = ['pyfastogt @ git+https://github.com/fastogt/pyfastogt@master#egg=pyfastogt',
+            'pymodm @ git+https://github.com/fastogt/pymodm@master#egg=pymodm']
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------

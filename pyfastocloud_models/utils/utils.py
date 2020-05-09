@@ -1,13 +1,9 @@
-import json
 import os
-import ssl
 import uuid
 from datetime import datetime, timezone
 from urllib.parse import urlparse
-from urllib.request import urlopen
 
 import requests
-from validate_email import validate_email
 
 
 def date_to_utc_msec(date: datetime):
@@ -54,21 +50,13 @@ def is_valid_http_url(url: str, timeout=1) -> bool:
         return False
 
 
-def is_valid_email(email: str, check_mx: bool) -> bool:
-    dns_valid = validate_email(email, check_mx=check_mx)
-    if not dns_valid:
+def is_valid_url(url):
+    try:
+        parsed_url = urlparse(url)
+        return (all([parsed_url.scheme, parsed_url.netloc, parsed_url.path])
+                and len(parsed_url.netloc.split('.')) > 1)
+    except TypeError as ex:
         return False
-
-    validate_url = 'https://open.kickbox.com/v1/disposable/' + email
-    context = ssl._create_unverified_context()
-    response = urlopen(validate_url, context=context)
-    if response.status != 200:
-        return False
-
-    data = response.read()
-    json_object = json.loads(data.decode('utf-8'))
-    is_disposable = json_object['disposable']
-    return not is_disposable
 
 
 def get_country_code_by_remote_addr(remote_addr: str):

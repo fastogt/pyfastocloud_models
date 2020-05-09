@@ -6,11 +6,13 @@ from bson.objectid import ObjectId
 from pymodm import MongoModel, fields, EmbeddedMongoModel
 from pymongo.operations import IndexModel
 
+from pyfastogt.utils import is_valid_email
+
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.stream.entry import IStream
-from pyfastocloud_models.utils.utils import date_to_utc_msec, is_valid_email
+from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
 def is_vod_stream(stream: IStream):
@@ -528,7 +530,7 @@ class Subscriber(MongoModel, Maker):
         res, email_field = self.check_required_type(Subscriber.EMAIL_FIELD, str, json)
         if res:
             email = email_field.lower()
-            if not is_valid_email(email, False):
+            if not is_valid_email(email):
                 raise ValueError('Invalid email')
             self.email = email
 

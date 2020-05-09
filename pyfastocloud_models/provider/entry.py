@@ -1,6 +1,8 @@
 from datetime import datetime
 from enum import IntEnum
 
+from pyfastogt.utils import is_valid_email
+
 from bson.objectid import ObjectId
 from pymodm import MongoModel, fields
 from pymongo.operations import IndexModel
@@ -9,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 from pyfastocloud_models.service.entry import ServiceSettings
-from pyfastocloud_models.utils.utils import date_to_utc_msec, is_valid_email
+from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
 class Provider(MongoModel):
@@ -118,7 +120,7 @@ class Provider(MongoModel):
         if not email_field:
             raise ValueError('Invalid input({0} required)'.format(Provider.EMAIL_FIELD))
         email = email_field.lower()
-        if not is_valid_email(email, False):
+        if not is_valid_email(email):
             raise ValueError('Invalid email')
         self.email = email
 

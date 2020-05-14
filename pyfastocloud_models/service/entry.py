@@ -2,13 +2,13 @@ from bson import ObjectId
 from pymodm import MongoModel, fields
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import HostAndPort
+from pyfastocloud_models.common_entries import HostAndPort, Maker
 from pyfastocloud_models.provider.entry_pair import ProviderPair
 from pyfastocloud_models.series.entry import Serial
 from pyfastocloud_models.stream.entry import IStream
 
 
-class ServiceSettings(MongoModel):
+class ServiceSettings(MongoModel, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
@@ -21,6 +21,7 @@ class ServiceSettings(MongoModel):
     VODS_DIRECTORY_FIELD = 'vods_directory'
     CODS_DIRECTORY_FIELD = 'cods_directory'
     PROVIDERS_FIELD = 'providers'
+    PRICE_FIELD = 'price'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -59,21 +60,27 @@ class ServiceSettings(MongoModel):
     providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
-                            min_length=MIN_SERVICE_NAME_LENGTH)
+                            min_length=MIN_SERVICE_NAME_LENGTH, required=True)
     host = fields.EmbeddedModelField(HostAndPort,
-                                     default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+                                     default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT),
+                                     required=True)
     http_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_HTTP_HOST,
-                                                                           port=DEFAULT_SERVICE_HTTP_PORT))
+                                                                           port=DEFAULT_SERVICE_HTTP_PORT),
+                                          required=True)
     vods_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_VODS_HOST,
-                                                                           port=DEFAULT_SERVICE_VODS_PORT))
+                                                                           port=DEFAULT_SERVICE_VODS_PORT),
+                                          required=True)
     cods_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CODS_HOST,
-                                                                           port=DEFAULT_SERVICE_CODS_PORT))
+                                                                           port=DEFAULT_SERVICE_CODS_PORT),
+                                          required=True)
 
-    feedback_directory = fields.CharField(default=DEFAULT_FEEDBACK_DIR_PATH)
-    timeshifts_directory = fields.CharField(default=DEFAULT_TIMESHIFTS_DIR_PATH)
-    hls_directory = fields.CharField(default=DEFAULT_HLS_DIR_PATH)
-    vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH)
-    cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH)
+    feedback_directory = fields.CharField(default=DEFAULT_FEEDBACK_DIR_PATH, required=True)
+    timeshifts_directory = fields.CharField(default=DEFAULT_TIMESHIFTS_DIR_PATH, required=True)
+    hls_directory = fields.CharField(default=DEFAULT_HLS_DIR_PATH, required=True)
+    vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH, required=True)
+    cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH, required=True)
+    price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
+                              max_value=constants.MAX_PRICE, required=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -151,65 +158,51 @@ class ServiceSettings(MongoModel):
                 stream.delete()
         return super(ServiceSettings, self).delete(*args, **kwargs)
 
-    @classmethod
-    def make_entry(cls, json: dict) -> 'ServiceSettings':
-        cl = cls()
-        cl.update_entry(json)
-        return cl
-
     def update_entry(self, json: dict):
-        if not json:
-            raise ValueError('Invalid input')
+        Maker.update_entry(self, json)
+        res, name = self.check_required_type(ServiceSettings.NAME_FIELD, str, json)
+        if res:  # required field
+            self.name = name
 
-        name_field = json.get(ServiceSettings.NAME_FIELD, None)
-        if not name_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.NAME_FIELD))
-        self.name = name_field
+        res, host = self.check_required_type(ServiceSettings.HOST_FIELD, dict, json)
+        if res:  # required field
+            self.host = HostAndPort.make_entry(host)
 
-        host_field = json.get(ServiceSettings.HOST_FIELD, None)
-        if not host_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.HOST_FIELD))
-        self.host = HostAndPort.make_entry(host_field)
+        res, http_host = self.check_required_type(ServiceSettings.HTTP_HOST_FIELD, dict, json)
+        if res:  # required field
+            self.http_host = HostAndPort.make_entry(http_host)
 
-        http_host_field = json.get(ServiceSettings.HTTP_HOST_FIELD, None)
-        if not http_host_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.HTTP_HOST_FIELD))
-        self.http_host = HostAndPort.make_entry(http_host_field)
+        res, vods_host = self.check_required_type(ServiceSettings.VODS_HOST_FIELD, dict, json)
+        if res:  # required field
+            self.vods_host = HostAndPort.make_entry(vods_host)
 
-        vods_host_field = json.get(ServiceSettings.VODS_HOST_FIELD, None)
-        if not vods_host_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.VODS_HOST_FIELD))
-        self.vods_host = HostAndPort.make_entry(vods_host_field)
+        res, cods_host = self.check_required_type(ServiceSettings.CODS_HOST_FIELD, dict, json)
+        if res:  # required field
+            self.cods_host = HostAndPort.make_entry(cods_host)
 
-        cods_host_field = json.get(ServiceSettings.CODS_HOST_FIELD, None)
-        if not cods_host_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.CODS_HOST_FIELD))
-        self.cods_host = HostAndPort.make_entry(cods_host_field)
+        res, feedback = self.check_required_type(ServiceSettings.FEEDBACK_DIRECOTRY_FIELD, str, json)
+        if res:  # required field
+            self.feedback_directory = feedback
 
-        feedback_field = json.get(ServiceSettings.FEEDBACK_DIRECOTRY_FIELD, None)
-        if not feedback_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.FEEDBACK_DIRECOTRY_FIELD))
-        self.feedback_directory = feedback_field
+        res, timeshift = self.check_required_type(ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD, str, json)
+        if res:  # required field
+            self.timeshifts_directory = timeshift
 
-        timeshift_field = json.get(ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD, None)
-        if not timeshift_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD))
-        self.timeshifts_directory = timeshift_field
+        res, hls = self.check_required_type(ServiceSettings.HLS_DIRECTORY_FIELD, str, json)
+        if res:  # required field
+            self.hls_directory = hls
 
-        hls_field = json.get(ServiceSettings.HLS_DIRECTORY_FIELD, None)
-        if not hls_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.HLS_DIRECTORY_FIELD))
-        self.hls_directory = hls_field
+        res, vods = self.check_required_type(ServiceSettings.VODS_DIRECTORY_FIELD, str, json)
+        if res:  # required field
+            self.vods_directory = vods
 
-        vods_field = json.get(ServiceSettings.VODS_DIRECTORY_FIELD, None)
-        if not vods_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.VODS_DIRECTORY_FIELD))
-        self.vods_directory = vods_field
+        res, cods = self.check_required_type(ServiceSettings.CODS_DIRECTORY_FIELD, str, json)
+        if res:  # required field
+            self.cods_directory = cods
 
-        cods_field = json.get(ServiceSettings.CODS_DIRECTORY_FIELD, None)
-        if not cods_field:
-            raise ValueError('Invalid input({0} required)'.format(ServiceSettings.CODS_DIRECTORY_FIELD))
-        self.cods_directory = cods_field
+        res, price = self.check_required_type(ServiceSettings.PRICE_FIELD, float, json)
+        if res:  # optional field
+            self.price = price
 
     def to_front_dict(self) -> dict:
         providers = []
@@ -224,4 +217,5 @@ class ServiceSettings(MongoModel):
                 ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: self.timeshifts_directory,
                 ServiceSettings.HLS_DIRECTORY_FIELD: self.hls_directory,
                 ServiceSettings.VODS_DIRECTORY_FIELD: self.vods_directory,
-                ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory, ServiceSettings.PROVIDERS_FIELD: providers}
+                ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory, ServiceSettings.PRICE_FIELD: self.price,
+                ServiceSettings.PROVIDERS_FIELD: providers}

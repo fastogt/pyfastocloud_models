@@ -479,6 +479,37 @@ class HostAndPort(EmbeddedMongoModel, Maker):
         return '{0}:{1}'.format(self.host, self.port)
 
 
+class MetaFile(EmbeddedMongoModel, Maker):
+    NAME_FIELD = 'name'
+    URL_FIELD = 'url'
+
+    name = fields.CharField(min_length=constants.MIN_STREAM_NAME_LENGTH, max_length=constants.MAX_STREAM_NAME_LENGTH,
+                            required=True)
+    url = fields.CharField(max_length=constants.MAX_URI_LENGTH, min_length=constants.MIN_URI_LENGTH, required=True)
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
+    def to_front_dict(self) -> dict:
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        res, name = self.check_required_type(MetaFile.NAME_FIELD, str, json)
+        if res:
+            self.name = name
+
+        res, url = self.check_required_type(MetaFile.URL_FIELD, str, json)
+        if res:
+            self.url = url
+
+
 class BlankStringOK(fields.CharField):
     def __init__(self, *args, **kwargs):
         super(BlankStringOK, self).__init__(*args, **kwargs, blank=True)

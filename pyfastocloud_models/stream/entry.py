@@ -7,7 +7,8 @@ from bson.objectid import ObjectId
 from pymodm import MongoModel, fields, EmbeddedMongoModel
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, BlankStringOK
+from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, \
+    BlankStringOK, MetaFile
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -48,6 +49,7 @@ class IStream(MongoModel, Maker):
     TVG_ID_FIELD = 'tvg_id'
     TVG_NAME_FIELD = 'tvg_name'
     PARTS_FIELD = 'parts'
+    META_FIELD = 'meta'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -86,6 +88,7 @@ class IStream(MongoModel, Maker):
                              max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True)  # for inner use
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
+    meta = fields.EmbeddedModelListField(MetaFile, default=[], blank=True)
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -104,6 +107,11 @@ class IStream(MongoModel, Maker):
         for part in self.parts:
             parts.append(str(part))
         result[IStream.PARTS_FIELD] = parts
+
+        meta = []
+        for met in self.meta:
+            meta.append(met.to_front_dict())
+        result[IStream.META_FIELD] = meta
         return result.to_dict()
 
     def created_date_utc_msec(self):
@@ -227,6 +235,13 @@ class IStream(MongoModel, Maker):
             for url in output:
                 stabled.append(OutputUrl.make_entry(url))
             self.output = stabled
+
+        res, meta = self.check_required_type(IStream.META_FIELD, list, json)
+        if res:  # optional field
+            meta_stabled = []
+            for met in meta:
+                meta_stabled.append(MetaFile.make_entry(met))
+            self.meta = meta_stabled
 
     @staticmethod
     def make_stream_entry(json: dict):

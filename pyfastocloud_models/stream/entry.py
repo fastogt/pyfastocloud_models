@@ -8,7 +8,7 @@ from pymodm import MongoModel, fields, EmbeddedMongoModel
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, \
-    BlankStringOK, MetaFile
+    BlankStringOK, MetaUrl
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -88,7 +88,7 @@ class IStream(MongoModel, Maker):
                              max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True)  # for inner use
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
-    meta = fields.EmbeddedModelListField(MetaFile, default=[], blank=True)
+    meta = fields.EmbeddedModelListField(MetaUrl, default=[], blank=True)
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -240,7 +240,7 @@ class IStream(MongoModel, Maker):
         if res:  # optional field
             meta_stabled = []
             for met in meta:
-                meta_stabled.append(MetaFile.make_entry(met))
+                meta_stabled.append(MetaUrl.make_entry(met))
             self.meta = meta_stabled
 
     @staticmethod

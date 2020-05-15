@@ -479,7 +479,7 @@ class HostAndPort(EmbeddedMongoModel, Maker):
         return '{0}:{1}'.format(self.host, self.port)
 
 
-class MetaFile(EmbeddedMongoModel, Maker):
+class MetaUrl(EmbeddedMongoModel, Maker):
     NAME_FIELD = 'name'
     URL_FIELD = 'url'
 
@@ -501,11 +501,11 @@ class MetaFile(EmbeddedMongoModel, Maker):
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
-        res, name = self.check_required_type(MetaFile.NAME_FIELD, str, json)
+        res, name = self.check_required_type(MetaUrl.NAME_FIELD, str, json)
         if res:
             self.name = name
 
-        res, url = self.check_required_type(MetaFile.URL_FIELD, str, json)
+        res, url = self.check_required_type(MetaUrl.URL_FIELD, str, json)
         if res:
             self.url = url
 

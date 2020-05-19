@@ -45,6 +45,7 @@ class EpgSettings(MongoModel, Maker):
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
     URLS_FIELD = 'urls'
+    PROVIDERS_FIELD = 'providers'
 
     @staticmethod
     def get_by_id(sid: ObjectId):

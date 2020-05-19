@@ -98,11 +98,11 @@ class Provider(MongoModel):
 
     def add_epg(self, server):
         if server:
-            self.epg.append(server)
+            self.epgs.append(server)
 
     def remove_epg(self, server):
         if server:
-            self.epg.remove(server)
+            self.epgs.remove(server)
 
     @staticmethod
     def generate_password_hash(password: str) -> str:

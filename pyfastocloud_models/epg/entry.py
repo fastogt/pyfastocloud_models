@@ -1,5 +1,6 @@
 from bson import ObjectId
 from pymodm import MongoModel, EmbeddedMongoModel, fields
+from pymodm.errors import ValidationError
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
@@ -7,14 +8,33 @@ from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
 class EpgUrl(EmbeddedMongoModel, Maker):
-    ID_FIELD = 'id'
-    ROLE_FIELD = 'role'
+    URL_FIELD = 'url'
+    EXTENSION_FIELD = 'extension'
 
-    uri = fields.CharField(default='http://0.0.0.0/epg.xml', max_length=constants.MAX_URI_LENGTH, required=True)
-    extension = fields.CharField(max_length=5, required=False)
+    url = fields.CharField(default='http://0.0.0.0/epg.xml', max_length=constants.MAX_URI_LENGTH, required=True)
+    extension = fields.CharField(default='xml', max_length=5, required=True)
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        res, url = self.check_required_type(EpgUrl.URL_FIELD, str, json)
+        if res:
+            self.url = url
+
+        res, ext = self.check_required_type(EpgUrl.EXTENSION_FIELD, str, json)
+        if res:
+            self.extension = ext
 
     def to_front_dict(self) -> dict:
-        return {ProviderPair.ID_FIELD: str(self.user.id), ProviderPair.ROLE_FIELD: self.role}
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
 
 
 class EpgSettings(MongoModel, Maker):
@@ -66,6 +86,14 @@ class EpgSettings(MongoModel, Maker):
             if prov.user == provider:
                 self.providers.remove(prov)
 
+    def add_url(self, url: EpgUrl):
+        if url:
+            self.urls.append(url)
+
+    def remove_url(self, url):
+        if url:
+            self.urls.remove(url)
+
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
@@ -83,5 +111,9 @@ class EpgSettings(MongoModel, Maker):
         providers = []
         for prov in self.providers:
             providers.append(prov.to_front_dict())
+        urls = []
+        for url in self.urls:
+            urls.append(url.to_front_dict())
         return {EpgSettings.ID_FIELD: self.get_id(), EpgSettings.NAME_FIELD: self.name,
-                EpgSettings.HOST_FIELD: self.host.to_front_dict(), EpgSettings.PROVIDERS_FIELD: providers}
+                EpgSettings.HOST_FIELD: self.host.to_front_dict(), EpgSettings.URLS_FIELD: urls,
+                EpgSettings.PROVIDERS_FIELD: providers}

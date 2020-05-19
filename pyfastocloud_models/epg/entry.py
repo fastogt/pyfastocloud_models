@@ -8,11 +8,16 @@ from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
 class EpgUrl(EmbeddedMongoModel, Maker):
+    ID_FIELD = 'id'
     URL_FIELD = 'url'
     EXTENSION_FIELD = 'extension'
 
+    id = fields.ObjectIdField(required=True, default=ObjectId, primary_key=True)
     url = fields.CharField(default='http://0.0.0.0/epg.xml', max_length=constants.MAX_URI_LENGTH, required=True)
     extension = fields.CharField(default='xml', max_length=5, required=True)
+
+    def get_id(self) -> str:
+        return str(self.id)
 
     def is_valid(self) -> bool:
         try:
@@ -32,9 +37,7 @@ class EpgUrl(EmbeddedMongoModel, Maker):
             self.extension = ext
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
-        return result.to_dict()
+        return {EpgUrl.ID_FIELD: self.get_id(), EpgUrl.URL_FIELD: self.url, EpgUrl.EXTENSION_FIELD: self.extension}
 
 
 class EpgSettings(MongoModel, Maker):
@@ -90,9 +93,10 @@ class EpgSettings(MongoModel, Maker):
         if url:
             self.urls.append(url)
 
-    def remove_url(self, url):
-        if url:
-            self.urls.remove(url)
+    def remove_url(self, uid: ObjectId):
+        for url in list(self.urls):
+            if url.id == uid:
+                self.urls.remove(url)
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)

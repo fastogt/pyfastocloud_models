@@ -3,10 +3,9 @@ from enum import IntEnum
 from hashlib import md5
 
 from bson.objectid import ObjectId
+from pyfastogt.utils import is_valid_email
 from pymodm import MongoModel, fields, EmbeddedMongoModel
 from pymongo.operations import IndexModel
-
-from pyfastogt.utils import is_valid_email
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker
@@ -221,11 +220,12 @@ class Subscriber(MongoModel, Maker):
             self.servers.append(server)
 
     def add_device(self, device: Device):
-        if len(self.devices) < self.max_devices_count:
-            self.devices.append(device)
+        if device:
+            if len(self.devices) < self.max_devices_count:
+                self.devices.append(device)
 
     def remove_device(self, did: ObjectId):
-        for dev in self.devices:
+        for dev in list(self.devices):
             if dev.id == did:
                 self.devices.remove(dev)
 

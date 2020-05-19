@@ -94,10 +94,13 @@ class EpgSettings(MongoModel, Maker):
         if url:
             self.urls.append(url)
 
-    def remove_url(self, uid: ObjectId):
+    def remove_url(self, uid: ObjectId) -> EpgUrl:
         for url in list(self.urls):
             if url.id == uid:
                 self.urls.remove(url)
+                return url
+
+        return None
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)

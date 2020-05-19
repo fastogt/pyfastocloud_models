@@ -8,6 +8,7 @@ from pymongo.operations import IndexModel
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import pyfastocloud_models.constants as constants
+from pyfastocloud_models.epg.entry import EpgSettings
 from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.utils.utils import date_to_utc_msec
@@ -69,6 +70,8 @@ class Provider(MongoModel):
                                blank=True)
     load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL),
                                       default=[], blank=True)
+    epgs = fields.ListField(fields.ReferenceField(EpgSettings, on_delete=fields.ReferenceField.PULL),
+                            default=[], blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -92,6 +95,14 @@ class Provider(MongoModel):
     def remove_load_balancer(self, server):
         if server:
             self.load_balancers.remove(server)
+
+    def add_epg(self, server):
+        if server:
+            self.epg.append(server)
+
+    def remove_epg(self, server):
+        if server:
+            self.epg.remove(server)
 
     @staticmethod
     def generate_password_hash(password: str) -> str:

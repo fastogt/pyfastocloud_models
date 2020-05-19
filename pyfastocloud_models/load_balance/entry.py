@@ -2,11 +2,11 @@ from bson import ObjectId
 from pymodm import MongoModel, fields
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import HostAndPort
+from pyfastocloud_models.common_entries import HostAndPort, Maker
 from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
-class LoadBalanceSettings(MongoModel):
+class LoadBalanceSettings(MongoModel, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
@@ -68,15 +68,8 @@ class LoadBalanceSettings(MongoModel):
             if prov.user == provider:
                 self.providers.remove(prov)
 
-    @classmethod
-    def make_entry(cls, json: dict) -> 'LoadBalanceSettings':
-        cl = cls()
-        cl.update_entry(json)
-        return cl
-
     def update_entry(self, json: dict):
-        if not json:
-            raise ValueError('Invalid input')
+        Maker.update_entry(self, json)
 
         name_field = json.get(LoadBalanceSettings.NAME_FIELD, None)
         if not name_field:

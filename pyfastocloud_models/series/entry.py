@@ -119,7 +119,7 @@ class Serial(MongoModel, Maker):
         if res:  # optional field
             self.visible = visible
 
-        res, episodes = self.check_optional_type(Serial.VISIBLE_FIELD, list, json)
+        res, episodes = self.check_optional_type(Serial.EPISODES_FIELD, list, json)
         if res:  # optional field
             stabled = []
             for episode in episodes:

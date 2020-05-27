@@ -117,6 +117,20 @@ class ServiceSettings(MongoModel, Maker):
 
         return result
 
+    def add_series(self, serials: [Serial]):
+        for serial in serials:
+            if serial:
+                self.add_serial(serial)
+
+    def add_serial(self, serial: Serial):
+        if serial:
+            self.series.append(serial)
+
+    def remove_serial(self, serial: Serial):
+        if serial:
+            self.series.remove(serial)
+            serial.delete()
+
     def add_streams(self, streams: [IStream]):
         for stream in streams:
             if stream:

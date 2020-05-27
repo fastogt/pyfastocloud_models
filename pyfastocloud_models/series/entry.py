@@ -61,6 +61,12 @@ class Serial(MongoModel, Maker):
     def created_date_utc_msec(self):
         return date_to_utc_msec(self.created_date)
 
+    @classmethod
+    def make_entry(cls, json: dict) -> 'Serial':
+        cl = cls()
+        cl.update_entry(json)
+        return cl
+
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
         res, name = self.check_required_type(Serial.NAME_FIELD, str, json)

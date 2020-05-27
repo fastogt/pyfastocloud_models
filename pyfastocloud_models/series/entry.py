@@ -54,6 +54,20 @@ class Serial(MongoModel, Maker):
     visible = fields.BooleanField(default=True, required=True)
     episodes = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
 
+    def add_episode(self, episode: IStream):
+        if not episode:
+            return
+
+        self.episodes.append(episode)
+
+    def remove_episode(self, episode: IStream):
+        if not episode:
+            return
+
+        for stream in self.episodes:
+            if stream == episode:
+                self.episodes.remove(episode)
+
     def to_front_dict(self) -> dict:
         result = self.to_son()
         result.pop('_cls')

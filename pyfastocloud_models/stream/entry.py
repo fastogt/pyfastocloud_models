@@ -183,12 +183,18 @@ class IStream(MongoModel, Maker):
 
     def delete(self, *args, **kwargs):
         from pyfastocloud_models.subscriber.entry import Subscriber
+        from pyfastocloud_models.series.entry import Serial
         subscribers = Subscriber.objects.all()
         for subscriber in subscribers:
             subscriber.remove_official_stream(self)
             subscriber.remove_official_vod(self)
             subscriber.remove_official_catchup(self)
             subscriber.save()
+
+        serials = Serial.objects.all()
+        for serial in serials:
+            serial.remove_episode(self)
+            serial.save()
         return super(IStream, self).delete(*args, **kwargs)
 
     def update_entry(self, json: dict):

@@ -5,6 +5,7 @@ from pymodm import MongoModel, fields
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker, BlankStringOK
+from pyfastocloud_models.stream.entry import IStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -17,6 +18,7 @@ class Serial(MongoModel, Maker):
     DESCRIPTION_FIELD = 'description'
     CREATED_DATE_FIELD = 'created_date'
     SEASON_FIELD = 'season'
+    EPISODES_FIELD = 'episodes'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -50,6 +52,7 @@ class Serial(MongoModel, Maker):
     created_date = fields.DateTimeField(default=datetime.now, required=True)
     season = fields.IntegerField(default=1, min_value=0, required=True)
     visible = fields.BooleanField(default=True, required=True)
+    episodes = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -57,6 +60,10 @@ class Serial(MongoModel, Maker):
         result.pop('_id')
         result[Serial.CREATED_DATE_FIELD] = self.created_date_utc_msec()
         result[Serial.ID_FIELD] = self.get_id()
+        episodes = []
+        for episode in self.episodes:
+            episodes.append(episode.get_id())
+        result[Serial.EPISODES_FIELD] = episodes
         return result.to_dict()
 
     def created_date_utc_msec(self):
@@ -97,3 +104,10 @@ class Serial(MongoModel, Maker):
         res, visible = self.check_optional_type(Serial.VISIBLE_FIELD, bool, json)
         if res:  # optional field
             self.visible = visible
+
+        res, episodes = self.check_optional_type(Serial.VISIBLE_FIELD, list, json)
+        if res:  # optional field
+            stabled = []
+            for episode in episodes:
+                stabled.append(ObjectId(episode))
+            self.episodes = stabled

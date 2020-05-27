@@ -9,6 +9,7 @@ from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
 class Serial(MongoModel, Maker):
+    ID_FIELD = 'id'
     NAME_FIELD = 'name'
     ICON_FIELD = 'icon'
     GROUPS_FIELD = 'groups'

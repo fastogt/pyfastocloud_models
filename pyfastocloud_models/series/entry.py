@@ -10,6 +10,7 @@ from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 class Serial(MongoModel, Maker):
     NAME_FIELD = 'name'
+    ICON_FIELD = 'icon'
     GROUPS_FIELD = 'groups'
     VISIBLE_FIELD = 'visible'
     DESCRIPTION_FIELD = 'description'
@@ -38,12 +39,14 @@ class Serial(MongoModel, Maker):
     def id(self):
         return self.pk
 
-    created_date = fields.DateTimeField(default=datetime.now, required=True)
     name = fields.CharField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH, required=True)
+    icon = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
+                         min_length=constants.MIN_URI_LENGTH, required=True)
     groups = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
     description = BlankStringOK(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
                                 max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
                                 required=True)
+    created_date = fields.DateTimeField(default=datetime.now, required=True)
     season = fields.IntegerField(default=1, min_value=0, required=True)
     visible = fields.BooleanField(default=True, required=True)
 
@@ -71,6 +74,10 @@ class Serial(MongoModel, Maker):
         res, groups = self.check_optional_type(Serial.GROUPS_FIELD, list, json)
         if res:  # optional field
             self.groups = groups
+
+        res, icon = self.check_optional_type(Serial.ICON_FIELD, str, json)
+        if res:  # optional field
+            self.icon = icon
 
         res, description = Maker.check_optional_type(Serial.DESCRIPTION_FIELD, str, json)
         if res:

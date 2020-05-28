@@ -101,6 +101,42 @@ class Url(EmbeddedMongoModel, Maker):
             self.uri = uri
 
 
+class StreamLink(EmbeddedMongoModel, Maker):
+    HTTP_PROXY_FIELD = 'http_proxy'
+    HTTPS_PROXY_FIELD = 'https_proxy'
+
+    http_proxy = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                  required=False)
+    https_proxy = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                   required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(StreamLink, self).__init__(*args, **kwargs)
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
+    def to_front_dict(self) -> dict:
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+
+        res, http = self.check_optional_type(StreamLink.HTTP_PROXY_FIELD, str, json)
+        if res:
+            self.http_proxy = http
+
+        res, https = self.check_optional_type(StreamLink.HTTPS_PROXY_FIELD, str, json)
+        if res:
+            self.https_proxy = https
+
+
 class HttpProxy(EmbeddedMongoModel, Maker):
     URI_FIELD = 'uri'
     USER_FIELD = 'user'
@@ -152,7 +188,7 @@ class InputUrl(Url):
     MAX_PROGRAM_NUMBER = constants.MAX_INTEGER_NUMBER
 
     user_agent = fields.IntegerField(choices=constants.UserAgent.choices(), required=False)
-    stream_link = fields.BooleanField(required=False)
+    stream_link = fields.EmbeddedModelField(StreamLink, required=False)
     proxy = fields.EmbeddedModelField(HttpProxy, required=False)
     program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER,
                                          max_value=MAX_PROGRAM_NUMBER, required=False)
@@ -172,9 +208,9 @@ class InputUrl(Url):
         if res:  # optional field
             self.user_agent = user_agent
 
-        res, stream_link = self.check_optional_type(InputUrl.STREAM_LINK_FIELD, bool, json)
+        res, stream_link = self.check_optional_type(InputUrl.STREAM_LINK_FIELD, dict, json)
         if res:  # optional field
-            self.stream_link = stream_link
+            self.stream_link = StreamLink.make_entry(stream_link)
 
         res, proxy = self.check_optional_type(InputUrl.PROXY_FIELD, dict, json)
         if res:  # optional field

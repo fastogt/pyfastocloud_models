@@ -81,7 +81,7 @@ class Serial(MongoModel, Maker):
         episodes = []
         views = 0
         for episode in self.episodes:
-            views += episodes.view_count
+            views += episode.view_count
             episodes.append(episode.get_id())
         result[Serial.VIEW_COUNT_FIELD] = views
         result[Serial.EPISODES_FIELD] = episodes

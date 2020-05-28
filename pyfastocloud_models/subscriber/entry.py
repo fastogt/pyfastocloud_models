@@ -9,6 +9,7 @@ from pymongo.operations import IndexModel
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker
+from pyfastocloud_models.series.entry import Serial
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.stream.entry import IStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec
@@ -198,6 +199,8 @@ class Subscriber(MongoModel, Maker):
     streams = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
     vods = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
     catchups = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
+    series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), default=[],
+                              blank=True, required=False)
 
     def __init__(self, *args, **kwargs):
         super(Subscriber, self).__init__(*args, **kwargs)
@@ -306,6 +309,30 @@ class Subscriber(MongoModel, Maker):
     def remove_official_vod_by_id(self, sid: ObjectId):
         original_stream = IStream.get_by_id(sid)
         self.remove_official_vod(original_stream)
+
+    # official series
+    def add_official_serial_by_id(self, sid: ObjectId):
+        serial = Serial.get_by_id(sid)
+        self.add_official_serial(serial)
+
+    def add_official_serial(self, serial: Serial):
+        if not serial:
+            return
+
+        if serial in self.series:
+            return
+
+        self.series.append(serial)
+
+    def remove_official_serial(self, serial: Serial):
+        if not serial:
+            return
+
+        self.series.remove(serial)
+
+    def remove_official_serial_by_id(self, sid: ObjectId):
+        serial = Serial.get_by_id(sid)
+        self.remove_official_serial(serial)
 
     # official catchups
     def add_official_catchup_by_id(self, oid: ObjectId):
@@ -440,6 +467,14 @@ class Subscriber(MongoModel, Maker):
 
         return streams
 
+    def all_available_official_series(self) -> [Serial]:
+        series = []
+        for serv in self.servers:
+            for serial in serv.series:
+                series.append(serial)
+
+        return series
+
     # select
     def select_all_streams(self, select: bool):
         if not select:
@@ -488,6 +523,13 @@ class Subscriber(MongoModel, Maker):
             ustreams.append(user_catchup)
 
         self.catchups = ustreams
+
+    def select_all_series(self, select: bool):
+        if not select:
+            self.series = []
+            return
+
+        self.series = self.all_available_official_series()
 
     def delete(self, *args, **kwargs):
         self.remove_all_own_streams()

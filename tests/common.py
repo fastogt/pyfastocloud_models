@@ -2,7 +2,7 @@
 import unittest
 
 from pyfastocloud_models.common_entries import HttpProxy, OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo, HostAndPort, \
-    Rational
+    Rational, StreamLink
 
 
 class CommonTest(unittest.TestCase):
@@ -89,6 +89,15 @@ class CommonTest(unittest.TestCase):
         self.assertTrue(proxy.is_valid())
         self.assertEqual(proxy.to_front_dict(), origin)
         self.assertEqual(proxy, HttpProxy.make_entry(origin))
+
+    def test_streamlink_proxy(self):
+        valid = StreamLink()
+        self.assertTrue(valid.is_valid())
+        self.assertEqual(valid.to_front_dict(), {})
+
+        valid2 = StreamLink.make_entry({})
+        self.assertTrue(valid2.is_valid())
+        self.assertEqual(valid2.to_front_dict(), {})
 
     def test_logo(self):
         invalid_url_str = str()

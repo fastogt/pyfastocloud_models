@@ -12,12 +12,12 @@ class Maker:
         return cl
 
     def update_entry(self, json: dict):
-        if not json:
+        if json is None:
             raise ValueError('Invalid input')
 
     @staticmethod
     def check_required_type(field: str, expected, json: dict):
-        if not json:
+        if json is None:
             raise ValueError('Invalid input')
 
         value_field = json.get(field, None)
@@ -32,7 +32,7 @@ class Maker:
 
     @staticmethod
     def check_optional_type(field: str, expected, json: dict):
-        if not json:
+        if json is None:
             raise ValueError('Invalid input')
 
         value_field = json.get(field, None)

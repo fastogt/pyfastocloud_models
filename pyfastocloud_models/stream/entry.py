@@ -242,7 +242,7 @@ class IStream(MongoModel, Maker):
                 stabled.append(OutputUrl.make_entry(url))
             self.output = stabled
 
-        res, meta = self.check_required_type(IStream.META_FIELD, list, json)
+        res, meta = self.check_optional_type(IStream.META_FIELD, list, json)
         if res:  # optional field
             meta_stabled = []
             for met in meta:

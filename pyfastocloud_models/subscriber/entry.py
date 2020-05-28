@@ -421,6 +421,9 @@ class Subscriber(MongoModel, Maker):
 
         return streams
 
+    def official_series(self):
+        return self.series
+
     def official_catchups(self):
         streams = []
         for stream in self.catchups:

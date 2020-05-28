@@ -13,12 +13,14 @@ class Serial(MongoModel, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     ICON_FIELD = 'icon'
+    PRICE_FIELD = 'price'
     GROUPS_FIELD = 'groups'
     VISIBLE_FIELD = 'visible'
     DESCRIPTION_FIELD = 'description'
     CREATED_DATE_FIELD = 'created_date'
     SEASON_FIELD = 'season'
     EPISODES_FIELD = 'episodes'
+    VIEW_COUNT_FIELD = 'view_count'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -50,6 +52,8 @@ class Serial(MongoModel, Maker):
                                 max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
                                 required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)
+    price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
+                              max_value=constants.MAX_PRICE, required=True)
     season = fields.IntegerField(default=1, min_value=0, required=True)
     visible = fields.BooleanField(default=True, required=True)
     episodes = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
@@ -75,8 +79,11 @@ class Serial(MongoModel, Maker):
         result[Serial.CREATED_DATE_FIELD] = self.created_date_utc_msec()
         result[Serial.ID_FIELD] = self.get_id()
         episodes = []
+        views = 0
         for episode in self.episodes:
+            views += episodes.view_count
             episodes.append(episode.get_id())
+        result[Serial.VIEW_COUNT_FIELD] = views
         result[Serial.EPISODES_FIELD] = episodes
         return result.to_dict()
 
@@ -106,6 +113,10 @@ class Serial(MongoModel, Maker):
         res, icon = self.check_optional_type(Serial.ICON_FIELD, str, json)
         if res:  # optional field
             self.icon = icon
+
+        res, price = self.check_optional_type(Serial.PRICE_FIELD, float, json)
+        if res:  # optional field
+            self.price = price
 
         res, description = Maker.check_optional_type(Serial.DESCRIPTION_FIELD, str, json)
         if res:

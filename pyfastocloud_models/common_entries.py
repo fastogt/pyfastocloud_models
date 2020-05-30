@@ -4,6 +4,17 @@ from pymodm.errors import ValidationError
 import pyfastocloud_models.constants as constants
 
 
+class BlankStringOK(fields.CharField):
+    def __init__(self, *args, **kwargs):
+        super(BlankStringOK, self).__init__(*args, **kwargs, blank=True)
+
+    def value_from_object(self, instance):
+        result = getattr(instance, self.attname)
+        if result is None:
+            setattr(instance, self.attname, '')
+        return super(BlankStringOK, self).value_from_object(instance)
+
+
 class Maker:
     @classmethod
     def make_entry(cls, json: dict) -> 'Maker':
@@ -137,46 +148,6 @@ class StreamLink(EmbeddedMongoModel, Maker):
             self.https_proxy = https
 
 
-class HttpProxy(EmbeddedMongoModel, Maker):
-    URI_FIELD = 'uri'
-    USER_FIELD = 'user'
-    PASSWORD_FIELD = 'password'
-
-    uri = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=True)
-    user = fields.CharField(required=False)
-    password = fields.CharField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        super(HttpProxy, self).__init__(*args, **kwargs)
-
-    def is_valid(self) -> bool:
-        try:
-            self.full_clean()
-        except ValidationError:
-            return False
-        return True
-
-    def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
-        return result.to_dict()
-
-    def update_entry(self, json: dict):
-        Maker.update_entry(self, json)
-
-        res, uri = self.check_required_type(HttpProxy.URI_FIELD, str, json)
-        if res:
-            self.uri = uri
-
-        res_user, user = self.check_optional_type(HttpProxy.USER_FIELD, str, json)
-        res_password, password = self.check_optional_type(HttpProxy.PASSWORD_FIELD, str, json)
-
-        if res_user and res_password:  # optional field
-            if user and password:
-                self.user = user
-                self.password = password
-
-
 class InputUrl(Url):
     USER_AGENT_FIELD = 'user_agent'
     STREAM_LINK_FIELD = 'stream_link'
@@ -189,7 +160,7 @@ class InputUrl(Url):
 
     user_agent = fields.IntegerField(choices=constants.UserAgent.choices(), required=False)
     stream_link = fields.EmbeddedModelField(StreamLink, required=False)
-    proxy = fields.EmbeddedModelField(HttpProxy, required=False)
+    proxy = BlankStringOK(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=False)
     program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER,
                                          max_value=MAX_PROGRAM_NUMBER, required=False)
     multicast_iface = fields.CharField(required=False)
@@ -212,9 +183,9 @@ class InputUrl(Url):
         if res:  # optional field
             self.stream_link = StreamLink.make_entry(stream_link)
 
-        res, proxy = self.check_optional_type(InputUrl.PROXY_FIELD, dict, json)
+        res, proxy = self.check_optional_type(InputUrl.PROXY_FIELD, str, json)
         if res:  # optional field
-            self.proxy = HttpProxy.make_entry(proxy)
+            self.proxy = proxy
 
         res, program_number = self.check_optional_type(InputUrl.PROGRAM_NUMBER_FIELD, int, json)
         if res:  # optional field
@@ -544,14 +515,3 @@ class MetaUrl(EmbeddedMongoModel, Maker):
         res, url = self.check_required_type(MetaUrl.URL_FIELD, str, json)
         if res:
             self.url = url
-
-
-class BlankStringOK(fields.CharField):
-    def __init__(self, *args, **kwargs):
-        super(BlankStringOK, self).__init__(*args, **kwargs, blank=True)
-
-    def value_from_object(self, instance):
-        result = getattr(instance, self.attname)
-        if result is None:
-            setattr(instance, self.attname, '')
-        return super(BlankStringOK, self).value_from_object(instance)

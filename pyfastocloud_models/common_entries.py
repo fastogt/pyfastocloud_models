@@ -160,9 +160,8 @@ class InputUrl(Url):
 
     user_agent = fields.IntegerField(choices=constants.UserAgent.choices(), required=False)
     stream_link = fields.EmbeddedModelField(StreamLink, required=False)
-    proxy = BlankStringOK(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=False)
-    program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER,
-                                         max_value=MAX_PROGRAM_NUMBER, required=False)
+    proxy = fields.CharField(required=False)
+    program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER, max_value=MAX_PROGRAM_NUMBER, required=False)
     multicast_iface = fields.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
@@ -324,8 +323,7 @@ class Logo(EmbeddedMongoModel, Maker):
 
     path = fields.CharField(required=True)
     position = fields.EmbeddedModelField(Point, required=True)
-    alpha = fields.FloatField(min_value=MIN_LOGO_ALPHA, max_value=MAX_LOGO_ALPHA,
-                              required=True)
+    alpha = fields.FloatField(min_value=MIN_LOGO_ALPHA, max_value=MAX_LOGO_ALPHA, required=True)
     size = fields.EmbeddedModelField(Size, required=True)
 
     def __init__(self, *args, **kwargs):

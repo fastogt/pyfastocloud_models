@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import unittest
 
-from pyfastocloud_models.common_entries import HttpProxy, OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo, HostAndPort, \
+from pyfastocloud_models.common_entries import OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo, HostAndPort, \
     Rational, StreamLink
 
 
@@ -72,23 +72,6 @@ class CommonTest(unittest.TestCase):
         self.assertTrue(point.is_valid())
         self.assertEqual(point.to_front_dict(), origin)
         self.assertEqual(point, Point.make_entry(origin))
-
-    def test_http_proxy(self):
-        invalid_proxy_url_str = str()
-        uri = 'test'
-
-        invalid_proxy = HttpProxy()
-        self.assertFalse(invalid_proxy.is_valid())
-        invalid_proxy.uri = invalid_proxy_url_str
-        self.assertFalse(invalid_proxy.is_valid())
-        invalid_proxy.uri = 'test'
-        self.assertTrue(invalid_proxy.is_valid())
-
-        proxy = HttpProxy(uri=uri)
-        origin = {HttpProxy.URI_FIELD: uri}
-        self.assertTrue(proxy.is_valid())
-        self.assertEqual(proxy.to_front_dict(), origin)
-        self.assertEqual(proxy, HttpProxy.make_entry(origin))
 
     def test_streamlink_proxy(self):
         valid = StreamLink()
@@ -173,10 +156,9 @@ class CommonTest(unittest.TestCase):
         self.assertEqual(input_url.to_front_dict(), origin)
         self.assertEqual(input_url, InputUrl.make_entry(origin))
 
-        proxy = HttpProxy(uri='test')
-        input_url.proxy = proxy
+        input_url.proxy = 'http://localhost:8080'
         origin = {InputUrl.URI_FIELD: uri, InputUrl.ID_FIELD: uid,
-                  InputUrl.MULTICAST_IFACE_FIELD: multicast_iface, InputUrl.PROXY_FIELD: proxy.to_front_dict()}
+                  InputUrl.MULTICAST_IFACE_FIELD: multicast_iface, InputUrl.PROXY_FIELD: 'http://localhost:8080'}
         self.assertTrue(input_url.is_valid())
         # self.assertEqual(input_url.to_front_dict(), origin)
         self.assertEqual(input_url, InputUrl.make_entry(origin))

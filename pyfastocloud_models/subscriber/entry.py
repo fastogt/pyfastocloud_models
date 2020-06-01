@@ -251,6 +251,24 @@ class Subscriber(MongoModel, Maker):
             else:
                 result += stream.sid.generate_device_playlist(sid, self.password, did, lb_server_host_and_port, False)
 
+        for vod in self.vods:
+            if vod.locked:  # FIXME should play stab video
+                continue
+
+            if vod.private:
+                result += vod.sid.generate_playlist(False)
+            else:
+                result += vod.sid.generate_device_playlist(sid, self.password, did, lb_server_host_and_port, False)
+
+        for cat in self.catchups:
+            if cat.locked:  # FIXME should play stab video
+                continue
+
+            if cat.private:
+                result += cat.sid.generate_playlist(False)
+            else:
+                result += cat.sid.generate_device_playlist(sid, self.password, did, lb_server_host_and_port, False)
+
         return result
 
     def all_streams(self):

@@ -47,11 +47,11 @@ class ServiceSettings(MongoModel, Maker):
 
     DEFAULT_SERVICE_HOST = 'localhost'
     DEFAULT_SERVICE_PORT = 6317
-    DEFAULT_SERVICE_HTTP_HOST = 'localhost'
+    DEFAULT_SERVICE_HTTP_HOST = '0.0.0.0'
     DEFAULT_SERVICE_HTTP_PORT = 8000
-    DEFAULT_SERVICE_VODS_HOST = 'localhost'
+    DEFAULT_SERVICE_VODS_HOST = '0.0.0.0'
     DEFAULT_SERVICE_VODS_PORT = 7000
-    DEFAULT_SERVICE_CODS_HOST = 'localhost'
+    DEFAULT_SERVICE_CODS_HOST = '0.0.0.0'
     DEFAULT_SERVICE_CODS_PORT = 6001
 
     streams = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)

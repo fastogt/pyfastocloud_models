@@ -33,11 +33,11 @@ class LoadBalanceSettings(MongoModel, Maker):
 
     DEFAULT_SERVICE_HOST = 'localhost'
     DEFAULT_SERVICE_PORT = 5317
-    DEFAULT_SERVICE_CLIENTS_HOST = 'localhost'
+    DEFAULT_SERVICE_CLIENTS_HOST = '0.0.0.0'
     DEFAULT_SERVICE_CLIENTS_PORT = 6000
 
     DEFAULT_CATCHUPS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/hls'
-    DEFAULT_CATCHUPS_HTTP_HOST = 'localhost'
+    DEFAULT_CATCHUPS_HTTP_HOST = '0.0.0.0'
     DEFAULT_CATCHUPS_HTTP_PORT = 8000
 
     providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)

@@ -198,10 +198,12 @@ class InputUrl(Url):
 class OutputUrl(Url):
     HTTP_ROOT_FIELD = 'http_root'
     HLS_TYPE_FIELD = 'hls_type'
+    SRT_MODE_FIELD = 'srt_mode'
 
     http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                  required=False)
     hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
+    srt_mode = fields.IntegerField(choices=constants.SrtMode.choices(), required=False, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(OutputUrl, self).__init__(*args, **kwargs)
@@ -227,6 +229,10 @@ class OutputUrl(Url):
             if http_root and hls_type is not None:
                 self.http_root = http_root
                 self.hls_type = hls_type
+
+        res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
+        if res:  # optional field
+            self.srt_mode = srt_mode
 
 
 class Point(EmbeddedMongoModel, Maker):

@@ -63,15 +63,17 @@ class Serial(MongoModel, Maker):
         if not episode:
             return
 
-        self.episodes.append(episode)
+        if episode not in self.episodes:
+            self.episodes.append(episode)
 
     def remove_episode(self, episode: IStream):
         if not episode:
             return
 
-        for stream in self.episodes:
-            if stream == episode:
-                self.episodes.remove(episode)
+        try:
+            self.episodes.remove(episode)
+        except ValueError:
+            pass
 
     def to_front_dict(self) -> dict:
         result = self.to_son()

@@ -340,15 +340,17 @@ class Subscriber(MongoModel, Maker):
         if serial in self.series:
             return
 
-        self.series.append(serial)
+        if serial not in self.series:
+            self.series.append(serial)
 
     def remove_official_serial(self, serial: Serial):
         if not serial:
             return
 
-        for ser in self.series:
-            if ser == serial:
-                self.series.remove(serial)
+        try:
+            self.series.remove(serial)
+        except ValueError:
+            pass
 
     def remove_official_serial_by_id(self, sid: ObjectId):
         serial = Serial.get_by_id(sid)

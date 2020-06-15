@@ -139,11 +139,3 @@ class Serial(MongoModel, Maker):
             for episode in episodes:
                 stabled.append(ObjectId(episode))
             self.episodes = stabled
-
-    def delete(self, *args, **kwargs):
-        from pyfastocloud_models.subscriber.entry import Subscriber
-        subscribers = Subscriber.objects.all()
-        for subscriber in subscribers:
-            subscriber.remove_official_serial(self)
-            subscriber.save()
-        return super(Serial, self).delete(*args, **kwargs)

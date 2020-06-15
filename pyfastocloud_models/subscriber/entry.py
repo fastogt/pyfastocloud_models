@@ -494,7 +494,8 @@ class Subscriber(MongoModel, Maker):
         series = []
         for serv in self.servers:
             for serial in serv.series:
-                series.append(serial)
+                if serial.visible:
+                    series.append(serial)
 
         return series
 

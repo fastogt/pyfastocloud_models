@@ -648,7 +648,7 @@ class Subscriber(MongoModel, Maker):
                 ValueError('Invalid country')
             self.country = country
 
-        res, language = self.check_required_type(Subscriber.COUNTRY_FIELD, str, json)
+        res, language = self.check_required_type(Subscriber.LANGUAGE_FIELD, str, json)
         if res:
             if constants.is_valid_locale_code(language):
                 raise ValueError('Invalid language')

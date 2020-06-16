@@ -224,7 +224,7 @@ class ServiceSettings(MongoModel, Maker):
             self.cods_directory = cods
 
         res, price = self.check_required_type(ServiceSettings.PRICE_FIELD, float, json)
-        if res:  # optional field
+        if res:  # required field
             self.price = price
 
     def to_front_dict(self) -> dict:

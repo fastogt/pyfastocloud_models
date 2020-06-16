@@ -80,29 +80,53 @@ class Provider(MongoModel):
     def id(self):
         return self.pk
 
-    def add_server(self, server):
-        if server:
+    def add_server(self, server: ServiceSettings):
+        if not server:
+            return
+
+        if server not in self.servers:
             self.servers.append(server)
 
-    def remove_server(self, server):
-        if server:
-            self.servers.remove(server)
+    def remove_server(self, server: ServiceSettings):
+        if not server:
+            return
 
-    def add_load_balancer(self, server):
-        if server:
+        try:
+            self.servers.remove(server)
+        except ValueError:
+            pass
+
+    def add_load_balancer(self, server: LoadBalanceSettings):
+        if not server:
+            return
+
+        if server not in self.load_balancers:
             self.load_balancers.append(server)
 
-    def remove_load_balancer(self, server):
-        if server:
-            self.load_balancers.remove(server)
+    def remove_load_balancer(self, server: LoadBalanceSettings):
+        if not server:
+            return
 
-    def add_epg(self, server):
-        if server:
+        try:
+            self.load_balancers.remove(server)
+        except ValueError:
+            pass
+
+    def add_epg(self, server: EpgSettings):
+        if not server:
+            return
+
+        if server not in self.epgs:
             self.epgs.append(server)
 
-    def remove_epg(self, server):
-        if server:
+    def remove_epg(self, server: EpgSettings):
+        if not server:
+            return
+
+        try:
             self.epgs.remove(server)
+        except ValueError:
+            pass
 
     @staticmethod
     def generate_password_hash(password: str) -> str:

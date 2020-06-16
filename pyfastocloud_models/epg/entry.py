@@ -75,21 +75,36 @@ class EpgSettings(MongoModel, Maker):
     def id(self):
         return self.pk
 
-    def add_provider(self, user: ProviderPair):
-        if user:
-            self.providers.append(user)
+    def add_provider(self, user: ProviderPair) -> ProviderPair:
+        if not user:
+            return None
 
-    def remove_provider(self, provider):
-        for prov in list(self.providers):
+        if user not in self.providers:
+            self.providers.append(user)
+            return user
+
+        return None
+
+    def remove_provider(self, provider: ObjectId) -> ProviderPair:
+        for prov in self.providers:
             if prov.user == provider:
                 self.providers.remove(prov)
+                return prov
 
-    def add_url(self, url: EpgUrl):
-        if url:
+        return None
+
+    def add_url(self, url: EpgUrl) -> EpgUrl:
+        if not url:
+            return None
+
+        if url not in self.urls:
             self.urls.append(url)
+            return url
+
+        return None
 
     def remove_url(self, uid: ObjectId) -> EpgUrl:
-        for url in list(self.urls):
+        for url in self.urls:
             if url.id == uid:
                 self.urls.remove(url)
                 return url

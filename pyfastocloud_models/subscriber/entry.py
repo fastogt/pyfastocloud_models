@@ -219,8 +219,20 @@ class Subscriber(MongoModel, Maker):
         return date_to_utc_msec(self.exp_date)
 
     def add_server(self, server: ServiceSettings):
-        if server:
+        if not server:
+            return
+
+        if server not in self.servers:
             self.servers.append(server)
+
+    def remove_server(self, server: ServiceSettings):
+        if not server:
+            return
+
+        try:
+            self.servers.remove(server)
+        except ValueError:
+            pass
 
     def add_device(self, device: Device):
         if device:
@@ -232,7 +244,7 @@ class Subscriber(MongoModel, Maker):
             if dev.id == did:
                 self.devices.remove(dev)
 
-    def find_device(self, did: ObjectId):
+    def find_device(self, did: ObjectId) -> Device:
         for dev in self.devices:
             if dev.id == did:
                 return dev
@@ -427,7 +439,7 @@ class Subscriber(MongoModel, Maker):
                 self.vods.remove(stream)
 
     # available
-    def official_streams(self):
+    def official_streams(self) -> [UserStream]:
         streams = []
         for stream in self.streams:
             if not stream.private:
@@ -435,7 +447,7 @@ class Subscriber(MongoModel, Maker):
 
         return streams
 
-    def official_vods(self):
+    def official_vods(self) -> [UserStream]:
         streams = []
         for stream in self.vods:
             if not stream.private:
@@ -443,10 +455,10 @@ class Subscriber(MongoModel, Maker):
 
         return streams
 
-    def official_series(self):
+    def official_series(self) -> [Serial]:
         return self.series
 
-    def official_catchups(self):
+    def official_catchups(self) -> [UserStream]:
         streams = []
         for stream in self.catchups:
             if not stream.private:

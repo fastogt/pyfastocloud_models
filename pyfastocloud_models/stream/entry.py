@@ -118,12 +118,20 @@ class IStream(MongoModel, Maker):
         return date_to_utc_msec(self.created_date)
 
     def add_part(self, stream):
-        if stream:
+        if not stream:
+            return
+
+        if stream not in self.parts:
             self.parts.append(stream)
 
     def remove_part(self, stream):
-        if stream:
+        if not stream:
+            return
+
+        try:
             self.parts.remove(stream)
+        except ValueError:
+            pass
 
     def get_type(self) -> constants.StreamType:
         raise NotImplementedError('subclasses must override get_type()!')

@@ -150,16 +150,25 @@ class ServiceSettings(MongoModel, Maker):
             stream.delete()
         self.streams = []
 
-    def add_provider(self, user: ProviderPair):
-        if user:
-            self.providers.append(user)
+    def add_provider(self, user: ProviderPair) -> ProviderPair:
+        if not user:
+            return None
 
-    def remove_provider(self, provider):
-        for prov in list(self.providers):
+        if user not in self.providers:
+            self.providers.append(user)
+            return user
+
+        return None
+
+    def remove_provider(self, provider: ObjectId) -> ProviderPair:
+        for prov in self.providers:
             if prov.user == provider:
                 self.providers.remove(prov)
+                return prov
 
-    def find_stream_by_id(self, sid: ObjectId):
+        return None
+
+    def find_stream_by_id(self, sid: ObjectId) -> IStream:
         for stream in self.streams:
             if stream.id == sid:
                 return stream

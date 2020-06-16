@@ -650,7 +650,7 @@ class Subscriber(MongoModel, Maker):
 
         res, language = self.check_required_type(Subscriber.LANGUAGE_FIELD, str, json)
         if res:
-            if constants.is_valid_locale_code(language):
+            if not constants.is_valid_locale_code(language):
                 raise ValueError('Invalid language')
             self.language = language
 

@@ -381,7 +381,7 @@ class HardwareStream(IStream):
 
         res, extra = IStream.check_optional_type(HardwareStream.EXTRA_CONFIG_FIELD, str, json)
         if res:  # optional field
-            self.extra_config_fields = extra
+            self.extra_config = extra
 
     def get_type(self) -> constants.StreamType:
         raise NotImplementedError('subclasses must override get_type()!')

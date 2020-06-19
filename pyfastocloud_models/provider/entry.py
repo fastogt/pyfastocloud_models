@@ -174,7 +174,7 @@ class Provider(MongoModel, Maker):
         if res:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
-        res, status = self.check_required_type(Provider.STATUS_FIELD, int, json)
+        res, status = self.check_optional_type(Provider.STATUS_FIELD, int, json)
         if res:
             self.status = status
 

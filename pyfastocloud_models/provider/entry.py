@@ -8,13 +8,14 @@ from pymongo.operations import IndexModel
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import pyfastocloud_models.constants as constants
+from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.epg.entry import EpgSettings
 from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
-class Provider(MongoModel):
+class Provider(MongoModel, Maker):
     ID_FIELD = 'id'
     EMAIL_FIELD = 'email'
     FIRST_NAME_FIELD = 'first_name'
@@ -148,8 +149,7 @@ class Provider(MongoModel):
         return cl
 
     def update_entry(self, json: dict):
-        if not json:
-            raise ValueError('Invalid input')
+        Maker.update_entry(self, json)
 
         res, email_field = self.check_required_type(Provider.EMAIL_FIELD, str, json)
         if res:

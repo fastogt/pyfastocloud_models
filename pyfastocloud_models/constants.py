@@ -135,7 +135,7 @@ MAX_STREAM_DESCRIPTION_LENGTH = 4096
 
 MAX_VIDEO_DURATION_MSEC = 3600 * 1000 * 365
 
-DEFAULT_COUNTRY = 'UK'
+DEFAULT_COUNTRY = 'US'
 AVAILABLE_COUNTRIES = [('AF', 'Afghanistan'),
                        ('AX', 'Åland Islands'),
                        ('AL', 'Albania'),
@@ -371,7 +371,7 @@ AVAILABLE_COUNTRIES = [('AF', 'Afghanistan'),
                        ('UA', 'Ukraine'),
                        ('AE', 'United Arab Emirates'),
                        ('GB', 'United Kingdom'),
-                       ('US', 'United States'),
+                       (DEFAULT_COUNTRY, 'United States'),
                        ('UM', 'United States Minor Outlying Islands'),
                        ('UY', 'Uruguay'),
                        ('UZ', 'Uzbekistan'),

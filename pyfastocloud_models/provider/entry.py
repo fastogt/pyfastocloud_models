@@ -151,50 +151,44 @@ class Provider(MongoModel):
         if not json:
             raise ValueError('Invalid input')
 
-        email_field = json.get(Provider.EMAIL_FIELD, None)
-        if not email_field:
-            raise ValueError('Invalid input({0} required)'.format(Provider.EMAIL_FIELD))
-        email = email_field.lower()
-        if not is_valid_email(email):
-            raise ValueError('Invalid email')
-        self.email = email
+        res, email_field = self.check_required_type(Provider.EMAIL_FIELD, str, json)
+        if res:
+            email = email_field.lower()
+            if not is_valid_email(email):
+                raise ValueError('Invalid email')
+            self.email = email
 
-        password_field = json.get(Provider.PASSWORD_FIELD, None)
-        if not password_field:
-            raise ValueError('Invalid input({0} required)'.format(Provider.PASSWORD_FIELD))
-        self.password = Provider.generate_password_hash(password_field)
+        res, password = self.check_required_type(Provider.PASSWORD_FIELD, str, json)
+        if res:
+            self.password = Provider.generate_password_hash(password)
 
-        first_name_field = json.get(Provider.FIRST_NAME_FIELD, None)
-        if not first_name_field:
-            raise ValueError('Invalid input({0} required)'.format(Provider.FIRST_NAME_FIELD))
-        self.first_name = first_name_field
+        res, first_name = Provider.check_required_type(Provider.FIRST_NAME_FIELD, str, json)
+        if res:
+            self.first_name = first_name
 
-        last_name_field = json.get(Provider.LAST_NAME_FIELD, None)
-        if not last_name_field:
-            raise ValueError('Invalid input({0} required)'.format(Provider.LAST_NAME_FIELD))
-        self.last_name = last_name_field
+        res, last_name = Provider.check_required_type(Provider.LAST_NAME_FIELD, str, json)
+        if res:
+            self.last_name = last_name
 
-        created_date_field = json.get(Provider.CREATED_DATE_FIELD, None)
-        if created_date_field:  # optional field
-            self.created_date = datetime.utcfromtimestamp(created_date_field / 1000)
+        res, created_date_msec = self.check_optional_type(Provider.CREATED_DATE_FIELD, int, json)
+        if res:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
-        status_field = json.get(Provider.STATUS_FIELD, None)
-        if status_field:
-            self.status = status_field
+        res, status = self.check_required_type(Provider.STATUS_FIELD, int, json)
+        if res:
+            self.status = status
 
-        country_field = json.get(Provider.COUNTRY_FIELD, None)
-        if not country_field:
-            raise ValueError('Invalid input({0} required)'.format(Provider.COUNTRY_FIELD))
-        if not isinstance(country_field, str) or not constants.is_valid_country_code(country_field):
-            ValueError('Invalid country')
-        self.country = country_field
+        res, country = self.check_required_type(Provider.COUNTRY_FIELD, str, json)
+        if res:
+            if not constants.is_valid_country_code(country):
+                ValueError('Invalid country')
+            self.country = country
 
-        language_field = json.get(Provider.LANGUAGE_FIELD, None)
-        if not language_field:
-            raise ValueError('Invalid input({0} required)'.format(Provider.LANGUAGE_FIELD))
-        if not isinstance(language_field, str) or not constants.is_valid_locale_code(language_field):
-            raise ValueError('Invalid language')
-        self.language = language_field
+        res, language = self.check_required_type(Provider.LANGUAGE_FIELD, str, json)
+        if res:
+            if not constants.is_valid_locale_code(language):
+                raise ValueError('Invalid language')
+            self.language = language
 
     def to_front_dict(self):
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,

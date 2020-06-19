@@ -31,6 +31,7 @@ class StreamsTest(unittest.TestCase):
         http_host = HostAndPort(host='localhost1', port=1235)
         vods_host = HostAndPort(host='localhost2', port=1236)
         cods_host = HostAndPort(host='localhost3', port=1237)
+        nginx_host = HostAndPort(host='localhost', port=1344)
         feed = '/home/fead'
         timeshift_dir = '/home/time'
         hls_dir = '/home/tss'
@@ -43,6 +44,7 @@ class StreamsTest(unittest.TestCase):
                                              ServiceSettings.HTTP_HOST_FIELD: http_host.to_front_dict(),
                                              ServiceSettings.VODS_HOST_FIELD: vods_host.to_front_dict(),
                                              ServiceSettings.CODS_HOST_FIELD: cods_host.to_front_dict(),
+                                             ServiceSettings.NGINX_HOST_FIELD: nginx_host.to_front_dict(),
                                              ServiceSettings.FEEDBACK_DIRECOTRY_FIELD: feed,
                                              ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: timeshift_dir,
                                              ServiceSettings.HLS_DIRECTORY_FIELD: hls_dir,

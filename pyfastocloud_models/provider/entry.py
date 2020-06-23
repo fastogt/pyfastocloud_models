@@ -65,7 +65,7 @@ class Provider(MongoModel, Maker):
     last_name = fields.CharField(min_length=2, max_length=64, required=True)
     password = fields.CharField(required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
-    type = fields.IntegerField(default=Type.ADMIN, required=True)  #
+    type = fields.IntegerField(default=Type.RESELLER, required=True)  #
     status = fields.IntegerField(default=Status.NO_ACTIVE, required=True)  #
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)

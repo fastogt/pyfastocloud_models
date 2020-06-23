@@ -12,6 +12,7 @@ from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.epg.entry import EpgSettings
 from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 from pyfastocloud_models.service.entry import ServiceSettings
+from pyfastocloud_models.subscriber.entry import Subscriber
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -22,6 +23,7 @@ class Provider(MongoModel, Maker):
     LAST_NAME_FIELD = 'last_name'
     CREATED_DATE_FIELD = 'created_date'
     STATUS_FIELD = 'status'
+    TYPE_FIELD = 'type'
     LANGUAGE_FIELD = 'language'
     COUNTRY_FIELD = 'country'
     PASSWORD_FIELD = 'password'
@@ -50,8 +52,8 @@ class Provider(MongoModel, Maker):
         BANNED = 2
 
     class Type(IntEnum):
-        GUEST = 0,
-        USER = 1
+        ADMIN = 0,
+        RESELLER = 1
 
     class Meta:
         collection_name = 'providers'
@@ -63,12 +65,15 @@ class Provider(MongoModel, Maker):
     last_name = fields.CharField(min_length=2, max_length=64, required=True)
     password = fields.CharField(required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
+    type = fields.IntegerField(default=Type.ADMIN, required=True)  #
     status = fields.IntegerField(default=Status.NO_ACTIVE, required=True)  #
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
     servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[],
                                blank=True)
+    subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=fields.ReferenceField.PULL), default=[],
+                                   blank=True)
     load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL),
                                       default=[], blank=True)
     epgs = fields.ListField(fields.ReferenceField(EpgSettings, on_delete=fields.ReferenceField.PULL),
@@ -80,6 +85,25 @@ class Provider(MongoModel, Maker):
     @property
     def id(self):
         return self.pk
+
+    def is_admin(self) -> bool:
+        return self.type == Provider.Type.ADMIN
+
+    def add_subscriber(self, subscriber: Subscriber):
+        if not subscriber:
+            return
+
+        if subscriber not in self.subscribers:
+            self.subscribers.append(subscriber)
+
+    def remove_subscriber(self, subscriber: Subscriber):
+        if not subscriber:
+            return
+
+        try:
+            self.subscribers.remove(subscriber)
+        except ValueError:
+            pass
 
     def add_server(self, server: ServiceSettings):
         if not server:
@@ -174,6 +198,10 @@ class Provider(MongoModel, Maker):
         if res:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
+        res, ptype = self.check_optional_type(Provider.TYPE_FIELD, int, json)
+        if res:
+            self.type = ptype
+
         res, status = self.check_optional_type(Provider.STATUS_FIELD, int, json)
         if res:
             self.status = status
@@ -195,4 +223,5 @@ class Provider(MongoModel, Maker):
                 Provider.PASSWORD_FIELD: self.password,
                 Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,
                 Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date), Provider.STATUS_FIELD: self.status,
-                Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}
+                Provider.TYPE_FIELD: self.type, Provider.LANGUAGE_FIELD: self.language,
+                Provider.COUNTRY_FIELD: self.country}

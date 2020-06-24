@@ -420,6 +420,21 @@ class UserAgent(IntEnum):
         return str(self.value)
 
 
+class MlBackends(IntEnum):
+    NVIDIA = 0
+
+    @classmethod
+    def choices(cls):
+        return [(choice, choice.name) for choice in cls]
+
+    @classmethod
+    def coerce(cls, item):
+        return cls(int(item)) if not isinstance(item, cls) else item
+
+    def __str__(self):
+        return str(self.value)
+
+
 class HlsType(IntEnum):
     HLS_PULL = 0
     HLS_PUSH = 1

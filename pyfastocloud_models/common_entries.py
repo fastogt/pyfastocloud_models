@@ -490,6 +490,40 @@ class HostAndPort(EmbeddedMongoModel, Maker):
         return '{0}:{1}'.format(self.host, self.port)
 
 
+class MachineLearning(EmbeddedMongoModel, Maker):
+    MODEL_URL_FIELD = 'model_url'
+    OVERLAY_FIELD = 'overlay'
+
+    model_url = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                 required=True)
+    overlay = fields.BooleanField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(MachineLearning, self).__init__(*args, **kwargs)
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        res, url = self.check_required_type(MachineLearning.MODEL_URL_FIELD, str, json)
+        if res:
+            self.model_url = url
+
+        res, overlay = self.check_required_type(MachineLearning.OVERLAY_FIELD, bool, json)
+        if res:
+            self.overlay = overlay
+
+    def to_front_dict(self) -> dict:
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
+
+
 class MetaUrl(EmbeddedMongoModel, Maker):
     NAME_FIELD = 'name'
     URL_FIELD = 'url'

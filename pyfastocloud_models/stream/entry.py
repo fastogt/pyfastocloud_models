@@ -8,7 +8,7 @@ from pymodm import MongoModel, fields, EmbeddedMongoModel
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, \
-    BlankStringOK, MetaUrl
+    BlankStringOK, MetaUrl, MachineLearning
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -465,6 +465,7 @@ class EncodeStream(HardwareStream):
     AUDIO_CODEC_FIELD = 'audio_codec'
     AUDIO_CHANNELS_COUNT_FIELD = 'audio_channels_count'
     SIZE_FIELD = 'size'
+    MACHINE_LEARNING_FIELD = 'machine_learning'
     VIDEO_BITRATE_FIELD = 'video_bit_rate'
     AUDIO_BITRATE_FIELD = 'audio_bit_rate'
     LOGO_FIELD = 'logo'
@@ -487,6 +488,7 @@ class EncodeStream(HardwareStream):
     audio_channels_count = fields.IntegerField(min_value=constants.MIN_AUDIO_CHANNELS_COUNT,
                                                max_value=constants.MAX_AUDIO_CHANNELS_COUNT, required=False)
     size = fields.EmbeddedModelField(Size, required=False)
+    machine_learning = fields.EmbeddedModelField(MachineLearning, required=False)
     video_bit_rate = fields.IntegerField(required=False)
     audio_bit_rate = fields.IntegerField(required=False)
     logo = fields.EmbeddedModelField(Logo, required=False)
@@ -540,6 +542,12 @@ class EncodeStream(HardwareStream):
             self.size = Size.make_entry(size)
         else:
             delattr(self, EncodeStream.SIZE_FIELD)
+
+        res, learning = IStream.check_optional_type(EncodeStream.MACHINE_LEARNING_FIELD, dict, json)
+        if res:  # optional field
+            self.machine_learning = MachineLearning.make_entry(learning)
+        else:
+            delattr(self, EncodeStream.MACHINE_LEARNING_FIELD)
 
         res, video_bit_rate = IStream.check_optional_type(EncodeStream.VIDEO_BITRATE_FIELD, int, json)
         if res:  # optional field

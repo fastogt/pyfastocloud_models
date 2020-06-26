@@ -324,7 +324,7 @@ class HardwareStream(IStream):
     # optional
     auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
                                          required=False)
-    phoenix = fields.BooleanField(default=constants.DEFAULT_PHOENIX, required=False)
+    phoenix = fields.BooleanField(default=constants.DEFAULT_PHOENIX, required=True)
     audio_select = fields.IntegerField(min_value=constants.MIN_AUDIO_SELECT,
                                        max_value=constants.MAX_AUDIO_SELECT, required=False)
 
@@ -384,8 +384,6 @@ class HardwareStream(IStream):
         res, phoenix = IStream.check_optional_type(HardwareStream.PHOENIX_FIELD, bool, json)
         if res:  # optional field
             self.phoenix = phoenix
-        else:
-            delattr(self, HardwareStream.PHOENIX_FIELD)
 
         res, extra = IStream.check_optional_type(HardwareStream.EXTRA_CONFIG_FIELD, str, json)
         if res:  # optional field
@@ -405,6 +403,9 @@ class HardwareStream(IStream):
 
     def get_have_audio(self):
         return self.have_audio
+
+    def get_phoenix(self):
+        return self.phoenix
 
     def get_loop(self):
         return self.loop

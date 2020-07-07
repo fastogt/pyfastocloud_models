@@ -54,6 +54,18 @@ def for_subscribers_stream(stream: IStream):
     return is_vod_stream(stream) or is_live_stream(stream) or is_catchup(stream)
 
 
+def filtered_streams_in_server(server: ServiceSettings, cb) -> [IStream]:
+    if not server:
+        return []
+
+    streams = []
+    for stream in server.streams:
+        if cb(stream):
+            streams.append(stream)
+
+    return streams
+
+
 class Device(EmbeddedMongoModel):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
@@ -480,27 +492,21 @@ class Subscriber(MongoModel, Maker):
     def all_available_official_streams(self) -> [IStream]:
         streams = []
         for serv in self.servers:
-            for stream in serv.streams:
-                if is_live_stream(stream):
-                    streams.append(stream)
+            streams += filtered_streams_in_server(serv, is_live_stream)
 
         return streams
 
     def all_available_official_vods(self) -> [IStream]:
         streams = []
         for serv in self.servers:
-            for stream in serv.streams:
-                if is_vod_stream(stream):
-                    streams.append(stream)
+            streams += filtered_streams_in_server(serv, is_vod_stream)
 
         return streams
 
     def all_available_official_catchups(self) -> [IStream]:
         streams = []
         for serv in self.servers:
-            for stream in serv.streams:
-                if is_catchup(stream):
-                    streams.append(stream)
+            streams += filtered_streams_in_server(serv, is_catchup)
 
         return streams
 
@@ -513,7 +519,23 @@ class Subscriber(MongoModel, Maker):
 
         return series
 
+    def find_user_stream_by_id(self, sid: ObjectId) -> UserStream:
+        for _stream in self.streams:
+            if _stream.sid == sid:
+                return _stream
+
+        return None
+
     # select
+    def select_server(self, server: ServiceSettings, select: bool):
+        if not server:
+            return
+        for stream in server.streams:
+            if select:
+                self.add_official_stream_by_id(stream.id)
+            else:
+                self.remove_official_stream(stream)
+
     def select_all_streams(self, select: bool):
         if not select:
             self.streams = []
@@ -522,10 +544,9 @@ class Subscriber(MongoModel, Maker):
         ustreams = []
         for stream in self.all_available_official_streams():
             user_stream = UserStream(sid=stream.id)
-            for _stream in self.streams:
-                if not _stream.private and _stream.sid == user_stream.sid:
-                    user_stream = _stream
-                    break
+            cached = self.find_user_stream_by_id(stream.id)
+            if cached and not cached.private:
+                user_stream = cached
             ustreams.append(user_stream)
 
         self.streams = ustreams
@@ -538,10 +559,9 @@ class Subscriber(MongoModel, Maker):
         vods = []
         for ovod in self.all_available_official_vods():
             user_vod = UserStream(sid=ovod.id)
-            for _vod in self.vods:
-                if not _vod.private and _vod.sid == user_vod.sid:
-                    user_vod = _vod
-                    break
+            cached = self.find_user_stream_by_id(ovod.id)
+            if cached and not cached.private:
+                user_vod = cached
             vods.append(user_vod)
 
         self.vods = vods
@@ -554,10 +574,9 @@ class Subscriber(MongoModel, Maker):
         ustreams = []
         for ocatchup in self.all_available_official_catchups():
             user_catchup = UserStream(sid=ocatchup.id)
-            for catchup in self.catchups:
-                if not catchup.private and catchup.sid == user_catchup.sid:
-                    user_catchup = catchup
-                    break
+            cached = self.find_user_stream_by_id(user_catchup.id)
+            if cached and not cached.private:
+                user_catchup = cached
             ustreams.append(user_catchup)
 
         self.catchups = ustreams

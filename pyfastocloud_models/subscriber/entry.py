@@ -510,6 +510,14 @@ class Subscriber(MongoModel, Maker):
 
         return streams
 
+    def own_vods(self):
+        vods = []
+        for vod in self.vods:
+            if vod.private:
+                vods.append(vod)
+
+        return vods
+
     def all_available_servers(self):
         return self.servers
 
@@ -550,6 +558,10 @@ class Subscriber(MongoModel, Maker):
 
         return None
 
+    def sync_content(self):
+        self.select_all_streams(True)
+        self.select_all_vods(True)
+
     # select
     def select_server(self, server: ServiceSettings, select: bool):
         if not server:
@@ -561,30 +573,30 @@ class Subscriber(MongoModel, Maker):
                 self.remove_official_stream(stream)
 
     def select_all_streams(self, select: bool):
+        ustreams = self.own_streams()
         if not select:
-            self.streams = []
+            self.streams = ustreams
             return
 
-        ustreams = []
         for stream in self.all_available_official_streams():
             user_stream = UserStream(sid=stream.id)
             cached = self.find_user_stream_by_id(stream.id)
-            if cached and not cached.private:
+            if cached:
                 user_stream = cached
             ustreams.append(user_stream)
 
         self.streams = ustreams
 
     def select_all_vods(self, select: bool):
+        vods = self.own_vods()
         if not select:
-            self.vods = []
+            self.vods = vods
             return
 
-        vods = []
         for ovod in self.all_available_official_vods():
             user_vod = UserStream(sid=ovod.id)
             cached = self.find_user_stream_by_id(ovod.id)
-            if cached and not cached.private:
+            if cached:
                 user_vod = cached
             vods.append(user_vod)
 
@@ -599,7 +611,7 @@ class Subscriber(MongoModel, Maker):
         for ocatchup in self.all_available_official_catchups():
             user_catchup = UserStream(sid=ocatchup.id)
             cached = self.find_user_stream_by_id(user_catchup.id)
-            if cached and not cached.private:
+            if cached:
                 user_catchup = cached
             ustreams.append(user_catchup)
 

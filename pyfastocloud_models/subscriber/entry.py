@@ -66,7 +66,7 @@ def filtered_streams_in_server(server: ServiceSettings, cb) -> [IStream]:
     return streams
 
 
-class Device(EmbeddedMongoModel):
+class Device(EmbeddedMongoModel, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     STATUS_FIELD = 'status'
@@ -103,7 +103,31 @@ class Device(EmbeddedMongoModel):
 
     def to_front_dict(self) -> dict:
         return {Device.ID_FIELD: self.get_id(), Device.NAME_FIELD: self.name, Device.STATUS_FIELD: self.status,
-                Device.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date)}
+                Device.CREATED_DATE_FIELD: self.created_date_utc_msec()}
+
+    def created_date_utc_msec(self):
+        return date_to_utc_msec(self.created_date)
+
+    @classmethod
+    def make_entry(cls, json: dict) -> 'Device':
+        cl = cls()
+        cl.update_entry(json)
+        return cl
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+
+        res, name = Device.check_required_type(Device.NAME_FIELD, str, json)
+        if res:
+            self.name = name
+
+        res, created_date_msec = self.check_optional_type(Device.CREATED_DATE_FIELD, int, json)
+        if res:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
+
+        res, status = self.check_required_type(Device.STATUS_FIELD, int, json)
+        if res:
+            self.status = status
 
 
 class UserStream(EmbeddedMongoModel):

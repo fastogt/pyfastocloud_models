@@ -633,7 +633,6 @@ class Subscriber(MongoModel, Maker):
         self.remove_all_own_streams()
         self.remove_all_own_vods()
         self.status = Subscriber.Status.DELETED
-        self.save()
         # return Document.delete(self, *args, **kwargs)
 
     @staticmethod

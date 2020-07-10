@@ -627,7 +627,7 @@ class Subscriber(MongoModel, Maker):
     def delete(self, *args, **kwargs):
         self.remove_all_own_streams()
         self.remove_all_own_vods()
-        return EmbeddedMongoModel.delete(*args, **kwargs)
+        return EmbeddedMongoModel.delete(self, *args, **kwargs)
 
     def delete_fake(self, *args, **kwargs):
         self.remove_all_own_streams()

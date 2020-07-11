@@ -572,6 +572,8 @@ class Subscriber(MongoModel, Maker):
             else:
                 self.remove_official_stream(stream)
 
+        self.select_all_series(self)
+
     def select_all_streams(self, select: bool):
         ustreams = self.own_streams()
         if not select:

@@ -231,7 +231,7 @@ class Provider(MongoModel, Maker):
         servers = ServiceSettings.objects.all()
         for server in servers:
             server.remove_provider(self.id)
-            servers.save()
+            server.save()
 
         from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
         loads = LoadBalanceSettings.objects.all()

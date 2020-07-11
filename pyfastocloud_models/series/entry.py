@@ -5,7 +5,7 @@ from pymodm import MongoModel, fields
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker, BlankStringOK
-from pyfastocloud_models.stream.entry import IStream
+from pyfastocloud_models.stream.entry import IStream, ProxyVodStream, VodEncodeStream, VodRelayStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -32,6 +32,7 @@ class Serial(MongoModel, Maker):
             return stream
 
     class Meta:
+        allow_inheritance = False
         collection_name = 'series'
 
     MIN_SERIES_NAME_LENGTH = 3
@@ -56,8 +57,7 @@ class Serial(MongoModel, Maker):
                               max_value=constants.MAX_PRICE, required=True)
     season = fields.IntegerField(default=1, min_value=0, required=True)
     visible = fields.BooleanField(default=True, required=True)
-    episodes = fields.ListField(fields.ReferenceField(IStream, on_delete=fields.ReferenceField.PULL), default=[],
-                                blank=True)
+    episodes = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
 
     def add_episode(self, episode: IStream):
         if not episode:
@@ -139,3 +139,9 @@ class Serial(MongoModel, Maker):
             for episode in episodes:
                 stabled.append(ObjectId(episode))
             self.episodes = stabled
+
+
+# if remove vod also clean parts
+ProxyVodStream.register_delete_rule(Serial, 'episodes', fields.ReferenceField.PULL)
+VodRelayStream.register_delete_rule(Serial, 'episodes', fields.ReferenceField.PULL)
+VodEncodeStream.register_delete_rule(Serial, 'episodes', fields.ReferenceField.PULL)

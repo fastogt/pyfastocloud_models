@@ -225,3 +225,23 @@ class Provider(MongoModel, Maker):
                 Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date), Provider.STATUS_FIELD: self.status,
                 Provider.TYPE_FIELD: self.type, Provider.LANGUAGE_FIELD: self.language,
                 Provider.COUNTRY_FIELD: self.country}
+
+    def delete(self, *args, **kwargs):
+        from pyfastocloud_models.service.entry import ServiceSettings
+        servers = ServiceSettings.objects.all()
+        for server in servers:
+            server.remove_provider(self.id)
+            servers.save()
+
+        from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
+        loads = LoadBalanceSettings.objects.all()
+        for load in loads:
+            load.remove_provider(self.id)
+            load.save()
+
+        from pyfastocloud_models.epg.entry import EpgSettings
+        epgs = EpgSettings.objects.all()
+        for epg in epgs:
+            epg.remove_provider(self.id)
+            epg.save()
+        return super(Provider, self).delete(*args, **kwargs)

@@ -25,6 +25,7 @@ class LoadBalanceSettings(MongoModel, Maker):
             return ser
 
     class Meta:
+        allow_inheritance = False
         collection_name = 'load_balance'
 
     DEFAULT_SERVICE_NAME = 'Load Balance'

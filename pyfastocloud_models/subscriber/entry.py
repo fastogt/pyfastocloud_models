@@ -194,7 +194,7 @@ class Subscriber(MongoModel, Maker):
 
     class Meta:
         collection_name = 'subscribers'
-        allow_inheritance = True
+        allow_inheritance = False
         indexes = [IndexModel([('email', 1)], unique=True)]
 
     MAX_DATE = datetime(2100, 1, 1)

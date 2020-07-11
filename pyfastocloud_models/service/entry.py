@@ -34,6 +34,7 @@ class ServiceSettings(MongoModel, Maker):
             return ser
 
     class Meta:
+        allow_inheritance = False
         collection_name = 'services'
 
     DEFAULT_SERVICE_NAME = 'Service'

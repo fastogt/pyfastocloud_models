@@ -51,6 +51,7 @@ class EpgSettings(MongoModel, Maker):
             return ser
 
     class Meta:
+        allow_inheritance = False
         collection_name = 'epg'
 
     DEFAULT_SERVICE_NAME = 'Epg'

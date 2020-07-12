@@ -58,7 +58,7 @@ class EpgSettings(MongoModel, Maker):
     MIN_SERVICE_NAME_LENGTH = 3
     MAX_SERVICE_NAME_LENGTH = 30
 
-    DEFAULT_SERVICE_HOST = 'localhost'
+    DEFAULT_SERVICE_HOST = '127.0.0.1'
     DEFAULT_SERVICE_PORT = 4317
 
     providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)

@@ -115,15 +115,13 @@ class EpgSettings(MongoModel, Maker):
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
-        name_field = json.get(EpgSettings.NAME_FIELD, None)
-        if not name_field:
-            raise ValueError('Invalid input({0} required)'.format(EpgSettings.NAME_FIELD))
-        self.name = name_field
+        res, name = self.check_required_type(EpgSettings.NAME_FIELD, str, json)
+        if res:  # required field
+            self.name = name
 
-        host_field = json.get(EpgSettings.HOST_FIELD, None)
-        if not host_field:
-            raise ValueError('Invalid input({0} required)'.format(EpgSettings.HOST_FIELD))
-        self.host = HostAndPort.make_entry(host_field)
+        res, host = self.check_required_type(EpgSettings.HOST_FIELD, dict, json)
+        if res:  # required field
+            self.host = HostAndPort.make_entry(host)
 
     def to_front_dict(self) -> dict:
         providers = []

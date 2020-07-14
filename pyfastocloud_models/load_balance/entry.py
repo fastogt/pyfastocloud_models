@@ -81,30 +81,25 @@ class LoadBalanceSettings(MongoModel, Maker):
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
 
-        name_field = json.get(LoadBalanceSettings.NAME_FIELD, None)
-        if not name_field:
-            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.NAME_FIELD))
-        self.name = name_field
+        res, name = self.check_required_type(LoadBalanceSettings.NAME_FIELD, str, json)
+        if res:  # required field
+            self.name = name
 
-        host_field = json.get(LoadBalanceSettings.HOST_FIELD, None)
-        if not host_field:
-            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.HOST_FIELD))
-        self.host = HostAndPort.make_entry(host_field)
+        res, host = self.check_required_type(LoadBalanceSettings.HOST_FIELD, dict, json)
+        if res:  # required field
+            self.host = HostAndPort.make_entry(host)
 
-        clients_host_field = json.get(LoadBalanceSettings.CLIENTS_HOST, None)
-        if not clients_host_field:
-            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.CLIENTS_HOST))
-        self.clients_host = HostAndPort.make_entry(clients_host_field)
+        res, clhost = self.check_required_type(LoadBalanceSettings.CLIENTS_HOST, dict, json)
+        if res:  # required field
+            self.clients_host = HostAndPort.make_entry(clhost)
 
-        catchups_host_field = json.get(LoadBalanceSettings.CATCHUPS_HOST_FIELD, None)
-        if not catchups_host_field:
-            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.CATCHUPS_HOST_FIELD))
-        self.catchups_http_host = HostAndPort.make_entry(catchups_host_field)
+        res, cat = self.check_required_type(LoadBalanceSettings.CATCHUPS_HOST_FIELD, dict, json)
+        if res:  # required field
+            self.catchups_http_host = HostAndPort.make_entry(cat)
 
-        catchups_http_root_field = json.get(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD, None)
-        if not catchups_http_root_field:
-            raise ValueError('Invalid input({0} required)'.format(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD))
-        self.catchups_hls_directory = catchups_http_root_field
+        res, http = self.check_required_type(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD, str, json)
+        if res:  # required field
+            self.catchups_hls_directory = http
 
     def to_front_dict(self) -> dict:
         providers = []

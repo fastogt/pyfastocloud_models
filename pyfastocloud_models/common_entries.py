@@ -565,3 +565,36 @@ class MetaUrl(EmbeddedMongoModel, Maker):
         res, url = self.check_required_type(MetaUrl.URL_FIELD, str, json)
         if res:
             self.url = url
+
+
+class Phone(EmbeddedMongoModel, Maker):
+    DIAL_CODE_FIELD = 'dial_code'
+    PHONE_NUMBER_FIELD = 'phone_number'
+
+    dial_code = fields.CharField(required=True)
+    phone_number = fields.CharField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Phone, self).__init__(*args, **kwargs)
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+        res, dial_code = self.check_required_type(Phone.DIAL_CODE_FIELD, str, json)
+        if res:
+            self.dial_code = dial_code
+
+        res, phone_number = self.check_required_type(Phone.PHONE_NUMBER_FIELD, str, json)
+        if res:
+            self.phone_number = phone_number
+
+    def to_front_dict(self) -> dict:
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()

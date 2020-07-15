@@ -242,7 +242,7 @@ class ServiceSettings(MongoModel, Maker):
 
         res, proxy = self.check_required_type(ServiceSettings.PROXY_DIRECTORY_FIELD, str, json)
         if res:  # required field
-            self.proxy_directory = cods
+            self.proxy_directory = proxy
 
         res, price = self.check_required_type(ServiceSettings.PRICE_FIELD, float, json)
         if res:  # required field

@@ -21,6 +21,7 @@ class ServiceSettings(MongoModel, Maker):
     HLS_DIRECTORY_FIELD = 'hls_directory'
     VODS_DIRECTORY_FIELD = 'vods_directory'
     CODS_DIRECTORY_FIELD = 'cods_directory'
+    PROXY_DIRECTORY_FIELD = 'proxy_directory'
     PROVIDERS_FIELD = 'providers'
     PRICE_FIELD = 'price'
 
@@ -46,6 +47,7 @@ class ServiceSettings(MongoModel, Maker):
     DEFAULT_HLS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/hls'
     DEFAULT_VODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/vods'
     DEFAULT_CODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/cods'
+    DEFAULT_PROXY_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/proxy'
 
     DEFAULT_SERVICE_HOST = '127.0.0.1'
     DEFAULT_SERVICE_PORT = 6317
@@ -86,6 +88,7 @@ class ServiceSettings(MongoModel, Maker):
     hls_directory = fields.CharField(default=DEFAULT_HLS_DIR_PATH, required=True)
     vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH, required=True)
     cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH, required=True)
+    proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
     price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                               max_value=constants.MAX_PRICE, required=True)
 
@@ -237,6 +240,10 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # required field
             self.cods_directory = cods
 
+        res, proxy = self.check_required_type(ServiceSettings.PROXY_DIRECTORY_FIELD, str, json)
+        if res:  # required field
+            self.proxy_directory = cods
+
         res, price = self.check_required_type(ServiceSettings.PRICE_FIELD, float, json)
         if res:  # required field
             self.price = price
@@ -255,5 +262,7 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: self.timeshifts_directory,
                 ServiceSettings.HLS_DIRECTORY_FIELD: self.hls_directory,
                 ServiceSettings.VODS_DIRECTORY_FIELD: self.vods_directory,
-                ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory, ServiceSettings.PRICE_FIELD: self.price,
+                ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory,
+                ServiceSettings.PROXY_DIRECTORY_FIELD: self.proxy_directory,
+                ServiceSettings.PRICE_FIELD: self.price,
                 ServiceSettings.PROVIDERS_FIELD: providers}

@@ -70,14 +70,11 @@ class Provider(MongoModel, Maker):
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
-    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[],
-                               blank=True)
-    subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=fields.ReferenceField.PULL), default=[],
-                                   blank=True)
+    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), blank=True)
+    subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=fields.ReferenceField.PULL), blank=True)
     load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL),
-                                      default=[], blank=True)
-    epgs = fields.ListField(fields.ReferenceField(EpgSettings, on_delete=fields.ReferenceField.PULL),
-                            default=[], blank=True)
+                                      blank=True)
+    epgs = fields.ListField(fields.ReferenceField(EpgSettings, on_delete=fields.ReferenceField.PULL), blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)

@@ -227,16 +227,14 @@ class Subscriber(MongoModel, Maker):
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
-    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), default=[],
-                               blank=True, required=False)
+    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), blank=True)
     devices = fields.EmbeddedModelListField(Device, default=[], blank=True, required=False)
     max_devices_count = fields.IntegerField(default=constants.DEFAULT_DEVICES_COUNT, required=False)
     # content
     streams = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
     vods = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
     catchups = fields.EmbeddedModelListField(UserStream, default=[], blank=True, required=False)
-    series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), default=[],
-                              blank=True, required=False)
+    series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Subscriber, self).__init__(*args, **kwargs)

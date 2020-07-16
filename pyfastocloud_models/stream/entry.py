@@ -87,7 +87,7 @@ class IStream(MongoModel, Maker):
     tvg_name = BlankStringOK(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
                              max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True)  # for inner use
     # optional
-    parts = fields.ListField(fields.ReferenceField('IStream'), default=[], required=False, blank=True)
+    parts = fields.ListField(fields.ReferenceField('IStream'), blank=True)
     meta = fields.EmbeddedModelListField(MetaUrl, default=[], blank=True)
 
     def to_front_dict(self) -> dict:

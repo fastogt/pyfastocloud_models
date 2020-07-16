@@ -57,7 +57,7 @@ class Serial(MongoModel, Maker):
                               max_value=constants.MAX_PRICE, required=True)
     season = fields.IntegerField(default=1, min_value=0, required=True)
     visible = fields.BooleanField(default=True, required=True)
-    episodes = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
+    episodes = fields.ListField(fields.ReferenceField(IStream), blank=True)
 
     def add_episode(self, episode: IStream):
         if not episode:

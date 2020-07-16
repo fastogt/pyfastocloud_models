@@ -60,9 +60,8 @@ class ServiceSettings(MongoModel, Maker):
     DEFAULT_SERVICE_NGINX_HOST = '0.0.0.0'
     DEFAULT_SERVICE_NGINX_PORT = 81
 
-    streams = fields.ListField(fields.ReferenceField(IStream), default=[], blank=True)
-    series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), default=[],
-                              blank=True)
+    streams = fields.ListField(fields.ReferenceField(IStream), blank=True)
+    series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), blank=True)
     providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,

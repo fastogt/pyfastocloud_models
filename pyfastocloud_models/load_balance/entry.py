@@ -100,7 +100,7 @@ class LoadBalanceSettings(MongoModel, Maker):
         res, http = self.check_required_type(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD, str, json)
         if res:  # required field
             self.catchups_hls_directory = http
-        self.is_valid()
+        self.full_clean()
 
     def to_front_dict(self) -> dict:
         providers = []

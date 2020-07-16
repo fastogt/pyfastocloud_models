@@ -128,7 +128,7 @@ class Device(EmbeddedMongoModel, Maker):
         res, status = self.check_required_type(Device.STATUS_FIELD, int, json)
         if res:
             self.status = status
-        self.is_valid()
+        self.full_clean()
 
 
 class UserStream(EmbeddedMongoModel):

@@ -256,7 +256,7 @@ class IStream(MongoModel, Maker):
             for met in meta:
                 meta_stabled.append(MetaUrl.make_entry(met))
             self.meta = meta_stabled
-        self.is_valid()
+        self.full_clean()
 
     @staticmethod
     def make_stream_entry(json: dict):

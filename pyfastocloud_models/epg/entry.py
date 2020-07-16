@@ -122,7 +122,7 @@ class EpgSettings(MongoModel, Maker):
         res, host = self.check_required_type(EpgSettings.HOST_FIELD, dict, json)
         if res:  # required field
             self.host = HostAndPort.make_entry(host)
-        self.is_valid()
+        self.full_clean()
 
     def to_front_dict(self) -> dict:
         providers = []

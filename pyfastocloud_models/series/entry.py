@@ -139,6 +139,7 @@ class Serial(MongoModel, Maker):
             for episode in episodes:
                 stabled.append(ObjectId(episode))
             self.episodes = stabled
+        self.is_valid()
 
 
 # if remove vod also clean parts

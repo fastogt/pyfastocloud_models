@@ -214,6 +214,7 @@ class Provider(MongoModel, Maker):
             if not constants.is_valid_locale_code(language):
                 raise ValueError('Invalid language')
             self.language = language
+        self.is_valid()
 
     def to_front_dict(self):
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,

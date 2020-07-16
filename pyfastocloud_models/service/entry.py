@@ -246,6 +246,7 @@ class ServiceSettings(MongoModel, Maker):
         res, price = self.check_required_type(ServiceSettings.PRICE_FIELD, float, json)
         if res:  # required field
             self.price = price
+        self.is_valid()
 
     def to_front_dict(self) -> dict:
         providers = []

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from bson.objectid import ObjectId
-from pymodm import MongoModel, fields
+from pymodm import MongoModel, fields, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker, BlankStringOK
@@ -139,7 +139,10 @@ class Serial(MongoModel, Maker):
             for episode in episodes:
                 stabled.append(ObjectId(episode))
             self.episodes = stabled
-        self.full_clean()
+        try:
+            self.full_clean()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
 
 
 # if remove vod also clean parts

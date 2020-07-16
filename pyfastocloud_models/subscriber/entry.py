@@ -4,7 +4,7 @@ from hashlib import md5
 
 from bson.objectid import ObjectId
 from pyfastogt.utils import is_valid_email
-from pymodm import MongoModel, fields, EmbeddedMongoModel
+from pymodm import MongoModel, fields, EmbeddedMongoModel, errors
 from pymongo.operations import IndexModel
 
 import pyfastocloud_models.constants as constants
@@ -128,7 +128,10 @@ class Device(EmbeddedMongoModel, Maker):
         res, status = self.check_required_type(Device.STATUS_FIELD, int, json)
         if res:
             self.status = status
-        self.full_clean()
+        try:
+            self.full_clean()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
 
 
 class UserStream(EmbeddedMongoModel):

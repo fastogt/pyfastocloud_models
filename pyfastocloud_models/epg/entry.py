@@ -1,5 +1,5 @@
 from bson import ObjectId
-from pymodm import MongoModel, EmbeddedMongoModel, fields
+from pymodm import MongoModel, EmbeddedMongoModel, fields, errors
 from pymodm.errors import ValidationError
 
 import pyfastocloud_models.constants as constants
@@ -122,7 +122,10 @@ class EpgSettings(MongoModel, Maker):
         res, host = self.check_required_type(EpgSettings.HOST_FIELD, dict, json)
         if res:  # required field
             self.host = HostAndPort.make_entry(host)
-        self.full_clean()
+        try:
+            self.full_clean()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
 
     def to_front_dict(self) -> dict:
         providers = []

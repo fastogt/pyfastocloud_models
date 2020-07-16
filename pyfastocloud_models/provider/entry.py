@@ -3,7 +3,7 @@ from enum import IntEnum
 
 from bson.objectid import ObjectId
 from pyfastogt.utils import is_valid_email
-from pymodm import MongoModel, fields
+from pymodm import MongoModel, fields, errors
 from pymongo.operations import IndexModel
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -214,7 +214,10 @@ class Provider(MongoModel, Maker):
             if not constants.is_valid_locale_code(language):
                 raise ValueError('Invalid language')
             self.language = language
-        self.full_clean()
+        try:
+            self.full_clean()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
 
     def to_front_dict(self):
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,

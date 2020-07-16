@@ -4,7 +4,7 @@ from enum import IntEnum
 from urllib.parse import urlparse
 
 from bson.objectid import ObjectId
-from pymodm import MongoModel, fields, EmbeddedMongoModel
+from pymodm import MongoModel, fields, EmbeddedMongoModel, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, \
@@ -256,7 +256,10 @@ class IStream(MongoModel, Maker):
             for met in meta:
                 meta_stabled.append(MetaUrl.make_entry(met))
             self.meta = meta_stabled
-        self.full_clean()
+        try:
+            self.full_clean()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
 
     @staticmethod
     def make_stream_entry(json: dict):

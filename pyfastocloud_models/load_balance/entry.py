@@ -1,5 +1,5 @@
 from bson import ObjectId
-from pymodm import MongoModel, fields
+from pymodm import MongoModel, fields, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
@@ -100,7 +100,10 @@ class LoadBalanceSettings(MongoModel, Maker):
         res, http = self.check_required_type(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD, str, json)
         if res:  # required field
             self.catchups_hls_directory = http
-        self.full_clean()
+        try:
+            self.full_clean()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
 
     def to_front_dict(self) -> dict:
         providers = []

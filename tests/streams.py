@@ -50,6 +50,21 @@ class StreamsTest(unittest.TestCase):
         self.assertEqual(encode.output, [output_url])
         self.assertTrue(encode.is_valid())
 
+    def test_raw(self):
+        data = {"id": None, "name": "Stream", "tvg_logo": "https://fastocloud.com/images/unknown_channel.png",
+                "groups": [], "type": 3, "price": 0, "view_count": 0, "output": [
+                {"id": 0, "uri": "http://fastocloud.com:8000/master.m3u8", "http_root": "~/streamer/hls",
+                 "hls_type": 0}], "visible": True, "iarc": 18, "tvg_id": None, "meta": [],
+                "input": [{"id": 1, "uri": "http://localhost:8000/master.m3u8"}], "log_level": 6,
+                "feedback_directory": None, "have_video": True, "have_audio": True, "phoenix": False, "loop": False,
+                "restart_attempts": 10, "extra_config": "{}", "status": 0, "cpu": 0, "timestamp": 0, "idle_time": 0,
+                "rss": 0, "loop_start_time": 0, "restarts": 0, "start_time": 0, "input_streams": [],
+                "output_streams": [], "quality": 100, "relay_video": False, "relay_audio": False, "deinterlace": False,
+                "volume": 1, "video_codec": "x264enc", "audio_codec": "faac"}
+
+        encode = EncodeStream.make_entry(data)
+        self.assertTrue(encode.is_valid())
+
 
 if __name__ == '__main__':
     unittest.main()

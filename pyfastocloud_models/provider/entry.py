@@ -71,7 +71,7 @@ class Provider(MongoModel, Maker):
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
     credits = fields.IntegerField(default=constants.DEFAULT_DEVICES_COUNT, min_value=constants.MIN_CREDITS_COUNT,
-                                  max_value=constants.MAX_CREDITS_COUNT, required=False)
+                                  max_value=constants.MAX_CREDITS_COUNT, required=True)
 
     servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), blank=True)
     subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=fields.ReferenceField.PULL), blank=True)
@@ -209,8 +209,8 @@ class Provider(MongoModel, Maker):
         if res:
             self.status = status
 
-        res, cred = self.check_required_type(Provider.CREDITS_FIELD, int, json)
-        if res:
+        res, cred = self.check_optional_type(Provider.CREDITS_FIELD, int, json)
+        if res:  # optional field
             self.credits = cred
 
         res, country = self.check_required_type(Provider.COUNTRY_FIELD, str, json)

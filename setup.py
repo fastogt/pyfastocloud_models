@@ -18,7 +18,7 @@ URL = 'https://github.com/fastogt/pyfastocloud_models'
 EMAIL = 'support@fastogt.com'
 AUTHOR = 'Alexandr Topilski'
 REQUIRES_PYTHON = '>=3.0.0'
-VERSION = '1.3.0'
+VERSION = '1.3.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = ['pyfastogt @ git+git://github.com/fastogt/pyfastogt@master',

@@ -27,6 +27,7 @@ class Provider(MongoModel, Maker):
     LANGUAGE_FIELD = 'language'
     COUNTRY_FIELD = 'country'
     PASSWORD_FIELD = 'password'
+    CREDITS_FIELD = 'credits'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -69,6 +70,8 @@ class Provider(MongoModel, Maker):
     status = fields.IntegerField(default=Status.NO_ACTIVE, required=True)  #
     country = fields.CharField(min_length=2, max_length=3, required=True)
     language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
+    credits = fields.IntegerField(default=constants.DEFAULT_DEVICES_COUNT, min_value=constants.MIN_CREDITS_COUNT,
+                                  max_value=constants.MAX_CREDITS_COUNT, required=False)
 
     servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), blank=True)
     subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=fields.ReferenceField.PULL), blank=True)
@@ -88,6 +91,9 @@ class Provider(MongoModel, Maker):
 
     def add_subscriber(self, subscriber: Subscriber):
         if not subscriber:
+            return
+
+        if len(self.subscriber) < self.credits:
             return
 
         if subscriber not in self.subscribers:
@@ -203,6 +209,10 @@ class Provider(MongoModel, Maker):
         if res:
             self.status = status
 
+        res, cred = self.check_required_type(Provider.CREDITS_FIELD, int, json)
+        if res:
+            self.credits = cred
+
         res, country = self.check_required_type(Provider.COUNTRY_FIELD, str, json)
         if res:
             if not constants.is_valid_country_code(country):
@@ -224,8 +234,8 @@ class Provider(MongoModel, Maker):
                 Provider.PASSWORD_FIELD: self.password,
                 Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,
                 Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date), Provider.STATUS_FIELD: self.status,
-                Provider.TYPE_FIELD: self.type, Provider.LANGUAGE_FIELD: self.language,
-                Provider.COUNTRY_FIELD: self.country}
+                Provider.CREDITS_FIELD: self.credits, Provider.TYPE_FIELD: self.type,
+                Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}
 
     def delete(self, *args, **kwargs):
         from pyfastocloud_models.service.entry import ServiceSettings

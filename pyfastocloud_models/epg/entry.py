@@ -4,6 +4,7 @@ from pymodm.errors import ValidationError
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
+from pyfastocloud_models.machine_entry import Machine
 from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
@@ -68,6 +69,7 @@ class EpgSettings(MongoModel, Maker):
                             min_length=MIN_SERVICE_NAME_LENGTH)
     host = fields.EmbeddedModelField(HostAndPort,
                                      default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+    stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -75,6 +77,18 @@ class EpgSettings(MongoModel, Maker):
     @property
     def id(self):
         return self.pk
+
+    def add_stat(self, stat: Machine):
+        if not stat:
+            return
+
+        self.stats.append(stat)
+
+    def remove_stat(self, stat: Machine):
+        if not stat:
+            return
+
+        self.stats.remove(stat)
 
     def add_provider(self, user: ProviderPair) -> ProviderPair:
         if not user:

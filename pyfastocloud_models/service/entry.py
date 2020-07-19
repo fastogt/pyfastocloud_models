@@ -3,6 +3,7 @@ from pymodm import MongoModel, fields, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
+from pyfastocloud_models.machine_entry import Machine
 from pyfastocloud_models.provider.entry_pair import ProviderPair
 from pyfastocloud_models.series.entry import Serial
 from pyfastocloud_models.stream.entry import IStream
@@ -90,6 +91,7 @@ class ServiceSettings(MongoModel, Maker):
     proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
     price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                               max_value=constants.MAX_PRICE, required=True)
+    stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -128,6 +130,18 @@ class ServiceSettings(MongoModel, Maker):
             result += stream.generate_playlist(False)
 
         return result
+
+    def add_stat(self, stat: Machine):
+        if not stat:
+            return
+
+        self.stats.append(stat)
+
+    def remove_stat(self, stat: Machine):
+        if not stat:
+            return
+
+        self.stats.remove(stat)
 
     def add_series(self, serials: [Serial]):
         for serial in serials:

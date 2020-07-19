@@ -3,6 +3,7 @@ from pymodm import MongoModel, fields, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
+from pyfastocloud_models.machine_entry import Machine
 from pyfastocloud_models.provider.entry_pair import ProviderPair
 
 
@@ -52,6 +53,7 @@ class LoadBalanceSettings(MongoModel, Maker):
     catchups_http_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_CATCHUPS_HTTP_HOST,
                                                                                     port=DEFAULT_CATCHUPS_HTTP_PORT))
     catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
+    stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -59,6 +61,18 @@ class LoadBalanceSettings(MongoModel, Maker):
     @property
     def id(self):
         return self.pk
+
+    def add_stat(self, stat: Machine):
+        if not stat:
+            return
+
+        self.stats.append(stat)
+
+    def remove_stat(self, stat: Machine):
+        if not stat:
+            return
+
+        self.stats.remove(stat)
 
     def add_provider(self, user: ProviderPair) -> ProviderPair:
         if not user:

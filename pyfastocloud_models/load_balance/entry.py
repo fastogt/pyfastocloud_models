@@ -15,6 +15,7 @@ class LoadBalanceSettings(MongoModel, Maker):
     CATCHUPS_HOST_FIELD = 'catchups_host'
     CATCHUPS_HTTP_ROOT_FIELD = 'catchups_http_root'
     PROVIDERS_FIELD = 'providers'
+    MONITORING_FILED = 'monitoring'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -53,6 +54,8 @@ class LoadBalanceSettings(MongoModel, Maker):
     catchups_http_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_CATCHUPS_HTTP_HOST,
                                                                                     port=DEFAULT_CATCHUPS_HTTP_PORT))
     catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
+    # stats
+    monitoring = fields.BooleanField(default=False, required=True)
     stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
 
     def get_id(self) -> str:
@@ -114,6 +117,11 @@ class LoadBalanceSettings(MongoModel, Maker):
         res, http = self.check_required_type(LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD, str, json)
         if res:  # required field
             self.catchups_hls_directory = http
+
+        res, monitoring = self.check_required_type(LoadBalanceSettings.MONITORING_FILED, bool, json)
+        if res:  # required field
+            self.monitoring = monitoring
+
         try:
             self.full_clean()
         except errors.ValidationError as err:
@@ -128,4 +136,4 @@ class LoadBalanceSettings(MongoModel, Maker):
                 LoadBalanceSettings.CLIENTS_HOST: self.clients_host.to_front_dict(),
                 LoadBalanceSettings.CATCHUPS_HOST_FIELD: self.catchups_http_host.to_front_dict(),
                 LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: self.catchups_hls_directory,
-                LoadBalanceSettings.PROVIDERS_FIELD: providers}
+                LoadBalanceSettings.PROVIDERS_FIELD: providers, LoadBalanceSettings.MONITORING_FILED: self.monitoring}

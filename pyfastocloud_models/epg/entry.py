@@ -41,6 +41,7 @@ class EpgSettings(MongoModel, Maker):
     HOST_FIELD = 'host'
     URLS_FIELD = 'urls'
     PROVIDERS_FIELD = 'providers'
+    MONITORING_FILED = 'monitoring'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -69,6 +70,8 @@ class EpgSettings(MongoModel, Maker):
                             min_length=MIN_SERVICE_NAME_LENGTH)
     host = fields.EmbeddedModelField(HostAndPort,
                                      default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+    # stats
+    monitoring = fields.BooleanField(default=False, required=True)
     stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
 
     def get_id(self) -> str:
@@ -136,6 +139,11 @@ class EpgSettings(MongoModel, Maker):
         res, host = self.check_required_type(EpgSettings.HOST_FIELD, dict, json)
         if res:  # required field
             self.host = HostAndPort.make_entry(host)
+
+        res, monitoring = self.check_required_type(EpgSettings.MONITORING_FILED, bool, json)
+        if res:  # required field
+            self.monitoring = monitoring
+
         try:
             self.full_clean()
         except errors.ValidationError as err:
@@ -150,4 +158,4 @@ class EpgSettings(MongoModel, Maker):
             urls.append(url.to_front_dict())
         return {EpgSettings.ID_FIELD: self.get_id(), EpgSettings.NAME_FIELD: self.name,
                 EpgSettings.HOST_FIELD: self.host.to_front_dict(), EpgSettings.URLS_FIELD: urls,
-                EpgSettings.PROVIDERS_FIELD: providers}
+                EpgSettings.PROVIDERS_FIELD: providers, EpgSettings.MONITORING_FILED: self.monitoring}

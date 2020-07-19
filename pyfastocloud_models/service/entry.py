@@ -25,6 +25,7 @@ class ServiceSettings(MongoModel, Maker):
     PROXY_DIRECTORY_FIELD = 'proxy_directory'
     PROVIDERS_FIELD = 'providers'
     PRICE_FIELD = 'price'
+    MONITORING_FILED = 'monitoring'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -91,6 +92,8 @@ class ServiceSettings(MongoModel, Maker):
     proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
     price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                               max_value=constants.MAX_PRICE, required=True)
+    # stats
+    monitoring = fields.BooleanField(default=False, required=True)
     stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
 
     def get_id(self) -> str:
@@ -260,6 +263,11 @@ class ServiceSettings(MongoModel, Maker):
         res, price = self.check_required_type(ServiceSettings.PRICE_FIELD, float, json)
         if res:  # required field
             self.price = price
+
+        res, monitoring = self.check_required_type(ServiceSettings.MONITORING_FILED, bool, json)
+        if res:  # required field
+            self.monitoring = monitoring
+
         try:
             self.full_clean()
         except errors.ValidationError as err:
@@ -282,4 +290,5 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory,
                 ServiceSettings.PROXY_DIRECTORY_FIELD: self.proxy_directory,
                 ServiceSettings.PRICE_FIELD: self.price,
+                ServiceSettings.MONITORING_FILED: self.monitoring,
                 ServiceSettings.PROVIDERS_FIELD: providers}

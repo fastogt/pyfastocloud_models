@@ -24,7 +24,6 @@ class ServiceSettings(MongoModel, Maker):
     CODS_DIRECTORY_FIELD = 'cods_directory'
     PROXY_DIRECTORY_FIELD = 'proxy_directory'
     PROVIDERS_FIELD = 'providers'
-    PRICE_FIELD = 'price'
     MONITORING_FILED = 'monitoring'
 
     @staticmethod
@@ -90,8 +89,7 @@ class ServiceSettings(MongoModel, Maker):
     vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH, required=True)
     cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH, required=True)
     proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
-    price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
-                              max_value=constants.MAX_PRICE, required=True)
+
     # stats
     monitoring = fields.BooleanField(default=False, required=True)
     stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
@@ -260,10 +258,6 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # required field
             self.proxy_directory = proxy
 
-        res, price = self.check_required_type(ServiceSettings.PRICE_FIELD, float, json)
-        if res:  # required field
-            self.price = price
-
         res, monitoring = self.check_required_type(ServiceSettings.MONITORING_FILED, bool, json)
         if res:  # required field
             self.monitoring = monitoring
@@ -289,6 +283,5 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.VODS_DIRECTORY_FIELD: self.vods_directory,
                 ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory,
                 ServiceSettings.PROXY_DIRECTORY_FIELD: self.proxy_directory,
-                ServiceSettings.PRICE_FIELD: self.price,
                 ServiceSettings.MONITORING_FILED: self.monitoring,
                 ServiceSettings.PROVIDERS_FIELD: providers}

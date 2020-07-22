@@ -46,6 +46,10 @@ class Machine(EmbeddedMongoModel, Maker):
             return False
         return True
 
+    @property
+    def hdd_used(self):
+        return self.hdd_total - self.hdd_free
+
     def to_front_dict(self) -> dict:
         result = self.to_son()
         result.pop('_cls')

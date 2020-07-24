@@ -93,7 +93,7 @@ class Provider(MongoModel, Maker):
         if not subscriber:
             return
 
-        if len(self.subscriber) < self.credits:
+        if len(self.subscribers) < self.credits:
             return
 
         if subscriber not in self.subscribers:

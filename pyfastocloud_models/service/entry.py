@@ -1,3 +1,5 @@
+from bisect import bisect_right
+
 from bson import ObjectId
 from pymodm import MongoModel, fields, errors
 
@@ -63,7 +65,7 @@ class ServiceSettings(MongoModel, Maker):
 
     streams = fields.ListField(fields.ReferenceField(IStream), blank=True)
     series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), blank=True)
-    providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)
+    providers = fields.EmbeddedModelListField(ProviderPair, blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
                             min_length=MIN_SERVICE_NAME_LENGTH, required=True)
@@ -92,7 +94,35 @@ class ServiceSettings(MongoModel, Maker):
 
     # stats
     monitoring = fields.BooleanField(default=False, required=True)
-    stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
+    stats = fields.EmbeddedModelListField(Machine, blank=True)
+
+    def get_net_bytes(self, start_timestamp) -> float:
+        stats_len = len(self.stats)
+        if stats_len < 2:
+            return 0.0
+
+        fake = Machine(timestamp=start_timestamp)
+        ind = bisect_right(self.stats, fake)
+        if ind == stats_len:
+            return 0.0
+
+        first_stat = self.stats[ind]
+        last_stat = self.stats[-1]
+        return last_stat.total_bytes_out - first_stat.total_bytes_out
+
+    def get_store_bytes(self, start_timestamp) -> float:
+        stats_len = len(self.stats)
+        if stats_len < 2:
+            return 0.0
+
+        fake = Machine(timestamp=start_timestamp)
+        ind = bisect_right(self.stats, fake)
+        if ind == stats_len:
+            return 0.0
+
+        first_stat = self.stats[ind]
+        last_stat = self.stats[-1]
+        return (last_stat.hdd_used + first_stat.hdd_used) / 2
 
     def get_id(self) -> str:
         return str(self.pk)

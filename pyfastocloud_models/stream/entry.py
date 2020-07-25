@@ -76,7 +76,7 @@ class IStream(MongoModel, Maker):
                                max_value=constants.MAX_IARC,
                                required=True)  # https://support.google.com/googleplay/answer/6209544
     view_count = fields.IntegerField(default=0, required=True)
-    output = fields.EmbeddedModelListField(OutputUrl, default=[], required=True)
+    output = fields.EmbeddedModelListField(OutputUrl, required=True)
 
     # blanks
     tvg_logo = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
@@ -88,7 +88,7 @@ class IStream(MongoModel, Maker):
                              max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True)  # for inner use
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'), blank=True)
-    meta = fields.EmbeddedModelListField(MetaUrl, default=[], blank=True)
+    meta = fields.EmbeddedModelListField(MetaUrl, blank=True)
 
     def to_front_dict(self) -> dict:
         result = self.to_son()
@@ -319,7 +319,7 @@ class HardwareStream(IStream):
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
-    input = fields.EmbeddedModelListField(InputUrl, default=[], required=True)
+    input = fields.EmbeddedModelListField(InputUrl, required=True)
     extra_config = fields.CharField(default='{}', required=True)
     # optional
     auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
@@ -627,7 +627,7 @@ class TimeshiftRecorderStream(RelayStream):
     TIMESHIFT_CHUNK_LIFE_TIME = 'timeshift_chunk_life_time'
 
     # required
-    output = fields.EmbeddedModelListField(OutputUrl, default=[], required=True, blank=True)  #
+    output = fields.EmbeddedModelListField(OutputUrl, required=True, blank=True)  #
     timeshift_chunk_duration = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_DURATION,
                                                    min_value=constants.MIN_TIMESHIFT_CHUNK_DURATION, required=True)
     timeshift_chunk_life_time = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_CHUNK_LIFE_TIME,
@@ -700,7 +700,7 @@ class TimeshiftPlayerStream(RelayStream):
     TIMESHIFT_DELAY = 'timeshift_delay'
 
     # required
-    input = fields.EmbeddedModelListField(InputUrl, default=[], required=True, blank=True)  #
+    input = fields.EmbeddedModelListField(InputUrl, required=True, blank=True)  #
     timeshift_dir = fields.CharField(required=True)  # FIXME default
     timeshift_delay = fields.IntegerField(default=constants.DEFAULT_TIMESHIFT_DELAY,
                                           min_value=constants.MIN_TIMESHIFT_DELAY,
@@ -725,7 +725,7 @@ class TimeshiftPlayerStream(RelayStream):
 
 
 class TestLifeStream(RelayStream):
-    output = fields.EmbeddedModelListField(OutputUrl, default=[], required=True, blank=True)  #
+    output = fields.EmbeddedModelListField(OutputUrl, required=True, blank=True)  #
 
     def __init__(self, *args, **kwargs):
         super(TestLifeStream, self).__init__(*args, **kwargs)

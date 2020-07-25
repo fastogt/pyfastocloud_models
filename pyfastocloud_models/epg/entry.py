@@ -63,8 +63,8 @@ class EpgSettings(MongoModel, Maker):
     DEFAULT_SERVICE_HOST = '127.0.0.1'
     DEFAULT_SERVICE_PORT = 4317
 
-    providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)
-    urls = fields.EmbeddedModelListField(EpgUrl, default=[], blank=True)
+    providers = fields.EmbeddedModelListField(ProviderPair, blank=True)
+    urls = fields.EmbeddedModelListField(EpgUrl, blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
                             min_length=MIN_SERVICE_NAME_LENGTH)
@@ -72,7 +72,7 @@ class EpgSettings(MongoModel, Maker):
                                      default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
     # stats
     monitoring = fields.BooleanField(default=False, required=True)
-    stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
+    stats = fields.EmbeddedModelListField(Machine, blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)

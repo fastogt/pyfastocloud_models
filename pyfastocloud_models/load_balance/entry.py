@@ -43,7 +43,7 @@ class LoadBalanceSettings(MongoModel, Maker):
     DEFAULT_CATCHUPS_HTTP_HOST = '0.0.0.0'
     DEFAULT_CATCHUPS_HTTP_PORT = 8000
 
-    providers = fields.EmbeddedModelListField(ProviderPair, default=[], blank=True)
+    providers = fields.EmbeddedModelListField(ProviderPair, blank=True)
 
     name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
                             min_length=MIN_SERVICE_NAME_LENGTH)
@@ -56,7 +56,7 @@ class LoadBalanceSettings(MongoModel, Maker):
     catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
     # stats
     monitoring = fields.BooleanField(default=False, required=True)
-    stats = fields.EmbeddedModelListField(Machine, default=[], blank=True)
+    stats = fields.EmbeddedModelListField(Machine, blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)

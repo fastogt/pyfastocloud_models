@@ -109,6 +109,9 @@ class Machine(EmbeddedMongoModel, Maker):
         if res:
             self.total_bytes_out = total_bytes_out
 
+    def __lt__(self, other):
+        return self.timestamp < other.timestamp
+
     @staticmethod
     def default():
         return Machine(cpu=0.0, gpu=0.0, load_average=str(),

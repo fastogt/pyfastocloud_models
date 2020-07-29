@@ -9,6 +9,7 @@ from pymongo.operations import IndexModel
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker
+from pyfastocloud_models.content_request.entry import ContentRequest
 from pyfastocloud_models.series.entry import Serial
 from pyfastocloud_models.service.entry import ServiceSettings
 from pyfastocloud_models.stream.entry import IStream
@@ -239,6 +240,7 @@ class Subscriber(MongoModel, Maker):
     vods = fields.EmbeddedModelListField(UserStream, blank=True, required=False)
     catchups = fields.EmbeddedModelListField(UserStream, blank=True, required=False)
     series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), blank=True)
+    requests = fields.ListField(fields.ReferenceField(ContentRequest, on_delete=fields.ReferenceField.PULL), blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Subscriber, self).__init__(*args, **kwargs)

@@ -48,7 +48,8 @@ class ContentRequest(MongoModel, Maker):
     status = fields.IntegerField(default=Status.NEW, required=True)  #
 
     def to_front_dict(self) -> dict:
-        return {ContentRequest.ID_FIELD: self.get_id(), ContentRequest.TYPE_FIELD: self.type,
+        return {ContentRequest.ID_FIELD: self.get_id(), ContentRequest.TITLE_FIELD: self.title,
+                ContentRequest.TYPE_FIELD: self.type,
                 ContentRequest.STATUS_FIELD: self.status}
 
     def created_date_utc_msec(self):

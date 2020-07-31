@@ -448,7 +448,7 @@ class Subscriber(MongoModel, Maker):
         istream = IStream.get_by_id(sid)
         if istream:
             for stream in self.streams:
-                if stream.sid == sid:
+                if stream.private and stream.sid == sid:
                     self.stream.remove(stream)
             istream.delete()
 

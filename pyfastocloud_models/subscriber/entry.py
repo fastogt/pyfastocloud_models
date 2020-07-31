@@ -705,13 +705,13 @@ class Subscriber(MongoModel, Maker):
         res, country = self.check_required_type(Subscriber.COUNTRY_FIELD, str, json)
         if res:
             if not constants.is_valid_country_code(country):
-                ValueError('Invalid country')
+                raise ValueError('Invalid {0}'.format(Subscriber.COUNTRY_FIELD))
             self.country = country
 
         res, language = self.check_required_type(Subscriber.LANGUAGE_FIELD, str, json)
         if res:
             if not constants.is_valid_locale_code(language):
-                raise ValueError('Invalid language')
+                raise ValueError('Invalid {0}'.format(Subscriber.LANGUAGE_FIELD))
             self.language = language
 
         res, servers = self.check_optional_type(Subscriber.SERVERS_FIELD, list, json)

@@ -93,11 +93,12 @@ AAC_AUDIO_PARSER = 'aacparse'
 AC3_AUDIO_PARSER = 'ac3parse'
 MPEG_AUDIO_PARSER = 'mpegaudioparse'
 RAW_AUDIO_PARSER = 'rawaudioparse'
+OPUS_AUDIO_PARSER = 'opusparse'
 DEFAULT_AUDIO_PARSER = AAC_AUDIO_PARSER
 
 AVAILABLE_VIDEO_PARSERS = [(TS_VIDEO_PARSER, 'ts'), (H264_VIDEO_PARSER, 'h264'), (H265_VIDEO_PARSER, 'h265')]
 AVAILABLE_AUDIO_PARSERS = [(MPEG_AUDIO_PARSER, 'mpeg'), (AAC_AUDIO_PARSER, 'aac'), (AC3_AUDIO_PARSER, 'ac3'),
-                           (RAW_AUDIO_PARSER, 'raw')]
+                           (RAW_AUDIO_PARSER, 'raw'), (OPUS_AUDIO_PARSER, 'opus')]
 
 EAVC_ENC = 'eavcenc'
 OPEN_H264_ENC = 'openh264enc'
@@ -114,12 +115,13 @@ DEFAULT_VIDEO_CODEC = X264_ENC
 LAME_MP3_ENC = 'lamemp3enc'
 FAAC = 'faac'
 VOAAC_ENC = 'voaacenc'
+OPUS_ENC = 'opusenc'
 DEFAULT_AUDIO_CODEC = FAAC
 
 AVAILABLE_VIDEO_CODECS = [(EAVC_ENC, 'eav'), (OPEN_H264_ENC, 'openh264'), (X264_ENC, 'x264'), (NV_H264_ENC, 'nvh264'),
                           (NV_H265_ENC, 'nvh265'), (VAAPI_H264_ENC, 'vaapih264'), (VAAPI_MPEG2_ENC, 'vaapimpeg2'),
                           (MFX_H264_ENC, 'mfxh264'), (X265_ENC, 'x265'), (MSDK_H264_ENC, 'msdkh264')]
-AVAILABLE_AUDIO_CODECS = [(LAME_MP3_ENC, 'mpeg'), (FAAC, 'aac'), (VOAAC_ENC, 'voaac')]
+AVAILABLE_AUDIO_CODECS = [(LAME_MP3_ENC, 'mpeg'), (FAAC, 'aac'), (VOAAC_ENC, 'voaac'), (OPUS_ENC, 'opus')]
 
 DEFAULT_SERVICE_ROOT_DIR_PATH = '~/streamer'
 DEFAULT_SERVICE_LOG_PATH_TEMPLATE_3SIS = 'http://{0}:{1}/service/log/{2}'

@@ -573,9 +573,11 @@ class MetaUrl(EmbeddedMongoModel, Maker):
 class Phone(EmbeddedMongoModel, Maker):
     DIAL_CODE_FIELD = 'dial_code'
     PHONE_NUMBER_FIELD = 'phone_number'
+    ISO_CODE_FILED = 'iso_code'
 
     dial_code = fields.CharField(required=True)
     phone_number = fields.CharField(required=True)
+    iso_code = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
 
     def __init__(self, *args, **kwargs):
         super(Phone, self).__init__(*args, **kwargs)
@@ -596,6 +598,12 @@ class Phone(EmbeddedMongoModel, Maker):
         res, phone_number = self.check_required_type(Phone.PHONE_NUMBER_FIELD, str, json)
         if res:
             self.phone_number = phone_number
+
+        res, iso_code = self.check_required_type(Phone.ISO_CODE_FILED, str, json)
+        if res:
+            if not constants.is_valid_country_code(iso_code):
+                raise ValueError('Invalid {0}'.format(Phone.ISO_CODE_FILED))
+            self.iso_code = iso_code
 
     def to_front_dict(self) -> dict:
         result = self.to_son()

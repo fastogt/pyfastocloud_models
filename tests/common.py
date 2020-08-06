@@ -170,6 +170,14 @@ class CommonTest(unittest.TestCase):
         # self.assertEqual(input_url.to_front_dict(), origin)
         self.assertEqual(input_url, InputUrl.make_entry(origin))
 
+        chunk_duration = 5
+        prod = {"id": 0, "uri": "http://fastocloud.com:8000/2/5f2bac3de154540b4476c5d2/0/master.m3u8",
+                "http_root": "~/streamer/hls/2/5f2bac3de154540b4476c5d2/0", "hls_type": 0,
+                "chunk_duration": chunk_duration}
+        prod_url = OutputUrl.make_entry(prod)
+        self.assertTrue(prod_url.is_valid())
+        self.assertEqual(prod_url.chunk_duration, chunk_duration)
+
     def test_output_url(self):
         invalid_output_url_str = str()
         uri = 'test'

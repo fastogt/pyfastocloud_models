@@ -2,6 +2,7 @@ from pymodm import EmbeddedMongoModel, fields
 from pymodm.errors import ValidationError
 
 import pyfastocloud_models.constants as constants
+from pyfastocloud_models.utils.utils import is_valid_url
 
 
 class BlankStringOK(fields.CharField):
@@ -109,6 +110,8 @@ class Url(EmbeddedMongoModel, Maker):
 
         res, uri = self.check_required_type(Url.URI_FIELD, str, json)
         if res:
+            if uri != 'test' and not is_valid_url(uri):
+                raise ValueError('Invalid url: {0}'.format(uri))
             self.uri = uri
 
 

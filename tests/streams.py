@@ -38,6 +38,21 @@ class StreamsTest(unittest.TestCase):
         self.assertEqual(relay.output, [output_url])
         self.assertTrue(relay.is_valid())
 
+        prod = {"id": "5f2bac3de154540b4476c5d2", "name": "Stream",
+                "tvg_logo": "https://fastocloud.com/images/unknown_channel.png", "groups": [], "type": 2, "price": 0,
+                "view_count": 0, "output": [
+                {"id": 0, "uri": "http://fastocloud.com:8000/2/5f2bac3de154540b4476c5d2/0/master.m3u8",
+                 "http_root": "~/streamer/hls/2/5f2bac3de154540b4476c5d2/0", "hls_type": 0, "chunk_duration": 5}],
+                "visible": True, "iarc": 18, "tvg_id": "", "meta": [], "input": [{"id": 1, "uri": "http://localhost"}],
+                "log_level": 6, "feedback_directory": "~/streamer/feedback/2/5f2bac3de154540b4476c5d2",
+                "have_video": True, "have_audio": True, "phoenix": False, "loop": False, "restart_attempts": 10,
+                "extra_config": "{}", "status": 0, "cpu": 0, "timestamp": 0, "idle_time": 0, "rss": 0,
+                "loop_start_time": 0, "restarts": 0, "start_time": 0, "input_streams": [], "output_streams": [],
+                "quality": 100, "video_parser": "h264parse", "audio_parser": "aacparse"}
+        prod = RelayStream.make_entry(prod)
+        self.assertEqual(prod.output[0].chunk_duration, 5)
+        self.assertTrue(prod.is_valid())
+
     def test_encode(self):
         input_url = InputUrl(id=InputUrl.generate_id(), uri='test')  # required
         output_url = OutputUrl(id=OutputUrl.generate_id(), uri='test')  # required

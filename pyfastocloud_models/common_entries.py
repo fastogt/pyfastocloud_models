@@ -201,7 +201,7 @@ class InputUrl(Url):
 
 class OutputUrl(Url):
     HTTP_ROOT_FIELD = 'http_root'
-    CHUNK_DURATION = 'chunk_duration'
+    CHUNK_DURATION_FIELD = 'chunk_duration'
     HLS_TYPE_FIELD = 'hls_type'
     SRT_MODE_FIELD = 'srt_mode'
 
@@ -236,11 +236,11 @@ class OutputUrl(Url):
                 self.http_root = http_root
                 self.hls_type = hls_type
 
-                res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION, int, json)
+                res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION_FIELD, int, json)
                 if res_chunk:  # optional field
                     self.chunk_duration = chunk_duration
                 else:
-                    delattr(self, OutputUrl.CHUNK_DURATION)
+                    delattr(self, OutputUrl.CHUNK_DURATION_FIELD)
 
         res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
         if res:  # optional field

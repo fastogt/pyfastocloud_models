@@ -149,6 +149,10 @@ class CommonTest(unittest.TestCase):
         valid_url = InputUrl.make_entry(valid)
         self.assertTrue(valid_url.is_valid())
 
+        valid2 = {InputUrl.URI_FIELD: 'udp://127.0.0.1:5555', InputUrl.ID_FIELD: uid}
+        valid2_url = InputUrl.make_entry(valid2)
+        self.assertTrue(valid2_url.is_valid())
+
         input_url = InputUrl(id=uid, uri=uri)
         origin = {InputUrl.URI_FIELD: uri, InputUrl.ID_FIELD: uid}
         self.assertTrue(input_url.is_valid())
@@ -171,10 +175,16 @@ class CommonTest(unittest.TestCase):
         self.assertEqual(input_url, InputUrl.make_entry(origin))
 
         chunk_duration = 5
-        prod = {"id": 0, "uri": "http://fastocloud.com:8000/2/5f2bac3de154540b4476c5d2/0/master.m3u8",
-                "http_root": "~/streamer/hls/2/5f2bac3de154540b4476c5d2/0", "hls_type": 0,
-                "chunk_duration": chunk_duration}
+        hls_type = 0
+        fastocloud_url = 'http://fastocloud.com:8000/2/5f2bac3de154540b4476c5d2/0/master.m3u8'
+        http_root = '~/streamer/hls/2/5f2bac3de154540b4476c5d2/0'
+        prod = {OutputUrl.ID_FIELD: uid, OutputUrl.URI_FIELD: fastocloud_url,
+                OutputUrl.HTTP_ROOT_FIELD: http_root, OutputUrl.HLS_TYPE_FIELD: hls_type,
+                OutputUrl.CHUNK_DURATION_FIELD: chunk_duration}
         prod_url = OutputUrl.make_entry(prod)
+        self.assertEqual(prod_url.id, uid)
+        self.assertEqual(prod_url.http_root, http_root)
+        self.assertEqual(prod_url.uri, fastocloud_url)
         self.assertTrue(prod_url.is_valid())
         self.assertEqual(prod_url.chunk_duration, chunk_duration)
 

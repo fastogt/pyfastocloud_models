@@ -200,11 +200,13 @@ class InputUrl(Url):
 
 class OutputUrl(Url):
     HTTP_ROOT_FIELD = 'http_root'
+    CHUNK_DURATION = 'chunk_duration'
     HLS_TYPE_FIELD = 'hls_type'
     SRT_MODE_FIELD = 'srt_mode'
 
     http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                  required=False)
+    chunk_duration = fields.IntegerField(required=False, blank=True)
     hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
     srt_mode = fields.IntegerField(choices=constants.SrtMode.choices(), required=False, blank=True)
 
@@ -232,6 +234,10 @@ class OutputUrl(Url):
             if http_root and hls_type is not None:
                 self.http_root = http_root
                 self.hls_type = hls_type
+
+                res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION, int, json)
+                if res_chunk:  # optional field
+                    self.chunk_duration = chunk_duration
 
         res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
         if res:  # optional field

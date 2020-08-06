@@ -110,8 +110,9 @@ class Url(EmbeddedMongoModel, Maker):
 
         res, uri = self.check_required_type(Url.URI_FIELD, str, json)
         if res:
-            if uri != 'test' and not is_valid_url(uri):
-                raise ValueError('Invalid url: {0}'.format(uri))
+            if uri != 'test':
+                if not is_valid_url(uri):
+                    raise ValueError('Invalid url: {0}'.format(uri))
             self.uri = uri
 
 

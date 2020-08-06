@@ -145,6 +145,10 @@ class CommonTest(unittest.TestCase):
         invalid = {InputUrl.URI_FIELD: '0.0.0.0:8888', InputUrl.ID_FIELD: uid}
         self.assertRaises(ValueError, InputUrl.make_entry, invalid)
 
+        valid = {InputUrl.URI_FIELD: 'http://localhost', InputUrl.ID_FIELD: uid}
+        valid_url = InputUrl.make_entry(valid)
+        self.assertTrue(valid_url.is_valid())
+
         input_url = InputUrl(id=uid, uri=uri)
         origin = {InputUrl.URI_FIELD: uri, InputUrl.ID_FIELD: uid}
         self.assertTrue(input_url.is_valid())

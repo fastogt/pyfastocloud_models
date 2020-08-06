@@ -239,6 +239,8 @@ class OutputUrl(Url):
                 res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION, int, json)
                 if res_chunk:  # optional field
                     self.chunk_duration = chunk_duration
+                else:
+                    delattr(self, OutputUrl.CHUNK_DURATION)
 
         res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
         if res:  # optional field

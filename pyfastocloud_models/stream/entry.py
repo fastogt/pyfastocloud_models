@@ -437,8 +437,8 @@ class RelayStream(HardwareStream):
     output = fields.EmbeddedModelListField(OutputUrl, required=True)
     input = fields.EmbeddedModelListField(InputUrl, required=True)
 
-    video_parser = fields.CharField(default=constants.DEFAULT_VIDEO_PARSER, required=False)
-    audio_parser = fields.CharField(default=constants.DEFAULT_AUDIO_PARSER, required=False)
+    video_parser = fields.CharField(required=False)
+    audio_parser = fields.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(RelayStream, self).__init__(*args, **kwargs)

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bson import ObjectId
 from pymodm import MongoModel, fields, errors
 
@@ -5,6 +7,7 @@ import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
 from pyfastocloud_models.machine_entry import Machine
 from pyfastocloud_models.provider.entry_pair import ProviderPair
+from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
 class LoadBalanceSettings(MongoModel, Maker):
@@ -56,10 +59,14 @@ class LoadBalanceSettings(MongoModel, Maker):
     catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
     # stats
     monitoring = fields.BooleanField(default=False, required=True)
+    created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     stats = fields.EmbeddedModelListField(Machine, blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
+
+    def created_date_utc_msec(self):
+        return date_to_utc_msec(self.created_date)
 
     @property
     def id(self):
@@ -118,6 +125,10 @@ class LoadBalanceSettings(MongoModel, Maker):
         if res:  # required field
             self.catchups_hls_directory = http
 
+        res, created_date_msec = self.check_optional_type(LoadBalanceSettings.CREATED_DATE_FIELD, int, json)
+        if res:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
+
         res, monitoring = self.check_required_type(LoadBalanceSettings.MONITORING_FILED, bool, json)
         if res:  # required field
             self.monitoring = monitoring
@@ -136,4 +147,5 @@ class LoadBalanceSettings(MongoModel, Maker):
                 LoadBalanceSettings.CLIENTS_HOST: self.clients_host.to_front_dict(),
                 LoadBalanceSettings.CATCHUPS_HOST_FIELD: self.catchups_http_host.to_front_dict(),
                 LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: self.catchups_hls_directory,
+                LoadBalanceSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 LoadBalanceSettings.PROVIDERS_FIELD: providers, LoadBalanceSettings.MONITORING_FILED: self.monitoring}

@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import IntEnum
 
 from bson.objectid import ObjectId
@@ -46,10 +47,12 @@ class ContentRequest(MongoModel, Maker):
     title = fields.CharField(required=True)
     type = fields.IntegerField(default=Type.LIVE, required=True)  #
     status = fields.IntegerField(default=Status.NEW, required=True)  #
+    created_date = fields.DateTimeField(default=datetime.now, required=True)  #
 
     def to_front_dict(self) -> dict:
         return {ContentRequest.ID_FIELD: self.get_id(), ContentRequest.TITLE_FIELD: self.title,
                 ContentRequest.TYPE_FIELD: self.type,
+                ContentRequest.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 ContentRequest.STATUS_FIELD: self.status}
 
     def created_date_utc_msec(self):
@@ -74,6 +77,10 @@ class ContentRequest(MongoModel, Maker):
         res, status = self.check_required_type(ContentRequest.STATUS_FIELD, int, json)
         if res:  # required field
             self.status = status
+
+        res, created_date_msec = self.check_optional_type(ContentRequest.CREATED_DATE_FIELD, int, json)
+        if res:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
         try:
             self.full_clean()

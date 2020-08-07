@@ -89,6 +89,9 @@ class Provider(MongoModel, Maker):
     def is_admin(self) -> bool:
         return self.type == Provider.Type.ADMIN
 
+    def created_date_utc_msec(self):
+        return date_to_utc_msec(self.created_date)
+
     def add_subscriber(self, subscriber: Subscriber):
         if not subscriber:
             return
@@ -233,7 +236,7 @@ class Provider(MongoModel, Maker):
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,
                 Provider.PASSWORD_FIELD: self.password,
                 Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,
-                Provider.CREATED_DATE_FIELD: date_to_utc_msec(self.created_date), Provider.STATUS_FIELD: self.status,
+                Provider.CREATED_DATE_FIELD: self.created_date_utc_msec(), Provider.STATUS_FIELD: self.status,
                 Provider.CREDITS_FIELD: self.credits, Provider.TYPE_FIELD: self.type,
                 Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}
 

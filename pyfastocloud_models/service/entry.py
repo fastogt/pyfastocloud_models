@@ -1,4 +1,5 @@
 from bisect import bisect_right
+from datetime import datetime
 
 from bson import ObjectId
 from pymodm import MongoModel, fields, errors
@@ -9,6 +10,7 @@ from pyfastocloud_models.machine_entry import Machine
 from pyfastocloud_models.provider.entry_pair import ProviderPair
 from pyfastocloud_models.series.entry import Serial
 from pyfastocloud_models.stream.entry import IStream
+from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
 class ServiceSettings(MongoModel, Maker):
@@ -26,6 +28,7 @@ class ServiceSettings(MongoModel, Maker):
     CODS_DIRECTORY_FIELD = 'cods_directory'
     PROXY_DIRECTORY_FIELD = 'proxy_directory'
     PROVIDERS_FIELD = 'providers'
+    CREATED_DATE_FIELD = 'created_date'
     MONITORING_FILED = 'monitoring'
 
     @staticmethod
@@ -94,6 +97,7 @@ class ServiceSettings(MongoModel, Maker):
 
     # stats
     monitoring = fields.BooleanField(default=False, required=True)
+    created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     stats = fields.EmbeddedModelListField(Machine, blank=True)
 
     def get_net_bytes(self, start_timestamp) -> float:
@@ -232,6 +236,9 @@ class ServiceSettings(MongoModel, Maker):
 
         return None
 
+    def created_date_utc_msec(self):
+        return date_to_utc_msec(self.created_date)
+
     def delete(self, *args, **kwargs):
         for stream in self.streams:
             if stream:
@@ -288,6 +295,10 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # required field
             self.proxy_directory = proxy
 
+        res, created_date_msec = self.check_optional_type(ServiceSettings.CREATED_DATE_FIELD, int, json)
+        if res:  # optional field
+            self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
+
         res, monitoring = self.check_required_type(ServiceSettings.MONITORING_FILED, bool, json)
         if res:  # required field
             self.monitoring = monitoring
@@ -314,4 +325,5 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory,
                 ServiceSettings.PROXY_DIRECTORY_FIELD: self.proxy_directory,
                 ServiceSettings.MONITORING_FILED: self.monitoring,
+                ServiceSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 ServiceSettings.PROVIDERS_FIELD: providers}

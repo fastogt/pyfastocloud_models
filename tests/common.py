@@ -3,6 +3,7 @@ import unittest
 
 from pyfastocloud_models.common_entries import OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo, HostAndPort, \
     Rational, StreamLink
+import pyfastocloud_models.constants as constants
 
 
 class CommonTest(unittest.TestCase):
@@ -190,21 +191,33 @@ class CommonTest(unittest.TestCase):
 
     def test_output_url(self):
         invalid_output_url_str = str()
-        uri = 'test'
+        test_uri = constants.DEFAULT_TEST_URL
+        display_uri = constants.DEFAULT_DISPLAY_URL
         uid = 1
 
         invalid_output_url = OutputUrl()
         self.assertFalse(invalid_output_url.is_valid())
         invalid_output_url.uri = invalid_output_url_str
         self.assertFalse(invalid_output_url.is_valid())
-        invalid_output_url.uri = uri
+        invalid_output_url.uri = test_uri
+        self.assertTrue(invalid_output_url.is_valid())
+        invalid_output_url.uri = display_uri
         self.assertTrue(invalid_output_url.is_valid())
         invalid_output_url.id = None
         self.assertFalse(invalid_output_url.is_valid())
 
-        output_url = OutputUrl(id=uid, uri=uri)
+        stable_uri = 'http://localhost'
+        output_url = OutputUrl(id=uid, uri=stable_uri)
         self.assertTrue(output_url.is_valid())
-        self.assertEqual(output_url.to_front_dict(), {OutputUrl.URI_FIELD: uri, OutputUrl.ID_FIELD: uid})
+        self.assertEqual(output_url.to_front_dict(), {OutputUrl.URI_FIELD: stable_uri, OutputUrl.ID_FIELD: uid})
+
+        output_url = OutputUrl.make_entry({OutputUrl.URI_FIELD: test_uri, OutputUrl.ID_FIELD: uid})
+        self.assertTrue(output_url.is_valid())
+        self.assertEqual(output_url.to_front_dict(), {OutputUrl.URI_FIELD: test_uri, OutputUrl.ID_FIELD: uid})
+
+        output_url = OutputUrl.make_entry({OutputUrl.URI_FIELD: display_uri, OutputUrl.ID_FIELD: uid})
+        self.assertTrue(output_url.is_valid())
+        self.assertEqual(output_url.to_front_dict(), {OutputUrl.URI_FIELD: display_uri, OutputUrl.ID_FIELD: uid})
 
 
 if __name__ == '__main__':

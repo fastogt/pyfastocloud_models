@@ -19,6 +19,8 @@ class LoadBalanceSettings(MongoModel, Maker):
     CATCHUPS_HTTP_ROOT_FIELD = 'catchups_http_root'
     PROVIDERS_FIELD = 'providers'
     MONITORING_FILED = 'monitoring'
+    AUTO_START_FIELD = 'auto_start'
+    ACTIVATION_KEY_FIELD = 'activation_key'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -58,6 +60,9 @@ class LoadBalanceSettings(MongoModel, Maker):
                                                                                     port=DEFAULT_CATCHUPS_HTTP_PORT))
     catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
     # stats
+    auto_start = fields.BooleanField(default=False, required=True)
+    activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
+                                      min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     stats = fields.EmbeddedModelListField(Machine, blank=True)
@@ -133,6 +138,14 @@ class LoadBalanceSettings(MongoModel, Maker):
         if res:  # required field
             self.monitoring = monitoring
 
+        res, auto_start = self.check_required_type(LoadBalanceSettings.AUTO_START_FIELD, bool, json)
+        if res:  # required field
+            self.auto_start = auto_start
+
+        res, activation_key = self.check_optional_type(LoadBalanceSettings.ACTIVATION_KEY_FIELD, str, json)
+        if res:  # optional field
+            self.activation_key = activation_key
+
         try:
             self.full_clean()
         except errors.ValidationError as err:
@@ -148,4 +161,6 @@ class LoadBalanceSettings(MongoModel, Maker):
                 LoadBalanceSettings.CATCHUPS_HOST_FIELD: self.catchups_http_host.to_front_dict(),
                 LoadBalanceSettings.CATCHUPS_HTTP_ROOT_FIELD: self.catchups_hls_directory,
                 LoadBalanceSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
+                LoadBalanceSettings.AUTO_START_FIELD: self.auto_start,
+                LoadBalanceSettings.ACTIVATION_KEY_FIELD: self.activation_key,
                 LoadBalanceSettings.PROVIDERS_FIELD: providers, LoadBalanceSettings.MONITORING_FILED: self.monitoring}

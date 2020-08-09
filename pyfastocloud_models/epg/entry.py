@@ -45,6 +45,8 @@ class EpgSettings(MongoModel, Maker):
     URLS_FIELD = 'urls'
     PROVIDERS_FIELD = 'providers'
     MONITORING_FILED = 'monitoring'
+    AUTO_START_FIELD = 'auto_start'
+    ACTIVATION_KEY_FIELD = 'activation_key'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -74,6 +76,9 @@ class EpgSettings(MongoModel, Maker):
     host = fields.EmbeddedModelField(HostAndPort,
                                      default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
     # stats
+    auto_start = fields.BooleanField(default=False, required=True)
+    activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
+                                      min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     stats = fields.EmbeddedModelListField(Machine, blank=True)
@@ -155,6 +160,14 @@ class EpgSettings(MongoModel, Maker):
         if res:  # required field
             self.monitoring = monitoring
 
+        res, auto_start = self.check_required_type(EpgSettings.AUTO_START_FIELD, bool, json)
+        if res:  # required field
+            self.auto_start = auto_start
+
+        res, activation_key = self.check_optional_type(EpgSettings.ACTIVATION_KEY_FIELD, str, json)
+        if res:  # optional field
+            self.activation_key = activation_key
+
         try:
             self.full_clean()
         except errors.ValidationError as err:
@@ -170,4 +183,6 @@ class EpgSettings(MongoModel, Maker):
         return {EpgSettings.ID_FIELD: self.get_id(), EpgSettings.NAME_FIELD: self.name,
                 EpgSettings.HOST_FIELD: self.host.to_front_dict(), EpgSettings.URLS_FIELD: urls,
                 EpgSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
+                EpgSettings.AUTO_START_FIELD: self.auto_start,
+                EpgSettings.ACTIVATION_KEY_FIELD: self.activation_key,
                 EpgSettings.PROVIDERS_FIELD: providers, EpgSettings.MONITORING_FILED: self.monitoring}

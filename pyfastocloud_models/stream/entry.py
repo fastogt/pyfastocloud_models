@@ -192,7 +192,7 @@ class IStream(MongoModel, Maker):
     def fixup_output_urls(self, settings):
         return
 
-    def save(self, settings, cascade=None, full_clean=True, force_insert=False):
+    def save(self, settings=None, cascade=None, full_clean=True, force_insert=False):
         if self.pk is None:
             self.pk = ObjectId()
         self.fixup_output_urls(settings)
@@ -440,7 +440,10 @@ class HardwareStream(IStream):
 
     def generate_http_link(self, settings, hls_type: constants.HlsType, chunk_duration=10,
                            playlist_name=constants.DEFAULT_HLS_PLAYLIST, oid=OutputUrl.generate_id()) -> OutputUrl:
-        http_root = self._generate_http_root_dir(settings, oid)
+        if not settings:
+            raise ValueError('Invalid input, settings required')
+
+        http_root = self._generate_http_root_dir(settings.hls_directory, oid)
         link = '{0}/{1}'.format(http_root, playlist_name)
         result = OutputUrl(id=oid, uri=settings.generate_http_link(link), http_root=http_root,
                            hls_type=hls_type)
@@ -451,7 +454,10 @@ class HardwareStream(IStream):
     def generate_vod_link(self, settings, hls_type: constants.HlsType, chunk_duration=10,
                           playlist_name=constants.DEFAULT_HLS_PLAYLIST,
                           oid=OutputUrl.generate_id()) -> OutputUrl:
-        vods_root = self._generate_vods_root_dir(settings, oid)
+        if not settings:
+            raise ValueError('Invalid input, settings required')
+
+        vods_root = self._generate_vods_root_dir(settings.vods_directory, oid)
         link = '{0}/{1}'.format(vods_root, playlist_name)
         result = OutputUrl(id=oid, uri=settings.generate_vods_link(link), http_root=vods_root, hls_type=hls_type)
         if chunk_duration is not None:
@@ -461,7 +467,10 @@ class HardwareStream(IStream):
     def generate_cod_link(self, settings, hls_type: constants.HlsType, chunk_duration=5,
                           playlist_name=constants.DEFAULT_HLS_PLAYLIST,
                           oid=OutputUrl.generate_id()) -> OutputUrl:
-        cods_root = self._generate_cods_root_dir(settings, oid)
+        if not settings:
+            raise ValueError('Invalid input, settings required')
+
+        cods_root = self._generate_cods_root_dir(settings.cods_directory, oid)
         link = '{0}/{1}'.format(cods_root, playlist_name)
         result = OutputUrl(id=oid, uri=settings.generate_cods_link(link), http_root=cods_root, hls_type=hls_type)
         if chunk_duration is not None:
@@ -472,14 +481,14 @@ class HardwareStream(IStream):
         return
 
     # private
-    def _generate_http_root_dir(self, settings, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(settings.hls_directory, self.get_type(), self.get_id(), oid)
+    def _generate_http_root_dir(self, hls_directory: str, oid: int):
+        return '{0}/{1}/{2}/{3}'.format(hls_directory, self.get_type(), self.get_id(), oid)
 
-    def _generate_vods_root_dir(self, settings, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(settings.vods_directory, self.get_type(), self.get_id(), oid)
+    def _generate_vods_root_dir(self, vods_directory: str, oid: int):
+        return '{0}/{1}/{2}/{3}'.format(vods_directory, self.get_type(), self.get_id(), oid)
 
-    def _generate_cods_root_dir(self, settings, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(settings.cods_directory, self.get_type(), self.get_id(), oid)
+    def _generate_cods_root_dir(self, cods_directory: str, oid: int):
+        return '{0}/{1}/{2}/{3}'.format(cods_directory, self.get_type(), self.get_id(), oid)
 
     def _fixup_http_output_urls(self, settings):
         for idx, val in enumerate(self.output):

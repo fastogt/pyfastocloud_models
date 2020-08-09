@@ -473,13 +473,13 @@ class HardwareStream(IStream):
 
     # private
     def _generate_http_root_dir(self, settings, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(settings.hls_directory, self.get_type(), self.uuid, oid)
+        return '{0}/{1}/{2}/{3}'.format(settings.hls_directory, self.get_type(), self.get_id(), oid)
 
     def _generate_vods_root_dir(self, settings, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(settings.vods_directory, self.get_type(), self.uuid, oid)
+        return '{0}/{1}/{2}/{3}'.format(settings.vods_directory, self.get_type(), self.get_id(), oid)
 
     def _generate_cods_root_dir(self, settings, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(settings.cods_directory, self.get_type(), self.uuid, oid)
+        return '{0}/{1}/{2}/{3}'.format(settings.cods_directory, self.get_type(), self.get_id(), oid)
 
     def _fixup_http_output_urls(self, settings):
         for idx, val in enumerate(self.output):

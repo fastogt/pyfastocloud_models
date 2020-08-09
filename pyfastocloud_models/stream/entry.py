@@ -189,13 +189,13 @@ class IStream(MongoModel, Maker):
     def generate_input_playlist(self, header=True) -> str:
         raise NotImplementedError('subclasses must override generate_input_playlist()!')
 
-    def fixup_output_urls(self):
+    def fixup_output_urls(self, settings):
         return
 
-    def save(self, cascade=None, full_clean=True, force_insert=False):
+    def save(self, settings, cascade=None, full_clean=True, force_insert=False):
         if self.pk is None:
             self.pk = ObjectId()
-        self.fixup_output_urls()
+        self.fixup_output_urls(settings)
         return super(IStream, self).save(cascade, full_clean, force_insert)
 
     def delete(self, *args, **kwargs):
@@ -438,50 +438,50 @@ class HardwareStream(IStream):
 
         return result
 
-    def generate_http_link(self, hls_type: constants.HlsType, chunk_duration=10,
+    def generate_http_link(self, settings, hls_type: constants.HlsType, chunk_duration=10,
                            playlist_name=constants.DEFAULT_HLS_PLAYLIST, oid=OutputUrl.generate_id()) -> OutputUrl:
-        http_root = self._generate_http_root_dir(oid)
+        http_root = self._generate_http_root_dir(settings, oid)
         link = '{0}/{1}'.format(http_root, playlist_name)
-        result = OutputUrl(id=oid, uri=self._settings.generate_http_link(link), http_root=http_root,
+        result = OutputUrl(id=oid, uri=settings.generate_http_link(link), http_root=http_root,
                            hls_type=hls_type)
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
 
-    def generate_vod_link(self, hls_type: constants.HlsType, chunk_duration=10,
+    def generate_vod_link(self, settings, hls_type: constants.HlsType, chunk_duration=10,
                           playlist_name=constants.DEFAULT_HLS_PLAYLIST,
                           oid=OutputUrl.generate_id()) -> OutputUrl:
-        vods_root = self._generate_vods_root_dir(oid)
+        vods_root = self._generate_vods_root_dir(settings, oid)
         link = '{0}/{1}'.format(vods_root, playlist_name)
-        result = OutputUrl(id=oid, uri=self._settings.generate_vods_link(link), http_root=vods_root, hls_type=hls_type)
+        result = OutputUrl(id=oid, uri=settings.generate_vods_link(link), http_root=vods_root, hls_type=hls_type)
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
 
-    def generate_cod_link(self, hls_type: constants.HlsType, chunk_duration=5,
+    def generate_cod_link(self, settings, hls_type: constants.HlsType, chunk_duration=5,
                           playlist_name=constants.DEFAULT_HLS_PLAYLIST,
                           oid=OutputUrl.generate_id()) -> OutputUrl:
-        cods_root = self._generate_cods_root_dir(oid)
+        cods_root = self._generate_cods_root_dir(settings, oid)
         link = '{0}/{1}'.format(cods_root, playlist_name)
-        result = OutputUrl(id=oid, uri=self._settings.generate_cods_link(link), http_root=cods_root, hls_type=hls_type)
+        result = OutputUrl(id=oid, uri=settings.generate_cods_link(link), http_root=cods_root, hls_type=hls_type)
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
 
-    def fixup_output_urls(self):
+    def fixup_output_urls(self, settings):
         return
 
     # private
-    def _generate_http_root_dir(self, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(self._settings.hls_directory, self.get_type(), self.uuid, oid)
+    def _generate_http_root_dir(self, settings, oid: int):
+        return '{0}/{1}/{2}/{3}'.format(settings.hls_directory, self.get_type(), self.uuid, oid)
 
-    def _generate_vods_root_dir(self, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(self._settings.vods_directory, self.get_type(), self.uuid, oid)
+    def _generate_vods_root_dir(self, settings, oid: int):
+        return '{0}/{1}/{2}/{3}'.format(settings.vods_directory, self.get_type(), self.uuid, oid)
 
-    def _generate_cods_root_dir(self, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(self._settings.cods_directory, self.get_type(), self.uuid, oid)
+    def _generate_cods_root_dir(self, settings, oid: int):
+        return '{0}/{1}/{2}/{3}'.format(settings.cods_directory, self.get_type(), self.uuid, oid)
 
-    def _fixup_http_output_urls(self):
+    def _fixup_http_output_urls(self, settings):
         for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
@@ -490,9 +490,9 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_http_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self.generate_http_link(settings, val.hls_type, val.chunk_duration, filename, val.id)
 
-    def _fixup_vod_output_urls(self):
+    def _fixup_vod_output_urls(self, settings):
         for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
@@ -501,9 +501,9 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_vod_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self.generate_vod_link(settings, val.hls_type, val.chunk_duration, filename, val.id)
 
-    def _fixup_cod_output_urls(self):
+    def _fixup_cod_output_urls(self, settings):
         for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
@@ -512,7 +512,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_cod_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self.generate_cod_link(settings, val.hls_type, val.chunk_duration, filename, val.id)
 
 
 class RelayStream(HardwareStream):
@@ -552,8 +552,8 @@ class RelayStream(HardwareStream):
     def get_audio_parser(self):
         return self.audio_parser
 
-    def fixup_output_urls(self):
-        return self._fixup_http_output_urls()
+    def fixup_output_urls(self, settings):
+        return self._fixup_http_output_urls(settings)
 
 
 class EncodeStream(HardwareStream):
@@ -713,8 +713,8 @@ class EncodeStream(HardwareStream):
     def get_audio_bit_rate(self):
         return self.audio_bit_rate
 
-    def fixup_output_urls(self):
-        return self._fixup_http_output_urls()
+    def fixup_output_urls(self, settings):
+        return self._fixup_http_output_urls(settings)
 
 
 class TimeshiftRecorderStream(RelayStream):
@@ -748,7 +748,7 @@ class TimeshiftRecorderStream(RelayStream):
     def get_timeshift_chunk_duration(self):
         return self.timeshift_chunk_duration
 
-    def fixup_output_urls(self):
+    def fixup_output_urls(self, settings):
         return
 
 
@@ -831,7 +831,7 @@ class TestLifeStream(RelayStream):
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.TEST_LIFE
 
-    def fixup_output_urls(self):
+    def fixup_output_urls(self, settings):
         return
 
 
@@ -842,8 +842,8 @@ class CodRelayStream(RelayStream):
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.COD_RELAY
 
-    def fixup_output_urls(self):
-        return self._fixup_cod_output_urls()
+    def fixup_output_urls(self, settings):
+        return self._fixup_cod_output_urls(settings)
 
 
 class CodEncodeStream(EncodeStream):
@@ -853,8 +853,8 @@ class CodEncodeStream(EncodeStream):
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.COD_ENCODE
 
-    def fixup_output_urls(self):
-        return self._fixup_cod_output_urls()
+    def fixup_output_urls(self, settings):
+        return self._fixup_cod_output_urls(settings)
 
 
 # VODS
@@ -958,8 +958,8 @@ class VodRelayStream(RelayStream, VodBasedStream):
         front[VodBasedStream.PRIME_DATE_FIELD] = self.prime_date_utc_msec()
         return front
 
-    def fixup_output_urls(self):
-        return self._fixup_vod_output_urls()
+    def fixup_output_urls(self, settings):
+        return self._fixup_vod_output_urls(settings)
 
 
 class VodEncodeStream(EncodeStream, VodBasedStream):
@@ -978,8 +978,8 @@ class VodEncodeStream(EncodeStream, VodBasedStream):
         front[VodBasedStream.PRIME_DATE_FIELD] = self.prime_date_utc_msec()
         return front
 
-    def fixup_output_urls(self):
-        return self._fixup_vod_output_urls()
+    def fixup_output_urls(self, settings):
+        return self._fixup_vod_output_urls(settings)
 
 
 class EventStream(VodEncodeStream):

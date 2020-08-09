@@ -318,6 +318,7 @@ class HardwareStream(IStream):
     AUTO_EXIT_TIME_FIELD = 'auto_exit_time'
     PHOENIX_FIELD = 'phoenix'
     EXTRA_CONFIG_FIELD = 'extra_config'
+    AUTO_START_FIELD = 'auto_start'
 
     # required
     log_level = fields.IntegerField(default=StreamLogLevel.LOG_LEVEL_INFO, min_value=StreamLogLevel.LOG_LEVEL_EMERG,
@@ -330,6 +331,7 @@ class HardwareStream(IStream):
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
     input = fields.EmbeddedModelListField(InputUrl, required=True)
     extra_config = fields.CharField(default='{}', required=True)
+    auto_start = fields.BooleanField(default=False, required=True)
     # optional
     auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
                                          required=False)
@@ -369,6 +371,10 @@ class HardwareStream(IStream):
         res, have_audio = IStream.check_optional_type(HardwareStream.HAVE_AUDIO_FIELD, bool, json)
         if res:  # optional field
             self.have_audio = have_audio
+
+        res, auto_start = IStream.check_optional_type(HardwareStream.AUTO_START_FIELD, bool, json)
+        if res:  # optional field
+            self.auto_start = auto_start
 
         res, audio_select = IStream.check_optional_type(HardwareStream.AUDIO_SELECT_FIELD, int, json)
         if res:  # optional field

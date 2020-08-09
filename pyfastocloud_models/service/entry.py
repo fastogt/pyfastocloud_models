@@ -30,6 +30,8 @@ class ServiceSettings(MongoModel, Maker):
     PROVIDERS_FIELD = 'providers'
     CREATED_DATE_FIELD = 'created_date'
     MONITORING_FILED = 'monitoring'
+    AUTO_START_FIELD = 'auto_start'
+    ACTIVATION_KEY_FIELD = 'activation_key'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -96,6 +98,9 @@ class ServiceSettings(MongoModel, Maker):
     proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
 
     # stats
+    auto_start = fields.BooleanField(default=False, required=True)
+    activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
+                                      min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     stats = fields.EmbeddedModelListField(Machine, blank=True)
@@ -303,6 +308,14 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # required field
             self.monitoring = monitoring
 
+        res, auto_start = self.check_required_type(ServiceSettings.AUTO_START_FIELD, bool, json)
+        if res:  # required field
+            self.auto_start = auto_start
+
+        res, activation_key = self.check_optional_type(ServiceSettings.ACTIVATION_KEY_FIELD, str, json)
+        if res:  # optional field
+            self.activation_key = activation_key
+
         try:
             self.full_clean()
         except errors.ValidationError as err:
@@ -325,5 +338,7 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory,
                 ServiceSettings.PROXY_DIRECTORY_FIELD: self.proxy_directory,
                 ServiceSettings.MONITORING_FILED: self.monitoring,
+                ServiceSettings.AUTO_START_FIELD: self.auto_start,
+                ServiceSettings.ACTIVATION_KEY_FIELD: self.activation_key,
                 ServiceSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 ServiceSettings.PROVIDERS_FIELD: providers}

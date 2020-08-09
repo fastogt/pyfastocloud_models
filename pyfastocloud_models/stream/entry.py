@@ -440,16 +440,16 @@ class HardwareStream(IStream):
 
     # private
     def _generate_http_root_dir(self, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(self._settings.hls_directory, self._stream.get_type(), self.uuid, oid)
+        return '{0}/{1}/{2}/{3}'.format(self._settings.hls_directory, self.get_type(), self.uuid, oid)
 
     def _generate_vods_root_dir(self, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(self._settings.vods_directory, self._stream.get_type(), self.uuid, oid)
+        return '{0}/{1}/{2}/{3}'.format(self._settings.vods_directory, self.get_type(), self.uuid, oid)
 
     def _generate_cods_root_dir(self, oid: int):
-        return '{0}/{1}/{2}/{3}'.format(self._settings.cods_directory, self._stream.get_type(), self.uuid, oid)
+        return '{0}/{1}/{2}/{3}'.format(self._settings.cods_directory, self.get_type(), self.uuid, oid)
 
     def _fixup_http_output_urls(self):
-        for idx, val in enumerate(self._stream.output):
+        for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
                 return
@@ -457,10 +457,10 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self._stream.output[idx] = self.generate_http_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self.generate_http_link(val.hls_type, val.chunk_duration, filename, val.id)
 
     def _fixup_vod_output_urls(self):
-        for idx, val in enumerate(self._stream.output):
+        for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
                 return
@@ -468,10 +468,10 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self._stream.output[idx] = self.generate_vod_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self.generate_vod_link(val.hls_type, val.chunk_duration, filename, val.id)
 
     def _fixup_cod_output_urls(self):
-        for idx, val in enumerate(self._stream.output):
+        for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
                 return
@@ -479,7 +479,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self._stream.output[idx] = self.generate_cod_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self.generate_cod_link(val.hls_type, val.chunk_duration, filename, val.id)
 
 
 class RelayStream(HardwareStream):

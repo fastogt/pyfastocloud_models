@@ -457,7 +457,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_http_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self._generate_http_link(val.hls_type, val.chunk_duration, filename, val.id)
 
     def _fixup_vod_output_urls(self):
         for idx, val in enumerate(self.output):
@@ -468,7 +468,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_vod_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self._generate_vod_link(val.hls_type, val.chunk_duration, filename, val.id)
 
     def _fixup_cod_output_urls(self):
         for idx, val in enumerate(self.output):
@@ -479,7 +479,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_cod_link(val.hls_type, val.chunk_duration, filename, val.id)
+                self.output[idx] = self._generate_cod_link(val.hls_type, val.chunk_duration, filename, val.id)
 
 
 class RelayStream(HardwareStream):

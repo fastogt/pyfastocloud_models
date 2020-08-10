@@ -44,6 +44,7 @@ class EpgSettings(MongoModel, Maker):
     HOST_FIELD = 'host'
     URLS_FIELD = 'urls'
     PROVIDERS_FIELD = 'providers'
+    CREATED_DATE_FIELD = 'created_date'
     MONITORING_FILED = 'monitoring'
     AUTO_START_FIELD = 'auto_start'
     ACTIVATION_KEY_FIELD = 'activation_key'

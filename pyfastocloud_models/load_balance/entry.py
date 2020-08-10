@@ -18,6 +18,7 @@ class LoadBalanceSettings(MongoModel, Maker):
     CATCHUPS_HOST_FIELD = 'catchups_host'
     CATCHUPS_HTTP_ROOT_FIELD = 'catchups_http_root'
     PROVIDERS_FIELD = 'providers'
+    CREATED_DATE_FIELD = 'created_date'
     MONITORING_FILED = 'monitoring'
     AUTO_START_FIELD = 'auto_start'
     ACTIVATION_KEY_FIELD = 'activation_key'

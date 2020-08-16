@@ -13,6 +13,7 @@ class ContentRequest(MongoModel, Maker):
     TITLE_FIELD = 'title'
     TYPE_FIELD = 'type'
     STATUS_FIELD = 'status'
+    CREATED_DATE_FIELD = 'created_date'
 
     @staticmethod
     def get_by_id(sid: ObjectId):

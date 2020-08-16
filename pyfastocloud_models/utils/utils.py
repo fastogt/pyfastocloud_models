@@ -53,7 +53,7 @@ def is_valid_http_url(url: str, timeout=1) -> bool:
 def is_valid_url(url):
     try:
         parsed_url = urlparse(url)
-        return all([parsed_url.scheme, parsed_url.netloc])
+        return all([parsed_url.scheme])
     except TypeError as ex:
         return False
 

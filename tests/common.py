@@ -189,6 +189,14 @@ class CommonTest(unittest.TestCase):
         self.assertTrue(prod_url.is_valid())
         self.assertEqual(prod_url.chunk_duration, chunk_duration)
 
+        file_url = 'file:///home/ytvmedia/Media/TV/Ballers/Season 5/Ballers.2015.S05E02.720p.HEVC.x265-MeGusta.mkv'
+        prod = {OutputUrl.ID_FIELD: uid, OutputUrl.URI_FIELD: file_url}
+        prod_url = OutputUrl.make_entry(prod)
+        self.assertEqual(prod_url.id, uid)
+        self.assertEqual(prod_url.uri, file_url)
+        self.assertTrue(prod_url.is_valid())
+        self.assertEqual(prod_url.chunk_duration, chunk_duration)
+
     def test_output_url(self):
         invalid_output_url_str = str()
         test_uri = constants.DEFAULT_TEST_URL

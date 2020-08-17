@@ -114,9 +114,5 @@ class Machine(EmbeddedMongoModel, Maker):
 
     @staticmethod
     def default():
-        return Machine(cpu=0.0, gpu=0.0, load_average=str(),
-                       memory_total=0, memory_free=0,
-                       hdd_total=0, hdd_free=0,
-                       bandwidth_in=0, bandwidth_out=0,
-                       uptime=0, timestamp=0,
-                       total_bytes_in=0, total_bytes_out=0)
+        return Machine(cpu=0.0, gpu=0.0, load_average=str(), memory_total=0, memory_free=0, hdd_total=0, hdd_free=0,
+                       bandwidth_in=0, bandwidth_out=0, uptime=0, timestamp=0, total_bytes_in=0, total_bytes_out=0)

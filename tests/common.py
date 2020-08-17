@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import unittest
 
+import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import OutputUrl, InputUrl, Point, Size, Logo, RSVGLogo, HostAndPort, \
     Rational, StreamLink
-import pyfastocloud_models.constants as constants
 
 
 class CommonTest(unittest.TestCase):
@@ -175,28 +175,6 @@ class CommonTest(unittest.TestCase):
         # self.assertEqual(input_url.to_front_dict(), origin)
         self.assertEqual(input_url, InputUrl.make_entry(origin))
 
-        chunk_duration = 5
-        hls_type = 0
-        fastocloud_url = 'http://fastocloud.com:8000/2/5f2bac3de154540b4476c5d2/0/master.m3u8'
-        http_root = '~/streamer/hls/2/5f2bac3de154540b4476c5d2/0'
-        prod = {OutputUrl.ID_FIELD: uid, OutputUrl.URI_FIELD: fastocloud_url,
-                OutputUrl.HTTP_ROOT_FIELD: http_root, OutputUrl.HLS_TYPE_FIELD: hls_type,
-                OutputUrl.CHUNK_DURATION_FIELD: chunk_duration}
-        prod_url = OutputUrl.make_entry(prod)
-        self.assertEqual(prod_url.id, uid)
-        self.assertEqual(prod_url.http_root, http_root)
-        self.assertEqual(prod_url.uri, fastocloud_url)
-        self.assertTrue(prod_url.is_valid())
-        self.assertEqual(prod_url.chunk_duration, chunk_duration)
-
-        file_url = 'file:///home/ytvmedia/Media/TV/Ballers/Season 5/Ballers.2015.S05E02.720p.HEVC.x265-MeGusta.mkv'
-        prod = {OutputUrl.ID_FIELD: uid, OutputUrl.URI_FIELD: file_url}
-        prod_url = OutputUrl.make_entry(prod)
-        self.assertEqual(prod_url.id, uid)
-        self.assertEqual(prod_url.uri, file_url)
-        self.assertTrue(prod_url.is_valid())
-        self.assertEqual(prod_url.chunk_duration, chunk_duration)
-
     def test_output_url(self):
         invalid_output_url_str = str()
         test_uri = constants.DEFAULT_TEST_URL
@@ -226,6 +204,34 @@ class CommonTest(unittest.TestCase):
         output_url = OutputUrl.make_entry({OutputUrl.URI_FIELD: display_uri, OutputUrl.ID_FIELD: uid})
         self.assertTrue(output_url.is_valid())
         self.assertEqual(output_url.to_front_dict(), {OutputUrl.URI_FIELD: display_uri, OutputUrl.ID_FIELD: uid})
+
+        chunk_duration = 51
+        hls_type = 0
+        fastocloud_url = 'http://fastocloud.com:8000/2/5f2bac3de154540b4476c5d2/0/master.m3u8'
+        http_root = '~/streamer/hls/2/5f2bac3de154540b4476c5d2/0'
+        prod = {OutputUrl.ID_FIELD: uid, OutputUrl.URI_FIELD: fastocloud_url,
+                OutputUrl.HTTP_ROOT_FIELD: http_root, OutputUrl.HLS_TYPE_FIELD: hls_type,
+                OutputUrl.CHUNK_DURATION_FIELD: chunk_duration}
+        prod_url = OutputUrl.make_entry(prod)
+        self.assertEqual(prod_url.id, uid)
+        self.assertEqual(prod_url.http_root, http_root)
+        self.assertEqual(prod_url.uri, fastocloud_url)
+        self.assertTrue(prod_url.is_valid())
+        self.assertEqual(prod_url.chunk_duration, chunk_duration)
+
+        file_str_url = 'file:///home/ytvmedia/Media/TV/Ballers/Season 5/Ballers.2015.S05E02.720p.HEVC.x265-MeGusta.mkv'
+        file = {OutputUrl.ID_FIELD: uid, OutputUrl.URI_FIELD: file_str_url}
+        file_url = OutputUrl.make_entry(file)
+        self.assertEqual(file_url.id, uid)
+        self.assertEqual(file_url.uri, file_str_url)
+        self.assertTrue(file_url.is_valid())
+
+        rtmp_str_url = 'rtmp://192.168.1.1:1935/live/test'
+        rtmp = {OutputUrl.ID_FIELD: uid, OutputUrl.URI_FIELD: rtmp_str_url}
+        rtmp_url = OutputUrl.make_entry(rtmp)
+        self.assertEqual(rtmp_url.id, uid)
+        self.assertEqual(rtmp_url.uri, rtmp_str_url)
+        self.assertTrue(rtmp_url.is_valid())
 
 
 if __name__ == '__main__':

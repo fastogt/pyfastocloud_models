@@ -392,8 +392,7 @@ class Subscriber(MongoModel, Maker):
         if serial in self.series:
             return
 
-        if serial not in self.series:
-            self.series.append(serial)
+        self.series.append(serial)
 
     def remove_official_serial(self, serial: Serial):
         if not serial:

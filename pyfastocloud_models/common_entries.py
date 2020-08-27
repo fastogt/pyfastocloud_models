@@ -532,6 +532,8 @@ class MachineLearning(EmbeddedMongoModel, Maker):
 
         res, url = self.check_required_type(MachineLearning.MODEL_URL_FIELD, str, json)
         if res:
+            if not is_valid_url(url):
+                raise ValueError('Invalid url: {0}'.format(url))
             self.model_url = url
 
         res, tracking = self.check_required_type(MachineLearning.TRACKING, bool, json)
@@ -576,6 +578,8 @@ class MetaUrl(EmbeddedMongoModel, Maker):
 
         res, url = self.check_required_type(MetaUrl.URL_FIELD, str, json)
         if res:
+            if not is_valid_url(url):
+                raise ValueError('Invalid url: {0}'.format(url))
             self.url = url
 
 

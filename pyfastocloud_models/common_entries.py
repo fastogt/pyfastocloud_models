@@ -233,20 +233,18 @@ class OutputUrl(Url):
 
         res_root, http_root = self.check_optional_type(OutputUrl.HTTP_ROOT_FIELD, str, json)
         res_type, hls_type = self.check_optional_type(OutputUrl.HLS_TYPE_FIELD, int, json)
-        if res_root and res_type:  # optional field
-            if http_root and hls_type is not None:
+        res_hlssink, hlssink2 = self.check_optional_type(OutputUrl.HLSSINK2, bool, json)
+        if res_root and res_type and res_hlssink:  # optional field
+            if http_root and hls_type is not None and res_hlssink is not None:
                 self.http_root = http_root
                 self.hls_type = hls_type
+                self.hlssink2 = hlssink2
 
                 res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION_FIELD, int, json)
                 if res_chunk:  # optional field
                     self.chunk_duration = chunk_duration
                 else:
                     delattr(self, OutputUrl.CHUNK_DURATION_FIELD)
-
-        res, hlssink2 = self.check_optional_type(OutputUrl.HLSSINK2, bool, json)
-        if res:  # optional field
-            self.hlssink2 = hlssink2
 
         res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
         if res:  # optional field

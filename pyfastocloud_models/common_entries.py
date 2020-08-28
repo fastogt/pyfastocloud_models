@@ -203,11 +203,13 @@ class OutputUrl(Url):
     HTTP_ROOT_FIELD = 'http_root'
     CHUNK_DURATION_FIELD = 'chunk_duration'
     HLS_TYPE_FIELD = 'hls_type'
+    HLSSINK2 = 'hlssink2'
     SRT_MODE_FIELD = 'srt_mode'
 
     http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                  required=False)
     chunk_duration = fields.IntegerField(required=False, blank=True)
+    hlssink2 = fields.BooleanField(required=False, blank=True)
     hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
     srt_mode = fields.IntegerField(choices=constants.SrtMode.choices(), required=False, blank=True)
 
@@ -220,7 +222,7 @@ class OutputUrl(Url):
 
     @classmethod
     def make_default_http(cls):
-        return cls(id=Url.generate_id(), http_root='/', hls_type=constants.HlsType.HLS_PULL)
+        return cls(id=Url.generate_id(), hlssink2=False, http_root='/', hls_type=constants.HlsType.HLS_PULL)
 
     @classmethod
     def make_test(cls):
@@ -241,6 +243,10 @@ class OutputUrl(Url):
                     self.chunk_duration = chunk_duration
                 else:
                     delattr(self, OutputUrl.CHUNK_DURATION_FIELD)
+
+        res, hlssink2 = self.check_optional_type(OutputUrl.HLSSINK2, bool, json)
+        if res:  # optional field
+            self.hlssink2 = hlssink2
 
         res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
         if res:  # optional field

@@ -205,9 +205,12 @@ class OutputUrl(Url):
     HLS_TYPE_FIELD = 'hls_type'
     HLSSINK2 = 'hlssink2'
     SRT_MODE_FIELD = 'srt_mode'
+    PLAYLIST_ROOT_FIELD = 'playlist_root'
 
     http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                  required=False)
+    playlist_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
+                                     required=False)
     chunk_duration = fields.IntegerField(required=False, blank=True)
     hlssink2 = fields.BooleanField(required=False, blank=True)
     hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
@@ -254,6 +257,12 @@ class OutputUrl(Url):
             self.chunk_duration = chunk_duration
         else:
             delattr(self, OutputUrl.CHUNK_DURATION_FIELD)
+
+        res_playlist, playlist = self.check_optional_type(OutputUrl.PLAYLIST_ROOT_FIELD, str, json)
+        if res_playlist:  # optional field
+            self.playlist_root = playlist
+        else:
+            delattr(self, OutputUrl.PLAYLIST_ROOT_FIELD)
 
         res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
         if res:  # optional field

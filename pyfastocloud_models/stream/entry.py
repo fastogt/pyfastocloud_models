@@ -451,8 +451,11 @@ class HardwareStream(IStream):
 
         http_root = self._generate_http_root_dir(settings.hls_directory, oid)
         link = '{0}/{1}'.format(http_root, playlist_name)
-        result = OutputUrl(id=oid, uri=settings.generate_http_link(link), http_root=http_root,
-                           hls_type=hls_type, hlssink2=hlssink2)
+        result = OutputUrl(id=oid, uri=settings.generate_http_link(link), http_root=http_root)
+        if hls_type is not None:
+            result.hls_type = hls_type
+        if hlssink2 is not None:
+            result.hlssink2 = hlssink2
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
@@ -465,8 +468,11 @@ class HardwareStream(IStream):
 
         vods_root = self._generate_vods_root_dir(settings.vods_directory, oid)
         link = '{0}/{1}'.format(vods_root, playlist_name)
-        result = OutputUrl(id=oid, uri=settings.generate_vods_link(link), http_root=vods_root, hls_type=hls_type,
-                           hlssink2=hlssink2)
+        result = OutputUrl(id=oid, uri=settings.generate_vods_link(link), http_root=vods_root)
+        if hls_type is not None:
+            result.hls_type = hls_type
+        if hlssink2 is not None:
+            result.hlssink2 = hlssink2
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
@@ -479,8 +485,11 @@ class HardwareStream(IStream):
 
         cods_root = self._generate_cods_root_dir(settings.cods_directory, oid)
         link = '{0}/{1}'.format(cods_root, playlist_name)
-        result = OutputUrl(id=oid, uri=settings.generate_cods_link(link), http_root=cods_root, hls_type=hls_type,
-                           hlssink2=hlssink2)
+        result = OutputUrl(id=oid, uri=settings.generate_cods_link(link), http_root=cods_root)
+        if hls_type is not None:
+            result.hls_type = hls_type
+        if hlssink2 is not None:
+            result.hlssink2 = hlssink2
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result

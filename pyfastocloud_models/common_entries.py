@@ -213,7 +213,7 @@ class OutputUrl(Url):
     playlist_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                      required=False)
     chunk_duration = fields.IntegerField(required=False, blank=True)
-    hlssink_type = fields.BooleanField(required=False, blank=True)
+    hlssink_type = fields.IntegerField(choices=constants.HlsSinkType.choices(), required=False, blank=True)
     hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
     # srt
     srt_mode = fields.IntegerField(choices=constants.SrtMode.choices(), required=False, blank=True)
@@ -227,7 +227,8 @@ class OutputUrl(Url):
 
     @classmethod
     def make_default_http(cls):
-        return cls(id=Url.generate_id(), hlssink_type=constants.HlsSinkType.HLSSINK, http_root='/', hls_type=constants.HlsType.HLS_PULL)
+        return cls(id=Url.generate_id(), hlssink_type=constants.HlsSinkType.HLSSINK, http_root='/',
+                   hls_type=constants.HlsType.HLS_PULL)
 
     @classmethod
     def make_test(cls):

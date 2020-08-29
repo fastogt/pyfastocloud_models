@@ -489,7 +489,7 @@ class HardwareStream(IStream):
         if hls_type is not None:
             result.hls_type = hls_type
         if hlssink_type is not None:
-            result.hlssink2 = hlssink_type
+            result.hlssink_type = hlssink_type
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
@@ -516,7 +516,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_http_link(settings, val.hls_type, val.hlssink2, val.chunk_duration,
+                self.output[idx] = self.generate_http_link(settings, val.hls_type, val.hlssink_type, val.chunk_duration,
                                                            filename, val.id)
 
     def _fixup_vod_output_urls(self, settings):
@@ -528,7 +528,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_vod_link(settings, val.hls_type, val.hlssink2, val.chunk_duration,
+                self.output[idx] = self.generate_vod_link(settings, val.hls_type, val.hlssink_type, val.chunk_duration,
                                                           filename, val.id)
 
     def _fixup_cod_output_urls(self, settings):
@@ -540,7 +540,7 @@ class HardwareStream(IStream):
             parsed_uri = urlparse(url)
             if parsed_uri.scheme == 'http':
                 filename = os.path.basename(parsed_uri.path)
-                self.output[idx] = self.generate_cod_link(settings, val.hls_type, val.hlssink2, val.chunk_duration,
+                self.output[idx] = self.generate_cod_link(settings, val.hls_type, val.hlssink_type, val.chunk_duration,
                                                           filename, val.id)
 
 

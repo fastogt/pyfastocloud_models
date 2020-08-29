@@ -227,7 +227,7 @@ class OutputUrl(Url):
 
     @classmethod
     def make_default_http(cls):
-        return cls(id=Url.generate_id(), hlssink2=False, http_root='/', hls_type=constants.HlsType.HLS_PULL)
+        return cls(id=Url.generate_id(), hlssink_type=constants.HlsSinkType.HLSSINK, http_root='/', hls_type=constants.HlsType.HLS_PULL)
 
     @classmethod
     def make_test(cls):
@@ -252,7 +252,7 @@ class OutputUrl(Url):
         if res_hlssink:
             self.hlssink_type = hlssink_type
         else:
-            delattr(self, OutputUrl.HLSSINK2)
+            delattr(self, OutputUrl.HLSSINK_TYPE_FIELD)
 
         res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION_FIELD, int, json)
         if res_chunk:  # optional field

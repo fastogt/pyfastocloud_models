@@ -232,23 +232,34 @@ class OutputUrl(Url):
         Url.update_entry(self, json)
 
         res_root, http_root = self.check_optional_type(OutputUrl.HTTP_ROOT_FIELD, str, json)
-        res_type, hls_type = self.check_optional_type(OutputUrl.HLS_TYPE_FIELD, int, json)
-        res_hlssink, hlssink2 = self.check_optional_type(OutputUrl.HLSSINK2, bool, json)
-        if res_root and res_type and res_hlssink:  # optional field
-            if http_root and hls_type is not None and res_hlssink is not None:
-                self.http_root = http_root
-                self.hls_type = hls_type
-                self.hlssink2 = hlssink2
+        if res_root:
+            self.http_root = http_root
+        else:
+            delattr(self, OutputUrl.HTTP_ROOT_FIELD)
 
-                res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION_FIELD, int, json)
-                if res_chunk:  # optional field
-                    self.chunk_duration = chunk_duration
-                else:
-                    delattr(self, OutputUrl.CHUNK_DURATION_FIELD)
+        res_type, hls_type = self.check_optional_type(OutputUrl.HLS_TYPE_FIELD, int, json)
+        if res_type:
+            self.hls_type = hls_type
+        else:
+            delattr(self, OutputUrl.HLS_TYPE_FIELD)
+
+        res_hlssink, hlssink2 = self.check_optional_type(OutputUrl.HLSSINK2, bool, json)
+        if res_hlssink:
+            self.hlssink2 = hlssink2
+        else:
+            delattr(self, OutputUrl.HLSSINK2)
+
+        res_chunk, chunk_duration = self.check_optional_type(OutputUrl.CHUNK_DURATION_FIELD, int, json)
+        if res_chunk:  # optional field
+            self.chunk_duration = chunk_duration
+        else:
+            delattr(self, OutputUrl.CHUNK_DURATION_FIELD)
 
         res, srt_mode = self.check_optional_type(OutputUrl.SRT_MODE_FIELD, int, json)
         if res:  # optional field
             self.srt_mode = srt_mode
+        else:
+            delattr(self, OutputUrl.SRT_MODE_FIELD)
 
 
 class Point(EmbeddedMongoModel, Maker):

@@ -444,7 +444,7 @@ class HardwareStream(IStream):
 
         return result
 
-    def generate_http_link(self, settings, hls_type: constants.HlsType, hlssink2: bool, chunk_duration=10,
+    def generate_http_link(self, settings, hls_type: constants.HlsType, hlssink_type: int, chunk_duration=10,
                            playlist_name=constants.DEFAULT_HLS_PLAYLIST, oid=OutputUrl.generate_id()) -> OutputUrl:
         if not settings:
             raise ValueError('Invalid input, settings required')
@@ -454,13 +454,13 @@ class HardwareStream(IStream):
         result = OutputUrl(id=oid, uri=settings.generate_http_link(link), http_root=http_root)
         if hls_type is not None:
             result.hls_type = hls_type
-        if hlssink2 is not None:
-            result.hlssink2 = hlssink2
+        if hlssink_type is not None:
+            result.hlssink_type = hlssink_type
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
 
-    def generate_vod_link(self, settings, hls_type: constants.HlsType, hlssink2: bool, chunk_duration=10,
+    def generate_vod_link(self, settings, hls_type: constants.HlsType, hlssink_type: int, chunk_duration=10,
                           playlist_name=constants.DEFAULT_HLS_PLAYLIST,
                           oid=OutputUrl.generate_id()) -> OutputUrl:
         if not settings:
@@ -471,13 +471,13 @@ class HardwareStream(IStream):
         result = OutputUrl(id=oid, uri=settings.generate_vods_link(link), http_root=vods_root)
         if hls_type is not None:
             result.hls_type = hls_type
-        if hlssink2 is not None:
-            result.hlssink2 = hlssink2
+        if hlssink_type is not None:
+            result.hlssink_type = hlssink_type
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result
 
-    def generate_cod_link(self, settings, hls_type: constants.HlsType, hlssink2: bool, chunk_duration=5,
+    def generate_cod_link(self, settings, hls_type: constants.HlsType, hlssink_type: int, chunk_duration=5,
                           playlist_name=constants.DEFAULT_HLS_PLAYLIST,
                           oid=OutputUrl.generate_id()) -> OutputUrl:
         if not settings:
@@ -488,8 +488,8 @@ class HardwareStream(IStream):
         result = OutputUrl(id=oid, uri=settings.generate_cods_link(link), http_root=cods_root)
         if hls_type is not None:
             result.hls_type = hls_type
-        if hlssink2 is not None:
-            result.hlssink2 = hlssink2
+        if hlssink_type is not None:
+            result.hlssink2 = hlssink_type
         if chunk_duration is not None:
             result.chunk_duration = chunk_duration
         return result

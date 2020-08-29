@@ -203,17 +203,19 @@ class OutputUrl(Url):
     HTTP_ROOT_FIELD = 'http_root'
     CHUNK_DURATION_FIELD = 'chunk_duration'
     HLS_TYPE_FIELD = 'hls_type'
-    HLSSINK2 = 'hlssink2'
+    HLSSINK_TYPE_FIELD = 'hlssink_type'
     SRT_MODE_FIELD = 'srt_mode'
     PLAYLIST_ROOT_FIELD = 'playlist_root'
 
+    # hls
     http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                  required=False)
     playlist_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
                                      required=False)
     chunk_duration = fields.IntegerField(required=False, blank=True)
-    hlssink2 = fields.BooleanField(required=False, blank=True)
+    hlssink_type = fields.BooleanField(required=False, blank=True)
     hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
+    # srt
     srt_mode = fields.IntegerField(choices=constants.SrtMode.choices(), required=False, blank=True)
 
     def __init__(self, *args, **kwargs):
@@ -246,9 +248,9 @@ class OutputUrl(Url):
         else:
             delattr(self, OutputUrl.HLS_TYPE_FIELD)
 
-        res_hlssink, hlssink2 = self.check_optional_type(OutputUrl.HLSSINK2, bool, json)
+        res_hlssink, hlssink_type = self.check_optional_type(OutputUrl.HLSSINK_TYPE_FIELD, int, json)
         if res_hlssink:
-            self.hlssink2 = hlssink2
+            self.hlssink_type = hlssink_type
         else:
             delattr(self, OutputUrl.HLSSINK2)
 

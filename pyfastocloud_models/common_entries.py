@@ -121,9 +121,9 @@ class StreamLink(EmbeddedMongoModel, Maker):
     HTTPS_PROXY_FIELD = 'https_proxy'
 
     http_proxy = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                  required=False)
+                                  required=False, blank=True)
     https_proxy = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                   required=False)
+                                   required=False, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(StreamLink, self).__init__(*args, **kwargs)
@@ -146,10 +146,14 @@ class StreamLink(EmbeddedMongoModel, Maker):
         res, http = self.check_optional_type(StreamLink.HTTP_PROXY_FIELD, str, json)
         if res:
             self.http_proxy = http
+        else:
+            delattr(self, StreamLink.HTTP_PROXY_FIELD)
 
         res, https = self.check_optional_type(StreamLink.HTTPS_PROXY_FIELD, str, json)
         if res:
             self.https_proxy = https
+        else:
+            delattr(self, StreamLink.HTTPS_PROXY_FIELD)
 
 
 class InputUrl(Url):

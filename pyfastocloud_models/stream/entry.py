@@ -441,6 +441,12 @@ class HardwareStream(IStream):
     def get_loop(self):
         return self.loop
 
+    def get_relay_video_type(self):
+        return self.relay_video_type
+
+    def get_relay_audio_type(self):
+        return self.relay_audio_type
+
     def get_restart_attempts(self):
         return self.restart_attempts
 

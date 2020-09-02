@@ -314,6 +314,8 @@ class HardwareStream(IStream):
     HAVE_AUDIO_FIELD = 'have_audio'
     AUDIO_SELECT_FIELD = 'audio_select'
     LOOP_FIELD = 'loop'
+    RELAY_VIDEO_TYPE_FIELD = 'relay_video_type'
+    RELAY_AUDIO_TYPE_FIELD = 'relay_audio_type'
     RESTART_ATTEMPTS_FIELD = 'restart_attempts'
     AUTO_EXIT_TIME_FIELD = 'auto_exit_time'
     PHOENIX_FIELD = 'phoenix'
@@ -329,6 +331,12 @@ class HardwareStream(IStream):
     have_video = fields.BooleanField(default=constants.DEFAULT_HAVE_VIDEO, required=True)
     have_audio = fields.BooleanField(default=constants.DEFAULT_HAVE_AUDIO, required=True)
     loop = fields.BooleanField(default=constants.DEFAULT_LOOP, required=True)
+    relay_video_type = fields.IntegerField(default=constants.RelayType.RELAY_DEEP,
+                                           min_value=constants.RelayType.RELAY_LITE,
+                                           max_value=constants.RelayType.RELAY_DEEP, required=True)
+    relay_audio_type = fields.IntegerField(default=constants.RelayType.RELAY_DEEP,
+                                           min_value=constants.RelayType.RELAY_LITE,
+                                           max_value=constants.RelayType.RELAY_DEEP, required=True)
     input = fields.EmbeddedModelListField(InputUrl, required=True)
     extra_config = fields.CharField(default='{}', required=True)
     auto_start = fields.BooleanField(default=False, required=True)
@@ -371,6 +379,14 @@ class HardwareStream(IStream):
         res, have_audio = IStream.check_optional_type(HardwareStream.HAVE_AUDIO_FIELD, bool, json)
         if res:  # optional field
             self.have_audio = have_audio
+
+        res, relay_video_type = IStream.check_optional_type(HardwareStream.RELAY_VIDEO_TYPE_FIELD, int, json)
+        if res:  # optional field
+            self.relay_video_type = relay_video_type
+
+        res, relay_audio_type = IStream.check_optional_type(HardwareStream.RELAY_AUDIO_TYPE_FIELD, int, json)
+        if res:  # optional field
+            self.relay_audio_type = relay_audio_type
 
         res, auto_start = IStream.check_optional_type(HardwareStream.AUTO_START_FIELD, bool, json)
         if res:  # optional field

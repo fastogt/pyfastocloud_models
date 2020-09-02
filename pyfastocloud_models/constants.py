@@ -479,6 +479,22 @@ class HlsSinkType(IntEnum):
         return str(self.value)
 
 
+class RelayType(IntEnum):
+    RELAY_LITE = 0
+    RELAY_DEEP = 1
+
+    @classmethod
+    def choices(cls):
+        return [(choice, choice.name) for choice in cls]
+
+    @classmethod
+    def coerce(cls, item):
+        return cls(int(item)) if not isinstance(item, cls) else item
+
+    def __str__(self):
+        return str(self.value)
+
+
 class SrtMode(IntEnum):
     NONE = 0
     CALLER = 1

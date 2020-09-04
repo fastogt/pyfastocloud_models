@@ -92,15 +92,17 @@ class Provider(MongoModel, Maker):
     def created_date_utc_msec(self):
         return date_to_utc_msec(self.created_date)
 
-    def add_subscriber(self, subscriber: Subscriber):
+    def can_add_subscriber(self, subscriber: Subscriber) -> bool:
         if not subscriber:
-            return
+            return False
 
-        if len(self.subscribers) < self.credits:
-            return
+        return len(self.subscribers) < self.credits and subscriber not in self.subscribers
 
-        if subscriber not in self.subscribers:
-            self.subscribers.append(subscriber)
+    def add_subscriber(self, subscriber: Subscriber):
+        if not self.can_add_subscriber(subscriber):
+            return False
+
+        self.subscribers.append(subscriber)
 
     def remove_subscriber(self, subscriber: Subscriber):
         if not subscriber:

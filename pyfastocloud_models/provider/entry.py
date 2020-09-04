@@ -99,11 +99,12 @@ class Provider(MongoModel, Maker):
         is_credits_ok = (len(self.subscribers) < self.credits or self.is_admin())
         return is_credits_ok and subscriber not in self.subscribers
 
-    def add_subscriber(self, subscriber: Subscriber):
+    def add_subscriber(self, subscriber: Subscriber) -> bool:
         if not self.can_add_subscriber(subscriber):
             return False
 
         self.subscribers.append(subscriber)
+        return True
 
     def remove_subscriber(self, subscriber: Subscriber):
         if not subscriber:

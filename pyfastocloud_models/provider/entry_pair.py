@@ -28,4 +28,4 @@ class ProviderPair(EmbeddedMongoModel):
     role = fields.IntegerField(min_value=Roles.READ, max_value=Roles.ADMIN, default=Roles.ADMIN)
 
     def to_front_dict(self) -> dict:
-        return {ProviderPair.ID_FIELD: self.user.get_id(), ProviderPair.ROLE_FIELD: self.role, 'email': self.id.email}
+        return {ProviderPair.ID_FIELD: self.user.get_id(), ProviderPair.ROLE_FIELD: self.role, 'email': self.user.email}

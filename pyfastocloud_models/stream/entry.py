@@ -341,13 +341,13 @@ class HardwareStream(IStream):
     input = fields.EmbeddedModelListField(InputUrl, required=True)
     extra_config = fields.CharField(default='{}', required=True)
     auto_start = fields.BooleanField(default=False, required=True)
+    audio_tracks_count = fields.IntegerField(min_value=1, required=True)
+    phoenix = fields.BooleanField(default=constants.DEFAULT_PHOENIX, required=True)
     # optional
     auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,
                                          required=False)
-    phoenix = fields.BooleanField(default=constants.DEFAULT_PHOENIX, required=True)
     audio_select = fields.IntegerField(min_value=constants.MIN_AUDIO_SELECT,
                                        max_value=constants.MAX_AUDIO_SELECT, required=False)
-    audio_tracks_count = fields.IntegerField(min_value=1, required=False)
 
     def __init__(self, *args, **kwargs):
         super(HardwareStream, self).__init__(*args, **kwargs)
@@ -403,8 +403,6 @@ class HardwareStream(IStream):
         res, audio_tracks_count = IStream.check_optional_type(HardwareStream.AUDIO_TRACKS_COUNT_FIELD, int, json)
         if res:  # optional field
             self.audio_tracks_count = audio_tracks_count
-        else:
-            delattr(self, HardwareStream.AUDIO_TRACKS_COUNT_FIELD)
 
         res, loop = IStream.check_optional_type(HardwareStream.LOOP_FIELD, bool, json)
         if res:  # optional field

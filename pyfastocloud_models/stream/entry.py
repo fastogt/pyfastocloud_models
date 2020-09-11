@@ -313,6 +313,7 @@ class HardwareStream(IStream):
     HAVE_VIDEO_FIELD = 'have_video'
     HAVE_AUDIO_FIELD = 'have_audio'
     AUDIO_SELECT_FIELD = 'audio_select'
+    AUDIO_TRACKS_COUNT_FIELD = 'audio_tracks_count'
     LOOP_FIELD = 'loop'
     RELAY_VIDEO_TYPE_FIELD = 'relay_video_type'
     RELAY_AUDIO_TYPE_FIELD = 'relay_audio_type'
@@ -346,6 +347,7 @@ class HardwareStream(IStream):
     phoenix = fields.BooleanField(default=constants.DEFAULT_PHOENIX, required=True)
     audio_select = fields.IntegerField(min_value=constants.MIN_AUDIO_SELECT,
                                        max_value=constants.MAX_AUDIO_SELECT, required=False)
+    audio_tracks_count = fields.IntegerField(min_value=1, required=False)
 
     def __init__(self, *args, **kwargs):
         super(HardwareStream, self).__init__(*args, **kwargs)
@@ -398,6 +400,12 @@ class HardwareStream(IStream):
         else:
             delattr(self, HardwareStream.AUDIO_SELECT_FIELD)
 
+        res, audio_tracks_count = IStream.check_optional_type(HardwareStream.AUDIO_TRACKS_COUNT_FIELD, int, json)
+        if res:  # optional field
+            self.audio_tracks_count = audio_tracks_count
+        else:
+            delattr(self, HardwareStream.AUDIO_TRACKS_COUNT_FIELD)
+
         res, loop = IStream.check_optional_type(HardwareStream.LOOP_FIELD, bool, json)
         if res:  # optional field
             self.loop = loop
@@ -428,6 +436,9 @@ class HardwareStream(IStream):
 
     def get_audio_select(self):
         return self.audio_select
+
+    def get_audio_tracks_count(self):
+        return self.audio_tracks_count
 
     def get_have_video(self):
         return self.have_video

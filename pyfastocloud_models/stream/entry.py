@@ -341,7 +341,7 @@ class HardwareStream(IStream):
     input = fields.EmbeddedModelListField(InputUrl, required=True)
     extra_config = fields.CharField(default='{}', required=True)
     auto_start = fields.BooleanField(default=False, required=True)
-    audio_tracks_count = fields.IntegerField(min_value=1, required=True)
+    audio_tracks_count = fields.IntegerField(min_value=1, default=1, required=True)
     phoenix = fields.BooleanField(default=constants.DEFAULT_PHOENIX, required=True)
     # optional
     auto_exit_time = fields.IntegerField(min_value=constants.MIN_AUTO_EXIT_TIME, max_value=constants.MAX_AUTO_EXIT_TIME,

@@ -115,23 +115,47 @@ class ServiceSettings(MongoModel, Maker):
         if ind == stats_len:
             return 0.0
 
-        first_stat = self.stats[ind]
-        last_stat = self.stats[-1]
-        return last_stat.total_bytes_out - first_stat.total_bytes_out
+        first = self.stats[ind]
+        result = 0.0
+        for i in range(ind + 1, stats_len):
+            cur = self.stats[i]
+            if first.total_bytes_out < cur.total_bytes_out:
+                result += cur.total_bytes_out - first.total_bytes_out
+            first = cur
+
+        return result
+
+    def get_net_price(self, start_timestamp) -> float:
+        start_timestamp = max(start_timestamp, self.created_date_utc_msec())
+        return self.price_net * self.get_net_bytes(start_timestamp) / (1024 * 1024 * 1024)
+
+    def get_support_price(self, start_timestamp):
+        start_timestamp = max(start_timestamp, self.created_date_utc_msec())
+        months = (start_timestamp - self.created_date_utc_msec()) / (24 * 3600 * 1000 * 30)
+        return self.price_support * months
 
     def get_store_bytes(self, start_timestamp) -> float:
         stats_len = len(self.stats)
-        if stats_len < 2:
+        if stats_len == 0:
             return 0.0
 
         fake = Machine(timestamp=start_timestamp)
         ind = bisect_right(self.stats, fake)
         if ind == stats_len:
+            last = self.stats[stats_len - 1]
+            if last.timestamp == start_timestamp:
+                return last.hdd_used
             return 0.0
 
-        first_stat = self.stats[ind]
-        last_stat = self.stats[-1]
-        return (last_stat.hdd_used + first_stat.hdd_used) / 2
+        result = 0.0
+        for i in range(ind, stats_len):
+            result += self.stats[i].hdd_used
+
+        return result / (stats_len - ind)
+
+    def get_store_price(self, start_timestamp) -> float:
+        start_timestamp = max(start_timestamp, self.created_date_utc_msec())
+        return self.price_store * self.get_store_bytes(start_timestamp) / (1024 * 1024 * 1024)
 
     def get_id(self) -> str:
         return str(self.pk)

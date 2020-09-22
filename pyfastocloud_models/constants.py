@@ -7,8 +7,6 @@ MAX_URI_LENGTH = 2048
 MIN_PATH_LENGTH = 1
 MAX_PATH_LENGTH = 255
 
-PRECISION = 2
-
 DATE_JS_FORMAT = '%m/%d/%Y %H:%M:%S'
 
 DEFAULT_HLS_PLAYLIST = 'master.m3u8'
@@ -407,8 +405,8 @@ def is_valid_country_code(code: str) -> bool:
     return False
 
 
-def round_value(value: float):
-    return round(value, PRECISION)
+def round_value(value: float, precision=2):
+    return round(value, precision)
 
 
 class UserAgent(IntEnum):

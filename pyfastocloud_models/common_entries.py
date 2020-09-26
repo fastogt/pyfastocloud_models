@@ -536,13 +536,15 @@ class HostAndPort(EmbeddedMongoModel, Maker):
 class MachineLearning(EmbeddedMongoModel, Maker):
     BACKEND_FILED = 'backend'
     MODEL_URL_FIELD = 'model_url'
-    TRACKING = 'tracking'
+    TRACKING_FIELD = 'tracking'
+    DUMP_FIELD = 'dump'
     OVERLAY_FIELD = 'overlay'
 
     backend = fields.IntegerField(choices=constants.MlBackends.choices(), required=False)
     model_url = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
                                  required=True)
     tracking = fields.BooleanField(required=True)
+    dump = fields.BooleanField(required=True)
     overlay = fields.BooleanField(required=True)
 
     def __init__(self, *args, **kwargs):
@@ -567,9 +569,13 @@ class MachineLearning(EmbeddedMongoModel, Maker):
                 raise ValueError('Invalid url: {0}'.format(url))
             self.model_url = url
 
-        res, tracking = self.check_required_type(MachineLearning.TRACKING, bool, json)
+        res, tracking = self.check_required_type(MachineLearning.TRACKING_FIELD, bool, json)
         if res:
             self.tracking = tracking
+
+        res, dump = self.check_required_type(MachineLearning.DUMP_FIELD, bool, json)
+        if res:
+            self.dump = dump
 
         res, overlay = self.check_required_type(MachineLearning.OVERLAY_FIELD, bool, json)
         if res:

@@ -21,6 +21,7 @@ class ServiceSettings(MongoModel, Maker):
     VODS_HOST_FIELD = 'vods_host'
     CODS_HOST_FIELD = 'cods_host'
     NGINX_HOST_FIELD = 'nginx_host'
+    RTMP_HOST_FIELD = 'rtmp_host'
     FEEDBACK_DIRECOTRY_FIELD = 'feedback_directory'
     TIMESHIFTS_DIRECTORY_FIELD = 'timeshifts_directory'
     HLS_DIRECTORY_FIELD = 'hls_directory'
@@ -67,6 +68,8 @@ class ServiceSettings(MongoModel, Maker):
     DEFAULT_SERVICE_CODS_PORT = 6001
     DEFAULT_SERVICE_NGINX_HOST = '0.0.0.0'
     DEFAULT_SERVICE_NGINX_PORT = 81
+    DEFAULT_SERVICE_RTMP_HOST = '0.0.0.0'
+    DEFAULT_SERVICE_RTMP_PORT = 1935
 
     streams = fields.ListField(fields.ReferenceField(IStream), blank=True)
     series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), blank=True)
@@ -89,6 +92,9 @@ class ServiceSettings(MongoModel, Maker):
     nginx_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_NGINX_HOST,
                                                                             port=DEFAULT_SERVICE_NGINX_PORT),
                                            required=True)
+    rtmp_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_RTMP_HOST,
+                                                                           port=DEFAULT_SERVICE_RTMP_PORT),
+                                          required=True)
 
     feedback_directory = fields.CharField(default=DEFAULT_FEEDBACK_DIR_PATH, required=True)
     timeshifts_directory = fields.CharField(default=DEFAULT_TIMESHIFTS_DIR_PATH, required=True)
@@ -178,6 +184,9 @@ class ServiceSettings(MongoModel, Maker):
 
     def get_nginx_host(self) -> str:
         return 'http://{0}'.format(str(self.nginx_host))
+
+    def get_rtmp_host(self) -> str:
+        return 'rtmp://{0}'.format(str(self.rtmp_host))
 
     def generate_http_link(self, url: str) -> str:
         return url.replace(self.hls_directory, self.get_http_host())
@@ -300,6 +309,10 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # required field
             self.nginx_host = HostAndPort.make_entry(nginx_host)
 
+        res, rtmp_host = self.check_required_type(ServiceSettings.RTMP_HOST_FIELD, dict, json)
+        if res:  # required field
+            self.rtmp_host = HostAndPort.make_entry(rtmp_host)
+
         res, feedback = self.check_required_type(ServiceSettings.FEEDBACK_DIRECOTRY_FIELD, str, json)
         if res:  # required field
             self.feedback_directory = feedback
@@ -355,6 +368,7 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.VODS_HOST_FIELD: self.vods_host.to_front_dict(),
                 ServiceSettings.CODS_HOST_FIELD: self.cods_host.to_front_dict(),
                 ServiceSettings.NGINX_HOST_FIELD: self.nginx_host.to_front_dict(),
+                ServiceSettings.RTMP_HOST_FIELD: self.rtmp_host.to_front_dict(),
                 ServiceSettings.FEEDBACK_DIRECOTRY_FIELD: self.feedback_directory,
                 ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: self.timeshifts_directory,
                 ServiceSettings.HLS_DIRECTORY_FIELD: self.hls_directory,

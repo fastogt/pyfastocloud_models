@@ -189,12 +189,16 @@ class IStream(MongoModel, Maker):
     def generate_input_playlist(self, header=True) -> str:
         raise NotImplementedError('subclasses must override generate_input_playlist()!')
 
+    def fixup_input_urls(self, settings):
+        return
+
     def fixup_output_urls(self, settings):
         return
 
     def save(self, settings=None, cascade=None, full_clean=True, force_insert=False):
         if self.pk is None:
             self.pk = ObjectId()
+        self.fixup_input_urls(settings)
         self.fixup_output_urls(settings)
         return super(IStream, self).save(cascade, full_clean, force_insert)
 

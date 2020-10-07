@@ -258,6 +258,17 @@ class Subscriber(MongoModel, Maker):
     def expiration_date_utc_msec(self):
         return date_to_utc_msec(self.exp_date)
 
+    def find_server_by_stream_id(self, sid: ObjectId) -> ServiceSettings:
+        if not sid:
+            return None
+
+        for server in self.servers:
+            stream = server.find_stream_by_id(sid)
+            if stream:
+                return server
+
+        return None
+
     def add_server(self, server: ServiceSettings):
         if not server:
             return

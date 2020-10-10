@@ -210,6 +210,8 @@ class OutputUrl(Url):
     HLSSINK_TYPE_FIELD = 'hlssink_type'
     SRT_MODE_FIELD = 'srt_mode'
     PLAYLIST_ROOT_FIELD = 'playlist_root'
+    RTMP_TYPE_FIELD = 'rtmp_type'
+    RTMP_WEB_URL_FIELD = 'rtmp_web_url'
 
     # hls
     http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
@@ -221,6 +223,10 @@ class OutputUrl(Url):
     hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
     # srt
     srt_mode = fields.IntegerField(choices=constants.SrtMode.choices(), required=False, blank=True)
+    # rtmp
+    rtmp_type = fields.IntegerField(choices=constants.RtmpType.choices(), required=False, blank=True)
+    rtmp_web_url = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                    required=False)
 
     def __init__(self, *args, **kwargs):
         super(OutputUrl, self).__init__(*args, **kwargs)
@@ -276,6 +282,18 @@ class OutputUrl(Url):
             self.srt_mode = srt_mode
         else:
             delattr(self, OutputUrl.SRT_MODE_FIELD)
+
+        res_rtmp_type, rtmp_type = self.check_optional_type(OutputUrl.RTMP_TYPE_FIELD, int, json)
+        if res_rtmp_type:
+            self.rtmp_type = rtmp_type
+        else:
+            delattr(self, OutputUrl.RTMP_TYPE_FIELD)
+
+        res_rtmp_web_url, rtmp_web_url = self.check_optional_type(OutputUrl.RTMP_WEB_URL_FIELD, str, json)
+        if res_rtmp_web_url:
+            self.rtmp_web_url = rtmp_web_url
+        else:
+            delattr(self, OutputUrl.RTMP_WEB_URL_FIELD)
 
 
 class Point(EmbeddedMongoModel, Maker):

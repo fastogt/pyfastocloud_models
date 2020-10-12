@@ -269,6 +269,16 @@ class Subscriber(MongoModel, Maker):
 
         return None
 
+    def find_server_by_id(self, sid: ObjectId) -> ServiceSettings:
+        if not sid:
+            return None
+
+        for server in self.servers:
+            if server.id == sid:
+                return server
+
+        return None
+
     def add_server(self, server: ServiceSettings):
         if not server:
             return

@@ -543,6 +543,9 @@ class HardwareStream(IStream):
         return '{0}/{1}/{2}/{3}'.format(cods_directory, self.get_type(), self.get_id(), oid)
 
     def _fixup_http_output_urls(self, settings):
+        if not settings:
+            return
+
         for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
@@ -555,6 +558,9 @@ class HardwareStream(IStream):
                                                            filename, val.id)
 
     def _fixup_vod_output_urls(self, settings):
+        if not settings:
+            return
+
         for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
@@ -567,6 +573,9 @@ class HardwareStream(IStream):
                                                           filename, val.id)
 
     def _fixup_cod_output_urls(self, settings):
+        if not settings:
+            return
+
         for idx, val in enumerate(self.output):
             url = val.uri
             if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:

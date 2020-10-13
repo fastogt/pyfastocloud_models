@@ -606,9 +606,9 @@ class Subscriber(MongoModel, Maker):
 
         for stream in self.all_available_official_streams():
             user_stream = UserStream(sid=stream.id)
-            cached = self.find_user_stream_by_id(stream.id)
-            if cached:
-                user_stream = cached
+            # cached = self.find_user_stream_by_id(stream.id)
+            # if cached:
+            #    user_stream = cached
             ustreams.append(user_stream)
 
         self.streams = ustreams
@@ -621,9 +621,9 @@ class Subscriber(MongoModel, Maker):
 
         for ovod in self.all_available_official_vods():
             user_vod = UserStream(sid=ovod.id)
-            cached = self.find_user_stream_by_id(ovod.id)
-            if cached:
-                user_vod = cached
+            # cached = self.find_user_stream_by_id(ovod.id)
+            # if cached:
+            #    user_vod = cached
             vods.append(user_vod)
 
         self.vods = vods
@@ -636,9 +636,9 @@ class Subscriber(MongoModel, Maker):
         ustreams = []
         for ocatchup in self.all_available_official_catchups():
             user_catchup = UserStream(sid=ocatchup.id)
-            cached = self.find_user_stream_by_id(user_catchup.id)
-            if cached:
-                user_catchup = cached
+            # cached = self.find_user_stream_by_id(user_catchup.id)
+            # if cached:
+            #    user_catchup = cached
             ustreams.append(user_catchup)
 
         self.catchups = ustreams

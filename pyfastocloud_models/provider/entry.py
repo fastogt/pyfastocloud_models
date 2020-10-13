@@ -28,6 +28,7 @@ class Provider(MongoModel, Maker):
     COUNTRY_FIELD = 'country'
     PASSWORD_FIELD = 'password'
     CREDITS_FIELD = 'credits'
+    CREDITS_REMAINING_FIELD = 'credits_remaining'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -237,12 +238,14 @@ class Provider(MongoModel, Maker):
             raise ValueError(err.message)
 
     def to_front_dict(self):
+        cred = self.credits - len(self.subscribers)
         return {Provider.ID_FIELD: self.get_id(), Provider.EMAIL_FIELD: self.email,
                 Provider.PASSWORD_FIELD: self.password,
                 Provider.FIRST_NAME_FIELD: self.first_name, Provider.LAST_NAME_FIELD: self.last_name,
                 Provider.CREATED_DATE_FIELD: self.created_date_utc_msec(), Provider.STATUS_FIELD: self.status,
                 Provider.CREDITS_FIELD: self.credits, Provider.TYPE_FIELD: self.type,
-                Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country}
+                Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country,
+                Provider.CREDITS_REMAINING_FIELD: cred}
 
     def delete(self, *args, **kwargs):
         from pyfastocloud_models.service.entry import ServiceSettings

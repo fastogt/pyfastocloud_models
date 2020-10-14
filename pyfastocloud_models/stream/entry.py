@@ -164,6 +164,22 @@ class IStream(MongoModel, Maker):
 
         return result
 
+    def generate_playlist_dict(self) -> [dict]:
+        result = []
+        stream_type = self.get_type()
+        if stream_type == constants.StreamType.RELAY or stream_type == constants.StreamType.VOD_RELAY or \
+                stream_type == constants.StreamType.COD_RELAY or stream_type == constants.StreamType.ENCODE or \
+                stream_type == constants.StreamType.VOD_ENCODE or stream_type == constants.StreamType.COD_ENCODE or \
+                stream_type == constants.StreamType.PROXY or stream_type == constants.StreamType.VOD_PROXY or \
+                stream_type == constants.StreamType.VOD_ENCODE or \
+                stream_type == constants.StreamType.TIMESHIFT_PLAYER or stream_type == constants.StreamType.CATCHUP:
+            for out in self.output:
+                result.append(
+                    {'tvg-id': self.tvg_id, 'tvg-name': self.tvg_name, 'tvg-logo': self.tvg_logo, 'groups': self.groups,
+                     'url': out.uri})
+
+        return result
+
     def generate_device_playlist(self, uid: str, pass_hash: str, did: str, lb_server_host_and_port: str,
                                  header=True) -> str:
         result = '#EXTM3U\n' if header else ''
@@ -181,8 +197,33 @@ class IStream(MongoModel, Maker):
                     url = 'http://{0}/{1}/{2}/{3}/{4}/{5}/{6}'.format(lb_server_host_and_port, uid, pass_hash, did,
                                                                       self.id,
                                                                       out.id, file_name)
-                    result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'. \
-                        format(self.tvg_id, self.tvg_name, self.tvg_logo, self.main_group, self.name, url)
+                else:
+                    url = out.uri
+                result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'. \
+                    format(self.tvg_id, self.tvg_name, self.tvg_logo, self.main_group, self.name, url)
+
+        return result
+
+    def generate_device_playlist_dict(self, uid: str, pass_hash: str, did: str, lb_server_host_and_port: str) -> [dict]:
+        result = []
+        stream_type = self.get_type()
+        if stream_type == constants.StreamType.RELAY or stream_type == constants.StreamType.VOD_RELAY or \
+                stream_type == constants.StreamType.COD_RELAY or stream_type == constants.StreamType.ENCODE or \
+                stream_type == constants.StreamType.VOD_ENCODE or stream_type == constants.StreamType.COD_ENCODE or \
+                stream_type == constants.StreamType.PROXY or stream_type == constants.StreamType.VOD_PROXY or \
+                stream_type == constants.StreamType.VOD_ENCODE or \
+                stream_type == constants.StreamType.TIMESHIFT_PLAYER or stream_type == constants.StreamType.CATCHUP:
+            for out in self.output:
+                parsed_uri = urlparse(out.uri)
+                if parsed_uri.scheme == 'http' or parsed_uri.scheme == 'https':
+                    file_name = os.path.basename(parsed_uri.path)
+                    url = 'http://{0}/{1}/{2}/{3}/{4}/{5}/{6}'.format(lb_server_host_and_port, uid, pass_hash, did,
+                                                                      self.id,
+                                                                      out.id, file_name)
+                else:
+                    url = out.uri
+                result.append({'tvg-id': self.tvg_id, 'tvg-name': self.tvg_name, 'tvg-logo': self.tvg_logo,
+                               'groups': self.groups, 'url': url})
 
         return result
 

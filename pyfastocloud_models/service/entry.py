@@ -28,6 +28,7 @@ class ServiceSettings(MongoModel, Maker):
     VODS_DIRECTORY_FIELD = 'vods_directory'
     CODS_DIRECTORY_FIELD = 'cods_directory'
     PROXY_DIRECTORY_FIELD = 'proxy_directory'
+    DATA_DIRECTORY_FIELD = 'data_directory'
     PROVIDERS_FIELD = 'providers'
     CREATED_DATE_FIELD = 'created_date'
     MONITORING_FILED = 'monitoring'
@@ -57,6 +58,7 @@ class ServiceSettings(MongoModel, Maker):
     DEFAULT_VODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/vods'
     DEFAULT_CODS_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/cods'
     DEFAULT_PROXY_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/proxy'
+    DEFAULT_DATA_DIR_PATH = constants.DEFAULT_SERVICE_ROOT_DIR_PATH + '/data'
 
     DEFAULT_SERVICE_HOST = '127.0.0.1'
     DEFAULT_SERVICE_PORT = 6317
@@ -102,6 +104,7 @@ class ServiceSettings(MongoModel, Maker):
     vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH, required=True)
     cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH, required=True)
     proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
+    data_directory = fields.CharField(default=DEFAULT_DATA_DIR_PATH, required=True)
 
     # stats
     auto_start = fields.BooleanField(default=False, required=True)
@@ -337,6 +340,10 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # required field
             self.proxy_directory = proxy
 
+        res, data = self.check_required_type(ServiceSettings.DATA_DIRECTORY_FIELD, str, json)
+        if res:  # required field
+            self.data_directory = data
+
         res, created_date_msec = self.check_optional_type(ServiceSettings.CREATED_DATE_FIELD, int, json)
         if res:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
@@ -375,6 +382,7 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.VODS_DIRECTORY_FIELD: self.vods_directory,
                 ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory,
                 ServiceSettings.PROXY_DIRECTORY_FIELD: self.proxy_directory,
+                ServiceSettings.DATA_DIRECTORY_FIELD: self.data_directory,
                 ServiceSettings.MONITORING_FILED: self.monitoring,
                 ServiceSettings.AUTO_START_FIELD: self.auto_start,
                 ServiceSettings.ACTIVATION_KEY_FIELD: self.activation_key,

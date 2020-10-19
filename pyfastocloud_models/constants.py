@@ -130,6 +130,11 @@ DEFAULT_TEST_URL = 'test'
 DEFAULT_FAKE_URL = 'fake'
 DEFAULT_DISPLAY_URL = 'display'
 
+
+def is_special_url(url: str):
+    return url == DEFAULT_TEST_URL or url == DEFAULT_DISPLAY_URL or url == DEFAULT_FAKE_URL
+
+
 DEFAULT_DEVICES_COUNT = 10
 
 MIN_STREAM_NAME_LENGTH = 1

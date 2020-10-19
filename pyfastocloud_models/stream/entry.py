@@ -595,7 +595,7 @@ class HardwareStream(IStream):
 
         for idx, val in enumerate(self.output):
             url = val.uri
-            if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
+            if constants.is_special_url(url):
                 return
 
             parsed_uri = urlparse(url)
@@ -610,7 +610,7 @@ class HardwareStream(IStream):
 
         for idx, val in enumerate(self.output):
             url = val.uri
-            if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
+            if constants.is_special_url(url):
                 return
 
             parsed_uri = urlparse(url)
@@ -625,7 +625,7 @@ class HardwareStream(IStream):
 
         for idx, val in enumerate(self.output):
             url = val.uri
-            if url == constants.DEFAULT_TEST_URL or url == constants.DEFAULT_DISPLAY_URL:
+            if constants.is_special_url(url):
                 return
 
             parsed_uri = urlparse(url)

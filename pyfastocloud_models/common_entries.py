@@ -110,7 +110,7 @@ class Url(EmbeddedMongoModel, Maker):
 
         res, uri = self.check_required_type(Url.URI_FIELD, str, json)
         if res:
-            if uri != constants.DEFAULT_TEST_URL and uri != constants.DEFAULT_DISPLAY_URL:
+            if uri != constants.DEFAULT_TEST_URL and uri != constants.DEFAULT_DISPLAY_URL and uri != constants.DEFAULT_FAKE_URL:
                 if not is_valid_url(uri):
                     raise ValueError('Invalid url: {0}'.format(uri))
             self.uri = uri
@@ -243,6 +243,10 @@ class OutputUrl(Url):
     @classmethod
     def make_test(cls):
         return cls(id=Url.generate_id(), uri=constants.DEFAULT_TEST_URL)
+
+    @classmethod
+    def make_fake(cls):
+        return cls(id=Url.generate_id(), uri=constants.DEFAULT_FAKE_URL)
 
     def update_entry(self, json: dict):
         Url.update_entry(self, json)

@@ -325,6 +325,14 @@ class IStream(MongoModel, Maker):
             return RelayStream.make_entry(json)
         elif stream_type == constants.StreamType.ENCODE:
             return EncodeStream.make_entry(json)
+        elif stream_type == constants.StreamType.TIMESHIFT_RECORDER:
+            return TimeshiftRecorderStream.make_entry(json)
+        elif stream_type == constants.StreamType.TIMESHIFT_PLAYER:
+            return TimeshiftPlayerStream.make_entry(json)
+        elif stream_type == constants.StreamType.CATCHUP:
+            return CatchupStream.make_entry(json)
+        elif stream_type == constants.StreamType.TEST_LIFE:
+            return TestLifeStream.make_entry(json)
         elif stream_type == constants.StreamType.VOD_RELAY:
             return VodRelayStream.make_entry(json)
         elif stream_type == constants.StreamType.VOD_ENCODE:
@@ -333,10 +341,8 @@ class IStream(MongoModel, Maker):
             return CodRelayStream.make_entry(json)
         elif stream_type == constants.StreamType.COD_ENCODE:
             return CodEncodeStream.make_entry(json)
-        elif stream_type == constants.StreamType.CATCHUP:
-            return CatchupStream.make_entry(json)
         else:
-            return TestLifeStream.make_entry(json)
+            return CvDataStream.make_entry(json)
 
 
 class ProxyStream(IStream):
@@ -1099,6 +1105,16 @@ class VodEncodeStream(EncodeStream, VodBasedStream):
 class EventStream(VodEncodeStream):
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.EVENT
+
+
+class CvDataStream(EncodeStream):
+    output = fields.EmbeddedModelListField(OutputUrl, required=True, blank=True)  #
+
+    def __init__(self, *args, **kwargs):
+        super(CvDataStream, self).__init__(*args, **kwargs)
+
+    def get_type(self) -> constants.StreamType:
+        return constants.StreamType.CV_DATA
 
 
 # if remove catchup also clean parts

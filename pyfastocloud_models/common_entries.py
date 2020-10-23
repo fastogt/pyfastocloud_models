@@ -162,6 +162,7 @@ class InputUrl(Url):
     PROXY_FIELD = 'proxy'
     PROGRAM_NUMBER_FIELD = 'program_number'
     MULTICAST_IFACE_FIELD = 'multicast_iface'
+    PASSPHRASE_FIELD = 'passphrase'
 
     MIN_PROGRAM_NUMBER = 0
     MAX_PROGRAM_NUMBER = constants.MAX_INTEGER_NUMBER
@@ -171,6 +172,7 @@ class InputUrl(Url):
     proxy = fields.CharField(required=False)
     program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER, max_value=MAX_PROGRAM_NUMBER, required=False)
     multicast_iface = fields.CharField(required=False)
+    passphrase = fields.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(InputUrl, self).__init__(*args, **kwargs)
@@ -201,6 +203,10 @@ class InputUrl(Url):
         res, multicast_iface = self.check_optional_type(InputUrl.MULTICAST_IFACE_FIELD, str, json)
         if res:  # optional field
             self.multicast_iface = multicast_iface
+
+        res, passphrase = self.check_optional_type(InputUrl.PASSPHRASE_FIELD, str, json)
+        if res:  # optional field
+            self.passphrase = passphrase
 
 
 class OutputUrl(Url):

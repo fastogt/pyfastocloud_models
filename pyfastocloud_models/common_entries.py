@@ -156,13 +156,52 @@ class StreamLink(EmbeddedMongoModel, Maker):
             delattr(self, StreamLink.HTTPS_PROXY_FIELD)
 
 
+class SrtKey(EmbeddedMongoModel, Maker):
+    PASSPHRASE_FIELD = 'passphrase'
+    KEY_LEN_FIELD = 'pbkeylen'
+
+    passphrase = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                  required=False, blank=True)
+    pbkeylen = fields.IntegerField(required=False, blank=True)
+
+    def __init__(self, *args, **kwargs):
+        super(SrtKey, self).__init__(*args, **kwargs)
+
+    def is_valid(self) -> bool:
+        try:
+            self.full_clean()
+        except ValidationError:
+            return False
+        return True
+
+    def to_front_dict(self) -> dict:
+        result = self.to_son()
+        result.pop('_cls')
+        return result.to_dict()
+
+    def update_entry(self, json: dict):
+        Maker.update_entry(self, json)
+
+        res, passw = self.check_optional_type(SrtKey.PASSPHRASE_FIELD, str, json)
+        if res:
+            self.passphrase = passw
+        else:
+            delattr(self, SrtKey.PASSPHRASE_FIELD)
+
+        res, kl = self.check_optional_type(SrtKey.KEY_LEN_FIELD, int, json)
+        if res:
+            self.pbkeylen = kl
+        else:
+            delattr(self, SrtKey.KEY_LEN_FIELD)
+
+
 class InputUrl(Url):
     USER_AGENT_FIELD = 'user_agent'
     STREAM_LINK_FIELD = 'stream_link'
     PROXY_FIELD = 'proxy'
     PROGRAM_NUMBER_FIELD = 'program_number'
     MULTICAST_IFACE_FIELD = 'multicast_iface'
-    PASSPHRASE_FIELD = 'passphrase'
+    SRT_KEY_FIELD = 'srt_key'
 
     MIN_PROGRAM_NUMBER = 0
     MAX_PROGRAM_NUMBER = constants.MAX_INTEGER_NUMBER
@@ -172,7 +211,7 @@ class InputUrl(Url):
     proxy = fields.CharField(required=False)
     program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER, max_value=MAX_PROGRAM_NUMBER, required=False)
     multicast_iface = fields.CharField(required=False)
-    passphrase = fields.CharField(required=False)
+    srt_key = fields.EmbeddedModelField(SrtKey, required=False)
 
     def __init__(self, *args, **kwargs):
         super(InputUrl, self).__init__(*args, **kwargs)
@@ -204,9 +243,9 @@ class InputUrl(Url):
         if res:  # optional field
             self.multicast_iface = multicast_iface
 
-        res, passphrase = self.check_optional_type(InputUrl.PASSPHRASE_FIELD, str, json)
+        res, srtkey = self.check_optional_type(InputUrl.SRT_KEY_FIELD, dict, json)
         if res:  # optional field
-            self.passphrase = passphrase
+            self.srt_key = SrtKey.make_entry(srtkey)
 
 
 class OutputUrl(Url):

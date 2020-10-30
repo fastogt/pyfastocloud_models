@@ -140,6 +140,7 @@ class UserStream(EmbeddedMongoModel):
     PRIVATE_FIELD = 'private'
     RECENT_FIELD = 'recent'
     LOCKED_FIELD = 'locked'
+    INTERRUPTION_TIME_FIELD = 'interruption_time'
 
     sid = fields.ReferenceField(IStream, required=True)
     favorite = fields.BooleanField(default=False)
@@ -162,6 +163,7 @@ class UserStream(EmbeddedMongoModel):
         res[UserStream.PRIVATE_FIELD] = self.private
         res[UserStream.LOCKED_FIELD] = self.locked
         res[UserStream.RECENT_FIELD] = date_to_utc_msec(self.recent)
+        res[UserStream.INTERRUPTION_TIME_FIELD] = self.interruption_time
         return res
 
 

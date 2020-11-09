@@ -150,6 +150,15 @@ class UserStream(EmbeddedMongoModel):
     interruption_time = fields.IntegerField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC,
                                             required=True)
 
+    def __init__(self, *args, **kwargs):
+        super(UserStream, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def make_from_stream(cls, stream: IStream) -> 'UserStream':
+        locked = stream.price > 0
+        cl = cls(sid=stream.id, locked=locked)
+        return cl
+
     def get_id(self) -> str:
         return str(self.pk)
 
@@ -384,7 +393,8 @@ class Subscriber(MongoModel, Maker):
 
     # official streams
     def add_official_stream_by_id(self, oid: ObjectId):
-        user_stream = UserStream(sid=oid)
+        stream = IStream.get_by_id(oid)
+        user_stream = UserStream.make_from_stream(stream)
         self.add_official_stream(user_stream)
 
     def add_official_stream(self, user_stream: UserStream):
@@ -411,7 +421,8 @@ class Subscriber(MongoModel, Maker):
 
     # official vods
     def add_official_vod_by_id(self, oid: ObjectId):
-        user_stream = UserStream(sid=oid)
+        stream = IStream.get_by_id(oid)
+        user_stream = UserStream.make_from_stream(stream)
         self.add_official_vod(user_stream)
 
     def add_official_vod(self, user_stream: UserStream):
@@ -465,7 +476,8 @@ class Subscriber(MongoModel, Maker):
 
     # official catchups
     def add_official_catchup_by_id(self, oid: ObjectId):
-        user_stream = UserStream(sid=oid)
+        stream = IStream.get_by_id(oid)
+        user_stream = UserStream.make_from_stream(stream)
         self.add_official_catchup(user_stream)
 
     def add_official_catchup(self, user_stream: UserStream):
@@ -617,6 +629,20 @@ class Subscriber(MongoModel, Maker):
 
         return None
 
+    def find_user_vods_by_id(self, sid: ObjectId) -> UserStream:
+        for _stream in self.vods:
+            if _stream.sid == sid:
+                return _stream
+
+        return None
+
+    def find_user_catchups_by_id(self, sid: ObjectId) -> UserStream:
+        for _stream in self.catchups:
+            if _stream.sid == sid:
+                return _stream
+
+        return None
+
     def sync_content(self):
         self.select_all_streams(True)
         self.select_all_vods(True)
@@ -640,7 +666,7 @@ class Subscriber(MongoModel, Maker):
             return
 
         for stream in self.all_available_official_streams():
-            user_stream = UserStream(sid=stream.id)
+            user_stream = UserStream.make_from_stream(stream)
             # cached = self.find_user_stream_by_id(stream.id)
             # if cached:
             #    user_stream = cached
@@ -655,8 +681,8 @@ class Subscriber(MongoModel, Maker):
             return
 
         for ovod in self.all_available_official_vods():
-            user_vod = UserStream(sid=ovod.id)
-            # cached = self.find_user_stream_by_id(ovod.id)
+            user_vod = UserStream.make_from_stream(ovod)
+            # cached = self.find_user_vods_by_id(ovod.id)
             # if cached:
             #    user_vod = cached
             vods.append(user_vod)
@@ -670,8 +696,8 @@ class Subscriber(MongoModel, Maker):
 
         ustreams = []
         for ocatchup in self.all_available_official_catchups():
-            user_catchup = UserStream(sid=ocatchup.id)
-            # cached = self.find_user_stream_by_id(user_catchup.id)
+            user_catchup = UserStream.make_from_stream(ocatchup)
+            # cached = self.find_user_catchups_by_id(user_catchup.id)
             # if cached:
             #    user_catchup = cached
             ustreams.append(user_catchup)

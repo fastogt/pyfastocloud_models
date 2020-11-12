@@ -140,7 +140,9 @@ class ServiceSettings(MongoModel, Maker):
 
     def get_support_price(self, start_timestamp):
         start_timestamp = max(start_timestamp, self.created_date_utc_msec())
-        months = (start_timestamp - self.created_date_utc_msec()) / (24 * 3600 * 1000 * 30)
+        now = datetime.now()
+        cur_ts = date_to_utc_msec(now)
+        months = (cur_ts - start_timestamp) / (24 * 3600 * 1000 * 30)
         return self.price_support * months
 
     def get_store_bytes(self, start_timestamp) -> float:

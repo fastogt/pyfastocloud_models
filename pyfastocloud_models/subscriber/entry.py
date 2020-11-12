@@ -624,21 +624,21 @@ class Subscriber(MongoModel, Maker):
 
     def find_user_stream_by_id(self, sid: ObjectId) -> UserStream:
         for _stream in self.streams:
-            if _stream.sid == sid:
+            if _stream.sid.id == sid:
                 return _stream
 
         return None
 
     def find_user_vods_by_id(self, sid: ObjectId) -> UserStream:
         for _stream in self.vods:
-            if _stream.sid == sid:
+            if _stream.sid.id == sid:
                 return _stream
 
         return None
 
     def find_user_catchups_by_id(self, sid: ObjectId) -> UserStream:
         for _stream in self.catchups:
-            if _stream.sid == sid:
+            if _stream.sid.id == sid:
                 return _stream
 
         return None
@@ -667,9 +667,9 @@ class Subscriber(MongoModel, Maker):
 
         for stream in self.all_available_official_streams():
             user_stream = UserStream.make_from_stream(stream)
-            # cached = self.find_user_stream_by_id(stream.id)
-            # if cached:
-            #    user_stream = cached
+            cached = self.find_user_stream_by_id(stream.id)
+            if cached:
+                user_stream = cached
             ustreams.append(user_stream)
 
         self.streams = ustreams
@@ -682,9 +682,9 @@ class Subscriber(MongoModel, Maker):
 
         for ovod in self.all_available_official_vods():
             user_vod = UserStream.make_from_stream(ovod)
-            # cached = self.find_user_vods_by_id(ovod.id)
-            # if cached:
-            #    user_vod = cached
+            cached = self.find_user_vods_by_id(ovod.id)
+            if cached:
+                user_vod = cached
             vods.append(user_vod)
 
         self.vods = vods
@@ -697,9 +697,9 @@ class Subscriber(MongoModel, Maker):
         ustreams = []
         for ocatchup in self.all_available_official_catchups():
             user_catchup = UserStream.make_from_stream(ocatchup)
-            # cached = self.find_user_catchups_by_id(user_catchup.id)
-            # if cached:
-            #    user_catchup = cached
+            cached = self.find_user_catchups_by_id(user_catchup.id)
+            if cached:
+                user_catchup = cached
             ustreams.append(user_catchup)
 
         self.catchups = ustreams

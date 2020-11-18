@@ -74,7 +74,7 @@ class Device(EmbeddedMongoModel, Maker):
     CREATED_DATE_FIELD = 'created_date'
 
     DEFAULT_DEVICE_NAME = 'Device'
-    MIN_DEVICE_NAME_LENGTH = 2
+    MIN_DEVICE_NAME_LENGTH = 1
     MAX_DEVICE_NAME_LENGTH = 32
 
     class Status(IntEnum):

@@ -30,6 +30,7 @@ class ServiceSettings(MongoModel, Maker):
     PROXY_DIRECTORY_FIELD = 'proxy_directory'
     DATA_DIRECTORY_FIELD = 'data_directory'
     PROVIDERS_FIELD = 'providers'
+    PRICE_PACKAGE_FIELD = 'price_package'
     CREATED_DATE_FIELD = 'created_date'
     MONITORING_FILED = 'monitoring'
     AUTO_START_FIELD = 'auto_start'
@@ -106,6 +107,9 @@ class ServiceSettings(MongoModel, Maker):
     proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
     data_directory = fields.CharField(default=DEFAULT_DATA_DIR_PATH, required=True)
 
+    price_package = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
+                                      max_value=constants.MAX_PRICE, required=True)
+
     # stats
     auto_start = fields.BooleanField(default=False, required=True)
     activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
@@ -113,6 +117,7 @@ class ServiceSettings(MongoModel, Maker):
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     stats = fields.EmbeddedModelListField(Machine, blank=True)
+
 
     def get_net_bytes(self, start_timestamp) -> float:
         stats_len = len(self.stats)
@@ -346,6 +351,10 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # required field
             self.data_directory = data
 
+        res, price_package = self.check_required_type(ServiceSettings.PRICE_PACKAGE_FIELD, float, json)
+        if res:  # required field
+            self.price_package = price_package
+
         res, created_date_msec = self.check_optional_type(ServiceSettings.CREATED_DATE_FIELD, int, json)
         if res:  # optional field
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
@@ -385,6 +394,7 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.CODS_DIRECTORY_FIELD: self.cods_directory,
                 ServiceSettings.PROXY_DIRECTORY_FIELD: self.proxy_directory,
                 ServiceSettings.DATA_DIRECTORY_FIELD: self.data_directory,
+                ServiceSettings.PRICE_PACKAGE_FIELD: self.price_package,
                 ServiceSettings.MONITORING_FILED: self.monitoring,
                 ServiceSettings.AUTO_START_FIELD: self.auto_start,
                 ServiceSettings.ACTIVATION_KEY_FIELD: self.activation_key,

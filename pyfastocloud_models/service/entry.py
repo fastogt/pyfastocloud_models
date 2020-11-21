@@ -116,7 +116,7 @@ class ServiceSettings(MongoModel, Maker):
                                       min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
-    description = fields.CharField(required=False)
+    description = fields.CharField(required=False, blank=True)
     # stats
     stats = fields.EmbeddedModelListField(Machine, blank=True)
 

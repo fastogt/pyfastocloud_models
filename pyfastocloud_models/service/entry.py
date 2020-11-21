@@ -35,6 +35,7 @@ class ServiceSettings(MongoModel, Maker):
     MONITORING_FILED = 'monitoring'
     AUTO_START_FIELD = 'auto_start'
     ACTIVATION_KEY_FIELD = 'activation_key'
+    DESCRIPTION_FIELD = 'description'
 
     @staticmethod
     def get_by_id(sid: ObjectId):
@@ -110,14 +111,14 @@ class ServiceSettings(MongoModel, Maker):
     price_package = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                                       max_value=constants.MAX_PRICE, required=True)
 
-    # stats
     auto_start = fields.BooleanField(default=False, required=True)
     activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
                                       min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
+    description = fields.CharField(required=False)
+    # stats
     stats = fields.EmbeddedModelListField(Machine, blank=True)
-
 
     def get_net_bytes(self, start_timestamp) -> float:
         stats_len = len(self.stats)
@@ -371,6 +372,10 @@ class ServiceSettings(MongoModel, Maker):
         if res:  # optional field
             self.activation_key = activation_key
 
+        res, description = self.check_optional_type(ServiceSettings.DESCRIPTION_FIELD, str, json)
+        if res:  # optional field
+            self.description = description
+
         try:
             self.full_clean()
         except errors.ValidationError as err:
@@ -398,5 +403,6 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.MONITORING_FILED: self.monitoring,
                 ServiceSettings.AUTO_START_FIELD: self.auto_start,
                 ServiceSettings.ACTIVATION_KEY_FIELD: self.activation_key,
+                ServiceSettings.DESCRIPTION_FIELD: self.description,
                 ServiceSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 ServiceSettings.PROVIDERS_FIELD: providers}

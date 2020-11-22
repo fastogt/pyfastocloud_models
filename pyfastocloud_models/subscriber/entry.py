@@ -394,8 +394,9 @@ class Subscriber(MongoModel, Maker):
     # official streams
     def add_official_stream_by_id(self, oid: ObjectId):
         stream = IStream.get_by_id(oid)
-        user_stream = UserStream.make_from_stream(stream)
-        self.add_official_stream(user_stream)
+        if stream:
+            user_stream = UserStream.make_from_stream(stream)
+            self.add_official_stream(user_stream)
 
     def add_official_stream(self, user_stream: UserStream):
         if not user_stream:

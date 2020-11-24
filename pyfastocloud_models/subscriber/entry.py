@@ -423,8 +423,9 @@ class Subscriber(MongoModel, Maker):
     # official vods
     def add_official_vod_by_id(self, oid: ObjectId):
         stream = IStream.get_by_id(oid)
-        user_stream = UserStream.make_from_stream(stream)
-        self.add_official_vod(user_stream)
+        if stream:
+            user_stream = UserStream.make_from_stream(stream)
+            self.add_official_vod(user_stream)
 
     def add_official_vod(self, user_stream: UserStream):
         if not user_stream:
@@ -451,7 +452,8 @@ class Subscriber(MongoModel, Maker):
     # official series
     def add_official_serial_by_id(self, sid: ObjectId):
         serial = Serial.get_by_id(sid)
-        self.add_official_serial(serial)
+        if serial:
+            self.add_official_serial(serial)
 
     def add_official_serial(self, serial: Serial):
         if not serial:
@@ -504,6 +506,12 @@ class Subscriber(MongoModel, Maker):
         self.remove_official_catchup(original_stream)
 
     # own
+    def add_own_stream_by_id(self, oid: ObjectId):
+        stream = IStream.get_by_id(oid)
+        if stream:
+            user_stream = UserStream.make_from_stream(stream)
+            self.add_own_stream(user_stream)
+
     def add_own_stream(self, user_stream: UserStream):
         for stream in self.streams:
             if stream.private and stream.sid == user_stream:

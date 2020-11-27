@@ -149,6 +149,13 @@ class IStream(MongoModel, Maker):
             return self.groups[0]
         return str()
 
+    @property
+    def stable_name(self):
+        if not self.tvg_name:
+            return self.name
+
+        return self.tvg_name
+
     def generate_playlist(self, header=True) -> str:
         result = '#EXTM3U\n' if header else ''
         stream_type = self.get_type()
@@ -160,7 +167,7 @@ class IStream(MongoModel, Maker):
                 stream_type == constants.StreamType.TIMESHIFT_PLAYER or stream_type == constants.StreamType.CATCHUP:
             for out in self.output:
                 result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'.format(
-                    self.tvg_id, self.tvg_name, self.tvg_logo, self.main_group, self.name, out.uri)
+                    self.tvg_id, self.stable_name, self.tvg_logo, self.main_group, self.name, out.uri)
 
         return result
 
@@ -175,7 +182,8 @@ class IStream(MongoModel, Maker):
                 stream_type == constants.StreamType.TIMESHIFT_PLAYER or stream_type == constants.StreamType.CATCHUP:
             for out in self.output:
                 result.append(
-                    {'tvg-id': self.tvg_id, 'tvg-name': self.tvg_name, 'tvg-logo': self.tvg_logo, 'groups': self.groups,
+                    {'tvg-id': self.tvg_id, 'tvg-name': self.stable_name, 'tvg-logo': self.tvg_logo,
+                     'groups': self.groups,
                      'url': out.uri})
 
         return result
@@ -200,7 +208,7 @@ class IStream(MongoModel, Maker):
                 else:
                     url = out.uri
                 result += '#EXTINF:-1 tvg-id="{0}" tvg-name="{1}" tvg-logo="{2}" group-title="{3}",{4}\n{5}\n'. \
-                    format(self.tvg_id, self.tvg_name, self.tvg_logo, self.main_group, self.name, url)
+                    format(self.tvg_id, self.stable_name, self.tvg_logo, self.main_group, self.name, url)
 
         return result
 
@@ -222,7 +230,8 @@ class IStream(MongoModel, Maker):
                                                                       out.id, file_name)
                 else:
                     url = out.uri
-                result.append({'tvg-id': self.tvg_id, 'tvg-name': self.tvg_name, 'tvg-logo': self.tvg_logo,
+
+                result.append({'tvg-id': self.tvg_id, 'tvg-name': self.stable_name, 'tvg-logo': self.tvg_logo,
                                'groups': self.groups, 'url': url})
 
         return result

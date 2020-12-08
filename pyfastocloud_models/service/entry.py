@@ -69,7 +69,7 @@ class ServiceSettings(Document, Maker):
     DEFAULT_SERVICE_RTMP_PORT = 1935
 
     streams = fields.ListField(fields.ReferenceField(IStream), blank=True)
-    series = fields.ListField(fields.ReferenceField(Serial, on_delete=PULL), blank=True)
+    series = fields.ListField(fields.ReferenceField(Serial, reverse_delete_rule=PULL), blank=True)
     providers = fields.EmbeddedDocumentListField(ProviderPair, blank=True)
 
     name = fields.StringField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,

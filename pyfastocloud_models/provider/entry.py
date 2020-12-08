@@ -60,11 +60,11 @@ class Provider(Document, Maker):
     credits = fields.IntField(default=constants.DEFAULT_DEVICES_COUNT, min_value=constants.MIN_CREDITS_COUNT,
                               max_value=constants.MAX_CREDITS_COUNT, required=True)
 
-    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=PULL), blank=True)
-    subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=PULL), blank=True)
-    load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=PULL),
+    servers = fields.ListField(fields.ReferenceField(ServiceSettings, reverse_delete_rule=PULL), blank=True)
+    subscribers = fields.ListField(fields.ReferenceField(Subscriber, reverse_delete_rule=PULL), blank=True)
+    load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, reverse_delete_rule=PULL),
                                       blank=True)
-    epgs = fields.ListField(fields.ReferenceField(EpgSettings, on_delete=PULL), blank=True)
+    epgs = fields.ListField(fields.ReferenceField(EpgSettings, reverse_delete_rule=PULL), blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)

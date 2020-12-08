@@ -230,15 +230,15 @@ class Subscriber(Document, Maker):
     country = fields.StringField(min_length=2, max_length=3, required=True)
     language = fields.StringField(default=constants.DEFAULT_LOCALE, required=True)
 
-    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=PULL), blank=True)
+    servers = fields.ListField(fields.ReferenceField(ServiceSettings, reverse_delete_rule=PULL), blank=True)
     devices = fields.EmbeddedDocumentListField(Device, blank=True, required=False)
     max_devices_count = fields.IntField(default=constants.DEFAULT_DEVICES_COUNT, required=False)
     # content
     streams = fields.EmbeddedDocumentListField(UserStream, blank=True, required=False)
     vods = fields.EmbeddedDocumentListField(UserStream, blank=True, required=False)
     catchups = fields.EmbeddedDocumentListField(UserStream, blank=True, required=False)
-    series = fields.ListField(fields.ReferenceField(Serial, on_delete=PULL), blank=True)
-    requests = fields.ListField(fields.ReferenceField(ContentRequest, on_delete=PULL), blank=True)
+    series = fields.ListField(fields.ReferenceField(Serial, reverse_delete_rule=PULL), blank=True)
+    requests = fields.ListField(fields.ReferenceField(ContentRequest, reverse_delete_rule=PULL), blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Subscriber, self).__init__(*args, **kwargs)

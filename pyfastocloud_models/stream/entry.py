@@ -278,19 +278,19 @@ class IStream(Document, Maker):
             self.groups = []
 
         res, tvg_id = self.check_optional_type(IStream.TVG_ID_FIELD, str, json)
-        if res:  # optional field
+        if res and tvg_id:  # optional field
             self.tvg_id = tvg_id
         else:
             self.tvg_id = None
 
         res, tvg_name = self.check_optional_type(IStream.TVG_NAME_FIELD, str, json)
-        if res:  # optional field
+        if res and tvg_name:  # optional field
             self.tvg_name = tvg_name
         else:
             self.tvg_name = None
 
         res, icon = self.check_optional_type(IStream.ICON_FIELD, str, json)
-        if res:  # optional field
+        if res and icon:  # optional field
             self.tvg_logo = icon
         else:
             self.tvg_logo = None

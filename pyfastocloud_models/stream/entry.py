@@ -8,7 +8,7 @@ from mongoengine import Document, fields, PULL, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, MetaUrl, \
-    MachineLearning, BlankListOk
+    MachineLearning
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
@@ -73,14 +73,12 @@ class IStream(Document, Maker):
 
     # blanks
     tvg_logo = fields.StringField(max_length=constants.MAX_STREAM_ICON_LENGTH,
-                                  min_length=constants.MIN_STREAM_ICON_LENGTH,
-                                  required=True, default='')
-    groups = BlankListOk(fields.StringField(), required=True)
+                                  min_length=constants.MIN_STREAM_ICON_LENGTH)
+    groups = fields.ListField(fields.StringField())
     tvg_id = fields.StringField(min_length=constants.MIN_STREAM_TVG_ID_LENGTH,
-                                max_length=constants.MAX_STREAM_TVG_ID_LENGTH, required=True, default='')
+                                max_length=constants.MAX_STREAM_TVG_ID_LENGTH)
     tvg_name = fields.StringField(min_length=constants.MIN_STREAM_TVG_NAME_LENGTH,
-                                  max_length=constants.MAX_STREAM_TVG_NAME_LENGTH, required=True,
-                                  default='')  # for inner use
+                                  max_length=constants.MAX_STREAM_TVG_NAME_LENGTH)  # for inner use
     # optional
     parts = fields.ListField(fields.ReferenceField('IStream'))
     meta_urls = fields.EmbeddedDocumentListField(MetaUrl, db_field='meta')
@@ -1014,11 +1012,9 @@ class VodBasedStream(object):
     country = fields.StringField(default=DEFAULT_COUNTRY, required=True)
     duration = fields.IntField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC, required=True)
     # blanks
-    trailer_url = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                     required=True, default='')
+    trailer_url = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH)
     description = fields.StringField(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
-                                     max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
-                                     required=True, default='')
+                                     max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH)
 
     def prime_date_utc_msec(self):
         return date_to_utc_msec(self.prime_date)

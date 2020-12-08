@@ -4,16 +4,6 @@ import pyfastocloud_models.constants as constants
 from pyfastocloud_models.utils.utils import is_valid_url
 
 
-class BlankListOk(fields.ListField):
-    def __init__(self, *args, **kwargs):
-        super(BlankListOk, self).__init__(*args, **kwargs, default=[])
-
-    def validate(self, value):
-        if not value:
-            return
-        return super(BlankListOk, self).validate(value)
-
-
 class Maker:
     @classmethod
     def make_entry(cls, json: dict) -> 'Maker':

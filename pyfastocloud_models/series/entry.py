@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 from mongoengine import Document, fields, errors, PULL
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Maker, BlankStringOK, BlankListOk
+from pyfastocloud_models.common_entries import Maker, BlankListOk
 from pyfastocloud_models.stream.entry import IStream, ProxyVodStream, VodEncodeStream, VodRelayStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
@@ -39,10 +39,11 @@ class Serial(Document, Maker):
         return self.pk
 
     name = fields.StringField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH)
-    icon = BlankStringOK(max_length=constants.MAX_URI_LENGTH, min_length=constants.MIN_URI_LENGTH)
-    groups = BlankListOk(fields.StringField(), default=[], required=True)
-    description = BlankStringOK(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
-                                max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH)
+    icon = fields.StringField(max_length=constants.MAX_STREAM_ICON_LENGTH, min_length=constants.MIN_STREAM_ICON_LENGTH,
+                              required=True, default='')
+    groups = BlankListOk(fields.StringField(), required=True)
+    description = fields.StringField(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
+                                     max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH, required=True, default='')
     created_date = fields.DateTimeField(default=datetime.now, required=True)
     price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                               max_value=constants.MAX_PRICE, required=True)

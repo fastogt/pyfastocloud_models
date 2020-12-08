@@ -1036,18 +1036,22 @@ class VodBasedStream(object):
             self.vod_type = vod_type
 
         res, description = Maker.check_optional_type(VodBasedStream.DESCRIPTION_FIELD, str, json)
-        if res:
+        if res and description:
             self.description = description
+        else:
+            self.description = None
 
         res, trailer = Maker.check_optional_type(VodBasedStream.TRAILER_URL_FIELD, str, json)
-        if res:
+        if res and trailer:
             self.trailer_url = trailer
+        else:
+            self.trailer_url = None
 
         res, score = Maker.check_optional_type(VodBasedStream.USER_SCORE_FIELD, float, json)
         if res:
             self.user_score = score
 
-        res, prime_date = self.check_required_type(VodBasedStream.PRIME_DATE_FIELD, int, json)
+        res, prime_date = Maker.check_required_type(VodBasedStream.PRIME_DATE_FIELD, int, json)
         if res:
             self.prime_date = datetime.utcfromtimestamp(prime_date / 1000)
 

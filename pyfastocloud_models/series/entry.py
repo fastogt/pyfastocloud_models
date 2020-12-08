@@ -38,7 +38,7 @@ class Serial(Document, Maker):
     def id(self):
         return self.pk
 
-    name = fields.StringField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH)
+    name = fields.StringField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH, required=True)
     icon = fields.StringField(max_length=constants.MAX_STREAM_ICON_LENGTH, min_length=constants.MIN_STREAM_ICON_LENGTH)
     groups = fields.ListField(fields.StringField())
     description = fields.StringField(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
@@ -101,20 +101,26 @@ class Serial(Document, Maker):
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
         res, groups = self.check_optional_type(Serial.GROUPS_FIELD, list, json)
-        if res:  # optional field
+        if res and groups:  # optional field
             self.groups = groups
+        else:
+            self.groups = []
 
         res, icon = self.check_optional_type(Serial.ICON_FIELD, str, json)
-        if res:  # optional field
+        if res and icon:  # optional field
             self.icon = icon
+        else:
+            self.icon = None
 
         res, price = self.check_optional_type(Serial.PRICE_FIELD, float, json)
         if res:  # optional field
             self.price = price
 
         res, description = Maker.check_optional_type(Serial.DESCRIPTION_FIELD, str, json)
-        if res:
+        if res and description:
             self.description = description
+        else:
+            self.description = None
 
         res, season = Maker.check_optional_type(Serial.SEASON_FIELD, int, json)
         if res:

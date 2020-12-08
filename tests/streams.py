@@ -70,7 +70,7 @@ class StreamsTest(unittest.TestCase):
         data = {"id": None, "name": "Stream", "tvg_logo": "https://fastocloud.com/images/unknown_channel.png",
                 "groups": [], "type": 3, "price": 0, "view_count": 0, "output": [
                 {"id": 0, "uri": "http://fastocloud.com:8000/master.m3u8", "http_root": "~/streamer/hls",
-                 "hls_type": 0}], "visible": True, "iarc": 18, "tvg_id": None, "meta": [],
+                 "hls_type": 0}], "visible": True, "iarc": 18, "tvg_id": "", "meta": [],
                 "input": [{"id": 1, "uri": "http://localhost:8000/master.m3u8"}], "log_level": 6,
                 "feedback_directory": None, "have_video": True, "have_audio": True, "phoenix": False, "loop": False,
                 "restart_attempts": 10, "extra_config": "{}", "status": 0, "cpu": 0, "timestamp": 0, "idle_time": 0,

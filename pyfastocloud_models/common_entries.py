@@ -4,6 +4,26 @@ import pyfastocloud_models.constants as constants
 from pyfastocloud_models.utils.utils import is_valid_url
 
 
+class BlankStringOK(fields.StringField):
+    def __init__(self, *args, **kwargs):
+        super(BlankStringOK, self).__init__(*args, **kwargs, default='')
+
+    def validate(self, value):
+        if not value:
+            return
+        return super(BlankStringOK, self).validate(value)
+
+
+class BlankListOk(fields.ListField):
+    def __init__(self, *args, **kwargs):
+        super(BlankListOk, self).__init__(*args, **kwargs)
+
+    def validate(self, value):
+        if not value:
+            return
+        return super(BlankListOk, self).validate(value)
+
+
 class Maker:
     @classmethod
     def make_entry(cls, json: dict) -> 'Maker':

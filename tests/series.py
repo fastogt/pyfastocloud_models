@@ -28,6 +28,7 @@ class SeriesTest(unittest.TestCase):
         proxy2 = ProxyVodStream.make_entry(proxy_data)
 
         ser = Serial()
+        self.assertTrue(ser.is_valid())
         ser.add_episode(proxy)
         self.assertEqual(len(ser.episodes), 1)
         ser.add_episode(proxy)

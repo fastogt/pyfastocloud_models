@@ -43,7 +43,8 @@ class StreamsTest(unittest.TestCase):
                 "view_count": 0, "output": [
                 {"id": 0, "uri": "http://fastocloud.com:8000/2/5f2bac3de154540b4476c5d2/0/master.m3u8",
                  "http_root": "~/streamer/hls/2/5f2bac3de154540b4476c5d2/0", "hls_type": 0, "chunk_duration": 5}],
-                "visible": True, "iarc": 18, "tvg_id": "", "meta": [], "input": [{"id": 1, "uri": "http://localhost"}],
+                "visible": True, "iarc": 18, "tvg_id": "123", "meta": [],
+                "input": [{"id": 1, "uri": "http://localhost"}],
                 "log_level": 6, "feedback_directory": "~/streamer/feedback/2/5f2bac3de154540b4476c5d2",
                 "have_video": True, "have_audio": True, "phoenix": False, "loop": False, "restart_attempts": 10,
                 "extra_config": "{}", "status": 0, "cpu": 0, "timestamp": 0, "idle_time": 0, "rss": 0,

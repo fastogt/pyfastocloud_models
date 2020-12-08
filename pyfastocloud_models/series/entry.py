@@ -1,15 +1,15 @@
 from datetime import datetime
 
 from bson.objectid import ObjectId
-from pymodm import MongoModel, fields, errors
+from mongoengine import Document, fields, errors, PULL
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Maker, BlankStringOK
+from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.stream.entry import IStream, ProxyVodStream, VodEncodeStream, VodRelayStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
-class Serial(MongoModel, Maker):
+class Serial(Document, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     ICON_FIELD = 'icon'
@@ -22,21 +22,14 @@ class Serial(MongoModel, Maker):
     EPISODES_FIELD = 'episodes'
     VIEW_COUNT_FIELD = 'view_count'
 
-    @staticmethod
-    def get_by_id(sid: ObjectId):
-        try:
-            stream = Serial.objects.get({'_id': sid})
-        except Serial.DoesNotExist:
-            return None
-        else:
-            return stream
-
-    class Meta:
-        allow_inheritance = False
-        collection_name = 'series'
-
     MIN_SERIES_NAME_LENGTH = 3
     MAX_SERIES_NAME_LENGTH = 30
+
+    meta = {'collection': 'series', 'allow_inheritance': False}
+
+    @staticmethod
+    def get_by_id(sid: ObjectId):
+        return Serial.objects(id=sid).first()
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -45,19 +38,17 @@ class Serial(MongoModel, Maker):
     def id(self):
         return self.pk
 
-    name = fields.CharField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH, required=True)
-    icon = BlankStringOK(max_length=constants.MAX_URI_LENGTH,
-                         min_length=constants.MIN_URI_LENGTH, required=True)
-    groups = fields.ListField(fields.CharField(), default=[], required=True, blank=True)
-    description = BlankStringOK(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
-                                max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH,
-                                required=True)
+    name = fields.StringField(max_length=MAX_SERIES_NAME_LENGTH, min_length=MIN_SERIES_NAME_LENGTH)
+    icon = fields.StringField(max_length=constants.MAX_URI_LENGTH, min_length=constants.MIN_URI_LENGTH)
+    groups = fields.ListField(fields.StringField(), default=[])
+    description = fields.StringField(min_length=constants.MIN_STREAM_DESCRIPTION_LENGTH,
+                                     max_length=constants.MAX_STREAM_DESCRIPTION_LENGTH)
     created_date = fields.DateTimeField(default=datetime.now, required=True)
     price = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                               max_value=constants.MAX_PRICE, required=True)
-    season = fields.IntegerField(default=1, min_value=0, required=True)
+    season = fields.IntField(default=1, min_value=0, required=True)
     visible = fields.BooleanField(default=True, required=True)
-    episodes = fields.ListField(fields.ReferenceField(IStream), blank=True)
+    episodes = fields.ListField(fields.ReferenceField(IStream))
 
     def add_episode(self, episode: IStream):
         if not episode:
@@ -76,7 +67,7 @@ class Serial(MongoModel, Maker):
             pass
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         result.pop('_id')
         result[Serial.CREATED_DATE_FIELD] = self.created_date_utc_msec()
@@ -140,12 +131,19 @@ class Serial(MongoModel, Maker):
                 stabled.append(ObjectId(episode))
             self.episodes = stabled
         try:
-            self.full_clean()
+            self.validate()
         except errors.ValidationError as err:
             raise ValueError(err.message)
 
+    def is_valid(self) -> bool:
+        try:
+            self.validate()
+        except errors.ValidationError:
+            return False
+        return True
+
 
 # if remove vod also clean parts
-ProxyVodStream.register_delete_rule(Serial, 'episodes', fields.ReferenceField.PULL)
-VodRelayStream.register_delete_rule(Serial, 'episodes', fields.ReferenceField.PULL)
-VodEncodeStream.register_delete_rule(Serial, 'episodes', fields.ReferenceField.PULL)
+ProxyVodStream.register_delete_rule(Serial, 'episodes', PULL)
+VodRelayStream.register_delete_rule(Serial, 'episodes', PULL)
+VodEncodeStream.register_delete_rule(Serial, 'episodes', PULL)

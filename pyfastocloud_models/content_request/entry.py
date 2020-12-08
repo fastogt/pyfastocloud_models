@@ -2,27 +2,24 @@ from datetime import datetime
 from enum import IntEnum
 
 from bson.objectid import ObjectId
-from pymodm import MongoModel, fields, errors
+from mongoengine import Document, fields, errors
 
 from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
-class ContentRequest(MongoModel, Maker):
+class ContentRequest(Document, Maker):
     ID_FIELD = 'id'
     TITLE_FIELD = 'title'
     TYPE_FIELD = 'type'
     STATUS_FIELD = 'status'
     CREATED_DATE_FIELD = 'created_date'
 
+    meta = {'collection': 'requests', 'allow_inheritance': False}
+
     @staticmethod
     def get_by_id(sid: ObjectId):
-        try:
-            request = ContentRequest.objects.get({'_id': sid})
-        except ContentRequest.DoesNotExist:
-            return None
-        else:
-            return request
+        return ContentRequest.objects(id=sid).first()
 
     class Status(IntEnum):
         NEW = 0
@@ -34,10 +31,6 @@ class ContentRequest(MongoModel, Maker):
         VODS = 1,
         SERIAL = 2
 
-    class Meta:
-        allow_inheritance = False
-        collection_name = 'requests'
-
     def get_id(self) -> str:
         return str(self.pk)
 
@@ -45,9 +38,9 @@ class ContentRequest(MongoModel, Maker):
     def id(self):
         return self.pk
 
-    title = fields.CharField(required=True)
-    type = fields.IntegerField(default=Type.LIVE, required=True)  #
-    status = fields.IntegerField(default=Status.NEW, required=True)  #
+    title = fields.StringField(required=True)
+    type = fields.IntField(default=Type.LIVE, required=True)  #
+    status = fields.IntField(default=Status.NEW, required=True)  #
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
 
     def to_front_dict(self) -> dict:
@@ -84,6 +77,6 @@ class ContentRequest(MongoModel, Maker):
             self.created_date = datetime.utcfromtimestamp(created_date_msec / 1000)
 
         try:
-            self.full_clean()
+            self.validate()
         except errors.ValidationError as err:
             raise ValueError(err.message)

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from pymodm import MongoModel, fields, errors
+from mongoengine import Document, fields, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
@@ -10,7 +10,7 @@ from pyfastocloud_models.provider.entry_pair import ProviderPair
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
-class LoadBalanceSettings(MongoModel, Maker):
+class LoadBalanceSettings(Document, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
@@ -23,18 +23,11 @@ class LoadBalanceSettings(MongoModel, Maker):
     AUTO_START_FIELD = 'auto_start'
     ACTIVATION_KEY_FIELD = 'activation_key'
 
+    meta = {'collection': 'load_balances', 'allow_inheritance': False}
+
     @staticmethod
     def get_by_id(sid: ObjectId):
-        try:
-            ser = LoadBalanceSettings.objects.get({'_id': sid})
-        except LoadBalanceSettings.DoesNotExist:
-            return None
-        else:
-            return ser
-
-    class Meta:
-        allow_inheritance = False
-        collection_name = 'load_balance'
+        return LoadBalanceSettings.objects(id=sid).first()
 
     DEFAULT_SERVICE_NAME = 'Load Balance'
     MIN_SERVICE_NAME_LENGTH = 3
@@ -49,24 +42,24 @@ class LoadBalanceSettings(MongoModel, Maker):
     DEFAULT_CATCHUPS_HTTP_HOST = '0.0.0.0'
     DEFAULT_CATCHUPS_HTTP_PORT = 8000
 
-    providers = fields.EmbeddedModelListField(ProviderPair, blank=True)
+    providers = fields.EmbeddedDocumentListField(ProviderPair, blank=True)
 
-    name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
-                            min_length=MIN_SERVICE_NAME_LENGTH)
-    host = fields.EmbeddedModelField(HostAndPort,
-                                     default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
-    clients_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CLIENTS_HOST,
-                                                                              port=DEFAULT_SERVICE_CLIENTS_PORT))
-    catchups_http_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_CATCHUPS_HTTP_HOST,
-                                                                                    port=DEFAULT_CATCHUPS_HTTP_PORT))
-    catchups_hls_directory = fields.CharField(default=DEFAULT_CATCHUPS_DIR_PATH)
+    name = fields.StringField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
+                              min_length=MIN_SERVICE_NAME_LENGTH)
+    host = fields.EmbeddedDocumentField(HostAndPort,
+                                        default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+    clients_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CLIENTS_HOST,
+                                                                                 port=DEFAULT_SERVICE_CLIENTS_PORT))
+    catchups_http_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_CATCHUPS_HTTP_HOST,
+                                                                                       port=DEFAULT_CATCHUPS_HTTP_PORT))
+    catchups_hls_directory = fields.StringField(default=DEFAULT_CATCHUPS_DIR_PATH)
     # stats
     auto_start = fields.BooleanField(default=False, required=True)
-    activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
-                                      min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
+    activation_key = fields.StringField(max_length=constants.ACTIVATION_KEY_LENGTH,
+                                        min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
-    stats = fields.EmbeddedModelListField(Machine, blank=True)
+    stats = fields.EmbeddedDocumentListField(Machine, blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -148,7 +141,7 @@ class LoadBalanceSettings(MongoModel, Maker):
             self.activation_key = activation_key
 
         try:
-            self.full_clean()
+            self.validate()
         except errors.ValidationError as err:
             raise ValueError(err.message)
 

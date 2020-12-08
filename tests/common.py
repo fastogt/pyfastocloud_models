@@ -141,7 +141,7 @@ class CommonTest(unittest.TestCase):
         invalid_input_url.uri = uri
         self.assertTrue(invalid_input_url.is_valid())
         invalid_input_url.id = None
-        self.assertFalse(invalid_input_url.is_valid())
+        self.assertTrue(invalid_input_url.is_valid())
 
         invalid = {InputUrl.URI_FIELD: '0.0.0.0:8888', InputUrl.ID_FIELD: uid}
         self.assertRaises(ValueError, InputUrl.make_entry, invalid)
@@ -190,7 +190,7 @@ class CommonTest(unittest.TestCase):
         invalid_output_url.uri = display_uri
         self.assertTrue(invalid_output_url.is_valid())
         invalid_output_url.id = None
-        self.assertFalse(invalid_output_url.is_valid())
+        self.assertTrue(invalid_output_url.is_valid())
 
         stable_uri = 'http://localhost'
         output_url = OutputUrl(id=uid, uri=stable_uri)

@@ -1,19 +1,7 @@
-from pymodm import EmbeddedMongoModel, fields
-from pymodm.errors import ValidationError
+from mongoengine import EmbeddedDocument, fields, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.utils.utils import is_valid_url
-
-
-class BlankStringOK(fields.CharField):
-    def __init__(self, *args, **kwargs):
-        super(BlankStringOK, self).__init__(*args, **kwargs, blank=True)
-
-    def value_from_object(self, instance):
-        result = getattr(instance, self.attname)
-        if result is None:
-            setattr(instance, self.attname, '')
-        return super(BlankStringOK, self).value_from_object(instance)
 
 
 class Maker:
@@ -69,30 +57,29 @@ class Maker:
         return False
 
 
-class Url(EmbeddedMongoModel, Maker):
+class Url(EmbeddedDocument, Maker):
     ID_FIELD = 'id'
     URI_FIELD = 'uri'
 
-    class Meta:
-        allow_inheritance = True
+    meta = {'allow_inheritance': True}
 
     _next_url_id = 0
 
-    id = fields.IntegerField(default=lambda: Url.generate_id(), required=True)
-    uri = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=True)
+    id = fields.IntField(default=lambda: Url.generate_id(), required=True)
+    uri = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH, required=True)
 
     def __init__(self, *args, **kwargs):
         super(Url, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()
 
@@ -116,28 +103,27 @@ class Url(EmbeddedMongoModel, Maker):
             self.uri = uri
 
 
-class StreamLink(EmbeddedMongoModel, Maker):
+class StreamLink(EmbeddedDocument, Maker):
     HTTP_PROXY_FIELD = 'http_proxy'
     HTTPS_PROXY_FIELD = 'https_proxy'
 
-    http_proxy = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                  required=False, blank=True)
-    https_proxy = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                   required=False, blank=True)
+    http_proxy = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                    required=False, blank=True)
+    https_proxy = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                     required=False, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(StreamLink, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
+        result = self.to_mongo()
         return result.to_dict()
 
     def update_entry(self, json: dict):
@@ -156,26 +142,26 @@ class StreamLink(EmbeddedMongoModel, Maker):
             delattr(self, StreamLink.HTTPS_PROXY_FIELD)
 
 
-class SrtKey(EmbeddedMongoModel, Maker):
+class SrtKey(EmbeddedDocument, Maker):
     PASSPHRASE_FIELD = 'passphrase'
     KEY_LEN_FIELD = 'pbkeylen'
 
-    passphrase = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                  required=False, blank=True)
-    pbkeylen = fields.IntegerField(required=False, blank=True)
+    passphrase = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                    required=False, blank=True)
+    pbkeylen = fields.IntField(required=False, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(SrtKey, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()
 
@@ -206,12 +192,12 @@ class InputUrl(Url):
     MIN_PROGRAM_NUMBER = 0
     MAX_PROGRAM_NUMBER = constants.MAX_INTEGER_NUMBER
 
-    user_agent = fields.IntegerField(choices=constants.UserAgent.choices(), required=False)
-    stream_link = fields.EmbeddedModelField(StreamLink, required=False)
-    proxy = fields.CharField(required=False)
-    program_number = fields.IntegerField(min_value=MIN_PROGRAM_NUMBER, max_value=MAX_PROGRAM_NUMBER, required=False)
-    multicast_iface = fields.CharField(required=False)
-    srt_key = fields.EmbeddedModelField(SrtKey, required=False)
+    user_agent = fields.IntField(choices=constants.UserAgent.choices(), required=False)
+    stream_link = fields.EmbeddedDocumentField(StreamLink, required=False)
+    proxy = fields.StringField(required=False)
+    program_number = fields.IntField(min_value=MIN_PROGRAM_NUMBER, max_value=MAX_PROGRAM_NUMBER, required=False)
+    multicast_iface = fields.StringField(required=False)
+    srt_key = fields.EmbeddedDocumentField(SrtKey, required=False)
 
     def __init__(self, *args, **kwargs):
         super(InputUrl, self).__init__(*args, **kwargs)
@@ -259,19 +245,19 @@ class OutputUrl(Url):
     RTMP_WEB_URL_FIELD = 'rtmp_web_url'
 
     # hls
-    http_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
-                                 required=False)
-    playlist_root = fields.CharField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
-                                     required=False)
-    chunk_duration = fields.IntegerField(required=False, blank=True)
-    hlssink_type = fields.IntegerField(choices=constants.HlsSinkType.choices(), required=False, blank=True)
-    hls_type = fields.IntegerField(choices=constants.HlsType.choices(), required=False, blank=True)
+    http_root = fields.StringField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
+                                   required=False)
+    playlist_root = fields.StringField(min_length=constants.MIN_PATH_LENGTH, max_length=constants.MAX_PATH_LENGTH,
+                                       required=False)
+    chunk_duration = fields.IntField(required=False, blank=True)
+    hlssink_type = fields.IntField(choices=constants.HlsSinkType.choices(), required=False, blank=True)
+    hls_type = fields.IntField(choices=constants.HlsType.choices(), required=False, blank=True)
     # srt
-    srt_mode = fields.IntegerField(choices=constants.SrtMode.choices(), required=False, blank=True)
+    srt_mode = fields.IntField(choices=constants.SrtMode.choices(), required=False, blank=True)
     # rtmp
-    rtmp_type = fields.IntegerField(choices=constants.RtmpType.choices(), required=False, blank=True)
-    rtmp_web_url = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                    required=False)
+    rtmp_type = fields.IntField(choices=constants.RtmpType.choices(), required=False, blank=True)
+    rtmp_web_url = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                      required=False)
 
     def __init__(self, *args, **kwargs):
         super(OutputUrl, self).__init__(*args, **kwargs)
@@ -345,26 +331,25 @@ class OutputUrl(Url):
             delattr(self, OutputUrl.RTMP_WEB_URL_FIELD)
 
 
-class Point(EmbeddedMongoModel, Maker):
+class Point(EmbeddedDocument, Maker):
     X_FIELD = 'x'
     Y_FIELD = 'y'
 
-    x = fields.IntegerField(required=True)
-    y = fields.IntegerField(required=True)
+    x = fields.IntField(required=True)
+    y = fields.IntField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Point, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
+        result = self.to_mongo()
         return result.to_dict()
 
     def update_entry(self, json: dict):
@@ -381,30 +366,36 @@ class Point(EmbeddedMongoModel, Maker):
         return '{0},{1}'.format(self.x, self.y)
 
 
-class Size(EmbeddedMongoModel, Maker):
+class Size(EmbeddedDocument, Maker):
     WIDTH_FIELD = 'width'
     HEIGHT_FIELD = 'height'
 
     INVALID_WIDTH = 0
     INVALID_HEIGHT = 0
 
-    width = fields.IntegerField(required=True)
-    height = fields.IntegerField(required=True)
+    width = fields.IntField(required=True)
+    height = fields.IntField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Size, self).__init__(*args, **kwargs)
 
     def clean(self):
+        if self.width is None:
+            raise errors.ValidationError('{0} should be not None'.format(Size.WIDTH_FIELD))
+
+        if self.height is None:
+            raise errors.ValidationError('{0} should be not None'.format(Size.HEIGHT_FIELD))
+
         if self.width <= Size.INVALID_WIDTH:
-            raise ValidationError('{0} should be bigger than'.format(Size.WIDTH_FIELD, Size.INVALID_WIDTH))
+            raise errors.ValidationError('{0} should be bigger than {1}'.format(Size.WIDTH_FIELD, Size.INVALID_WIDTH))
 
         if self.height <= Size.INVALID_HEIGHT:
-            raise ValidationError('{0} should be bigger than'.format(Size.HEIGHT_FIELD, Size.INVALID_HEIGHT))
+            raise errors.ValidationError('{0} should be bigger than {1}'.format(Size.HEIGHT_FIELD, Size.INVALID_HEIGHT))
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -419,15 +410,14 @@ class Size(EmbeddedMongoModel, Maker):
             self.height = height
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
+        result = self.to_mongo()
         return result.to_dict()
 
     def __str__(self):
         return '{0}x{1}'.format(self.width, self.height)
 
 
-class Logo(EmbeddedMongoModel, Maker):
+class Logo(EmbeddedDocument, Maker):
     PATH_FIELD = 'path'
     POSITION_FIELD = 'position'
     ALPHA_FIELD = 'alpha'
@@ -437,18 +427,18 @@ class Logo(EmbeddedMongoModel, Maker):
     MAX_LOGO_ALPHA = 1.0
     DEFAULT_LOGO_ALPHA = MAX_LOGO_ALPHA
 
-    path = fields.CharField(required=True)
-    position = fields.EmbeddedModelField(Point, required=True)
+    path = fields.StringField(required=True)
+    position = fields.EmbeddedDocumentField(Point, required=True)
     alpha = fields.FloatField(min_value=MIN_LOGO_ALPHA, max_value=MAX_LOGO_ALPHA, required=True)
-    size = fields.EmbeddedModelField(Size, required=True)
+    size = fields.EmbeddedDocumentField(Size, required=True)
 
     def __init__(self, *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -472,28 +462,28 @@ class Logo(EmbeddedMongoModel, Maker):
             self.size = Size.make_entry(size)
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()
 
 
-class RSVGLogo(EmbeddedMongoModel, Maker):
+class RSVGLogo(EmbeddedDocument, Maker):
     PATH_FIELD = 'path'
     POSITION_FIELD = 'position'
     ALPHA_FIELD = 'alpha'
     SIZE_FIELD = 'size'
 
-    path = fields.CharField(required=True)
-    position = fields.EmbeddedModelField(Point, required=True)
-    size = fields.EmbeddedModelField(Size, required=True)
+    path = fields.StringField(required=True)
+    position = fields.EmbeddedDocumentField(Point, required=True)
+    size = fields.EmbeddedDocumentField(Size, required=True)
 
     def __init__(self, *args, **kwargs):
         super(RSVGLogo, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -513,37 +503,45 @@ class RSVGLogo(EmbeddedMongoModel, Maker):
             self.size = Size.make_entry(size)
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()
 
 
-class Rational(EmbeddedMongoModel, Maker):
+class Rational(EmbeddedDocument, Maker):
     NUM_FIELD = 'num'
     DEN_FIELD = 'den'
 
     INVALID_RATIO_NUM = 0
     INVALID_RATIO_DEN = 0
 
-    num = fields.IntegerField(required=True)
-    den = fields.IntegerField(required=True)
+    num = fields.IntField(required=True)
+    den = fields.IntField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Rational, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
     def clean(self):
+        if self.num is None:
+            raise errors.ValidationError('{0} should be not None'.format(Rational.NUM_FIELD))
+
+        if self.den is None:
+            raise errors.ValidationError('{0} should be not None'.format(Rational.DEN_FIELD))
+
         if self.num <= Rational.INVALID_RATIO_NUM:
-            raise ValidationError('{0} should be bigger than'.format(Rational.NUM_FIELD, Rational.INVALID_RATIO_NUM))
+            raise errors.ValidationError(
+                '{0} should be bigger than {1}'.format(Rational.NUM_FIELD, Rational.INVALID_RATIO_NUM))
 
         if self.den <= Rational.INVALID_RATIO_NUM:
-            raise ValidationError('{0} should be bigger than'.format(Rational.DEN_FIELD, Rational.INVALID_RATIO_DEN))
+            raise errors.ValidationError(
+                '{0} should be bigger than {1}'.format(Rational.DEN_FIELD, Rational.INVALID_RATIO_DEN))
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
@@ -556,28 +554,27 @@ class Rational(EmbeddedMongoModel, Maker):
             self.den = den
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
+        result = self.to_mongo()
         return result.to_dict()
 
     def __str__(self):
         return '{0}:{1}'.format(self.num, self.den)
 
 
-class HostAndPort(EmbeddedMongoModel, Maker):
+class HostAndPort(EmbeddedDocument, Maker):
     HOST_FIELD = 'host'
     PORT_FIELD = 'port'
 
-    host = fields.CharField(required=True)
-    port = fields.IntegerField(required=True)
+    host = fields.StringField(required=True)
+    port = fields.IntField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(HostAndPort, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -592,24 +589,23 @@ class HostAndPort(EmbeddedMongoModel, Maker):
             self.port = port
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
-        result.pop('_cls')
+        result = self.to_mongo()
         return result.to_dict()
 
     def __str__(self):
         return '{0}:{1}'.format(self.host, self.port)
 
 
-class MachineLearning(EmbeddedMongoModel, Maker):
+class MachineLearning(EmbeddedDocument, Maker):
     BACKEND_FILED = 'backend'
     MODEL_URL_FIELD = 'model_url'
     TRACKING_FIELD = 'tracking'
     DUMP_FIELD = 'dump'
     OVERLAY_FIELD = 'overlay'
 
-    backend = fields.IntegerField(choices=constants.MlBackends.choices(), required=False)
-    model_url = fields.CharField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
-                                 required=True)
+    backend = fields.IntField(choices=constants.MlBackends.choices(), required=False)
+    model_url = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
+                                   required=True)
     tracking = fields.BooleanField(required=True)
     dump = fields.BooleanField(required=True)
     overlay = fields.BooleanField(required=True)
@@ -619,8 +615,8 @@ class MachineLearning(EmbeddedMongoModel, Maker):
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -649,28 +645,28 @@ class MachineLearning(EmbeddedMongoModel, Maker):
             self.overlay = overlay
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()
 
 
-class MetaUrl(EmbeddedMongoModel, Maker):
+class MetaUrl(EmbeddedDocument, Maker):
     NAME_FIELD = 'name'
     URL_FIELD = 'url'
 
-    name = fields.CharField(min_length=constants.MIN_STREAM_NAME_LENGTH, max_length=constants.MAX_STREAM_NAME_LENGTH,
-                            required=True)
-    url = fields.CharField(max_length=constants.MAX_URI_LENGTH, min_length=constants.MIN_URI_LENGTH, required=True)
+    name = fields.StringField(min_length=constants.MIN_STREAM_NAME_LENGTH, max_length=constants.MAX_STREAM_NAME_LENGTH,
+                              required=True)
+    url = fields.StringField(max_length=constants.MAX_URI_LENGTH, min_length=constants.MIN_URI_LENGTH, required=True)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()
 
@@ -687,22 +683,22 @@ class MetaUrl(EmbeddedMongoModel, Maker):
             self.url = url
 
 
-class Phone(EmbeddedMongoModel, Maker):
+class Phone(EmbeddedDocument, Maker):
     DIAL_CODE_FIELD = 'dial_code'
     PHONE_NUMBER_FIELD = 'phone_number'
     ISO_CODE_FILED = 'iso_code'
 
-    dial_code = fields.CharField(required=True)
-    phone_number = fields.CharField(required=True)
-    iso_code = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
+    dial_code = fields.StringField(required=True)
+    phone_number = fields.StringField(required=True)
+    iso_code = fields.StringField(default=constants.DEFAULT_LOCALE, required=True)
 
     def __init__(self, *args, **kwargs):
         super(Phone, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -723,6 +719,6 @@ class Phone(EmbeddedMongoModel, Maker):
             self.iso_code = iso_code
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()

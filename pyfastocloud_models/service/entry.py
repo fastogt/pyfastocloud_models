@@ -2,7 +2,7 @@ from bisect import bisect_right
 from datetime import datetime
 
 from bson import ObjectId
-from pymodm import MongoModel, fields, errors
+from mongoengine import Document, fields, errors, PULL
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
@@ -13,7 +13,7 @@ from pyfastocloud_models.stream.entry import IStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
-class ServiceSettings(MongoModel, Maker):
+class ServiceSettings(Document, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
@@ -37,18 +37,11 @@ class ServiceSettings(MongoModel, Maker):
     ACTIVATION_KEY_FIELD = 'activation_key'
     DESCRIPTION_FIELD = 'description'
 
+    meta = {'collection': 'services', 'allow_inheritance': False}
+
     @staticmethod
     def get_by_id(sid: ObjectId):
-        try:
-            ser = ServiceSettings.objects.get({'_id': sid})
-        except ServiceSettings.DoesNotExist:
-            return None
-        else:
-            return ser
-
-    class Meta:
-        allow_inheritance = False
-        collection_name = 'services'
+        return ServiceSettings.objects(id=sid).first()
 
     DEFAULT_SERVICE_NAME = 'Service'
     MIN_SERVICE_NAME_LENGTH = 3
@@ -76,49 +69,49 @@ class ServiceSettings(MongoModel, Maker):
     DEFAULT_SERVICE_RTMP_PORT = 1935
 
     streams = fields.ListField(fields.ReferenceField(IStream), blank=True)
-    series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), blank=True)
-    providers = fields.EmbeddedModelListField(ProviderPair, blank=True)
+    series = fields.ListField(fields.ReferenceField(Serial, on_delete=PULL), blank=True)
+    providers = fields.EmbeddedDocumentListField(ProviderPair, blank=True)
 
-    name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
-                            min_length=MIN_SERVICE_NAME_LENGTH, required=True)
-    host = fields.EmbeddedModelField(HostAndPort,
-                                     default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT),
-                                     required=True)
-    http_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_HTTP_HOST,
-                                                                           port=DEFAULT_SERVICE_HTTP_PORT),
-                                          required=True)
-    vods_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_VODS_HOST,
-                                                                           port=DEFAULT_SERVICE_VODS_PORT),
-                                          required=True)
-    cods_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CODS_HOST,
-                                                                           port=DEFAULT_SERVICE_CODS_PORT),
-                                          required=True)
-    nginx_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_NGINX_HOST,
-                                                                            port=DEFAULT_SERVICE_NGINX_PORT),
-                                           required=True)
-    rtmp_host = fields.EmbeddedModelField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_RTMP_HOST,
-                                                                           port=DEFAULT_SERVICE_RTMP_PORT),
-                                          required=True)
+    name = fields.StringField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
+                              min_length=MIN_SERVICE_NAME_LENGTH, required=True)
+    host = fields.EmbeddedDocumentField(HostAndPort,
+                                        default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT),
+                                        required=True)
+    http_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_HTTP_HOST,
+                                                                              port=DEFAULT_SERVICE_HTTP_PORT),
+                                             required=True)
+    vods_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_VODS_HOST,
+                                                                              port=DEFAULT_SERVICE_VODS_PORT),
+                                             required=True)
+    cods_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_CODS_HOST,
+                                                                              port=DEFAULT_SERVICE_CODS_PORT),
+                                             required=True)
+    nginx_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_NGINX_HOST,
+                                                                               port=DEFAULT_SERVICE_NGINX_PORT),
+                                              required=True)
+    rtmp_host = fields.EmbeddedDocumentField(HostAndPort, default=HostAndPort(host=DEFAULT_SERVICE_RTMP_HOST,
+                                                                              port=DEFAULT_SERVICE_RTMP_PORT),
+                                             required=True)
 
-    feedback_directory = fields.CharField(default=DEFAULT_FEEDBACK_DIR_PATH, required=True)
-    timeshifts_directory = fields.CharField(default=DEFAULT_TIMESHIFTS_DIR_PATH, required=True)
-    hls_directory = fields.CharField(default=DEFAULT_HLS_DIR_PATH, required=True)
-    vods_directory = fields.CharField(default=DEFAULT_VODS_DIR_PATH, required=True)
-    cods_directory = fields.CharField(default=DEFAULT_CODS_DIR_PATH, required=True)
-    proxy_directory = fields.CharField(default=DEFAULT_PROXY_DIR_PATH, required=True)
-    data_directory = fields.CharField(default=DEFAULT_DATA_DIR_PATH, required=True)
+    feedback_directory = fields.StringField(default=DEFAULT_FEEDBACK_DIR_PATH, required=True)
+    timeshifts_directory = fields.StringField(default=DEFAULT_TIMESHIFTS_DIR_PATH, required=True)
+    hls_directory = fields.StringField(default=DEFAULT_HLS_DIR_PATH, required=True)
+    vods_directory = fields.StringField(default=DEFAULT_VODS_DIR_PATH, required=True)
+    cods_directory = fields.StringField(default=DEFAULT_CODS_DIR_PATH, required=True)
+    proxy_directory = fields.StringField(default=DEFAULT_PROXY_DIR_PATH, required=True)
+    data_directory = fields.StringField(default=DEFAULT_DATA_DIR_PATH, required=True)
 
     price_package = fields.FloatField(default=constants.DEFAULT_PRICE, min_value=constants.MIN_PRICE,
                                       max_value=constants.MAX_PRICE, required=True)
 
     auto_start = fields.BooleanField(default=False, required=True)
-    activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
-                                      min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
+    activation_key = fields.StringField(max_length=constants.ACTIVATION_KEY_LENGTH,
+                                        min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
-    description = fields.CharField(required=False, blank=True)
+    description = fields.StringField(required=False, blank=True)
     # stats
-    stats = fields.EmbeddedModelListField(Machine, blank=True)
+    stats = fields.EmbeddedDocumentListField(Machine, blank=True)
 
     def get_net_bytes(self, start_timestamp) -> float:
         stats_len = len(self.stats)
@@ -140,17 +133,6 @@ class ServiceSettings(MongoModel, Maker):
 
         return result
 
-    def get_net_price(self, start_timestamp) -> float:
-        start_timestamp = max(start_timestamp, self.created_date_utc_msec())
-        return self.price_net * self.get_net_bytes(start_timestamp) / (1024 * 1024 * 1024)
-
-    def get_support_price(self, start_timestamp):
-        start_timestamp = max(start_timestamp, self.created_date_utc_msec())
-        now = datetime.now()
-        cur_ts = date_to_utc_msec(now)
-        months = (cur_ts - start_timestamp) / (24 * 3600 * 1000 * 30)
-        return self.price_support * months
-
     def get_store_bytes(self, start_timestamp) -> float:
         stats_len = len(self.stats)
         if stats_len == 0:
@@ -169,10 +151,6 @@ class ServiceSettings(MongoModel, Maker):
             result += self.stats[i].hdd_used
 
         return result / (stats_len - ind)
-
-    def get_store_price(self, start_timestamp) -> float:
-        start_timestamp = max(start_timestamp, self.created_date_utc_msec())
-        return self.price_store * self.get_store_bytes(start_timestamp) / (1024 * 1024 * 1024)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -377,7 +355,7 @@ class ServiceSettings(MongoModel, Maker):
             self.description = description
 
         try:
-            self.full_clean()
+            self.validate()
         except errors.ValidationError as err:
             raise ValueError(err.message)
 
@@ -406,3 +384,10 @@ class ServiceSettings(MongoModel, Maker):
                 ServiceSettings.DESCRIPTION_FIELD: self.description,
                 ServiceSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 ServiceSettings.PROVIDERS_FIELD: providers}
+
+    def is_valid(self) -> bool:
+        try:
+            self.validate()
+        except errors.ValidationError:
+            return False
+        return True

@@ -3,9 +3,8 @@ from enum import IntEnum
 from hashlib import md5
 
 from bson.objectid import ObjectId
+from mongoengine import Document, fields, EmbeddedDocument, errors, PULL
 from pyfastogt.utils import is_valid_email
-from pymodm import MongoModel, fields, EmbeddedMongoModel, errors
-from pymongo.operations import IndexModel
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import Maker
@@ -67,7 +66,7 @@ def filtered_streams_in_server(server: ServiceSettings, cb) -> [IStream]:
     return streams
 
 
-class Device(EmbeddedMongoModel, Maker):
+class Device(EmbeddedDocument, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     STATUS_FIELD = 'status'
@@ -95,9 +94,9 @@ class Device(EmbeddedMongoModel, Maker):
 
     id = fields.ObjectIdField(required=True, default=ObjectId, primary_key=True)
     created_date = fields.DateTimeField(default=datetime.now)
-    status = fields.IntegerField(default=Status.NOT_ACTIVE)
-    name = fields.CharField(default=DEFAULT_DEVICE_NAME, min_length=MIN_DEVICE_NAME_LENGTH,
-                            max_length=MAX_DEVICE_NAME_LENGTH, required=True)
+    status = fields.IntField(default=Status.NOT_ACTIVE)
+    name = fields.StringField(default=DEFAULT_DEVICE_NAME, min_length=MIN_DEVICE_NAME_LENGTH,
+                              max_length=MAX_DEVICE_NAME_LENGTH, required=True)
 
     def get_id(self) -> str:
         return str(self.id)
@@ -130,12 +129,12 @@ class Device(EmbeddedMongoModel, Maker):
         if res:
             self.status = status
         try:
-            self.full_clean()
+            self.validate()
         except errors.ValidationError as err:
             raise ValueError(err.message)
 
 
-class UserStream(EmbeddedMongoModel):
+class UserStream(EmbeddedDocument):
     FAVORITE_FIELD = 'favorite'
     PRIVATE_FIELD = 'private'
     RECENT_FIELD = 'recent'
@@ -147,8 +146,8 @@ class UserStream(EmbeddedMongoModel):
     private = fields.BooleanField(default=False)
     locked = fields.BooleanField(default=False)
     recent = fields.DateTimeField(default=datetime.utcfromtimestamp(0))
-    interruption_time = fields.IntegerField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC,
-                                            required=True)
+    interruption_time = fields.IntField(default=0, min_value=0, max_value=constants.MAX_VIDEO_DURATION_MSEC,
+                                        required=True)
 
     def __init__(self, *args, **kwargs):
         super(UserStream, self).__init__(*args, **kwargs)
@@ -176,7 +175,7 @@ class UserStream(EmbeddedMongoModel):
         return res
 
 
-class Subscriber(MongoModel, Maker):
+class Subscriber(Document, Maker):
     ID_FIELD = 'id'
     EMAIL_FIELD = 'email'
     FIRST_NAME_FIELD = 'first_name'
@@ -191,28 +190,15 @@ class Subscriber(MongoModel, Maker):
     SERVERS_FIELD = 'servers'
     DEVICES_COUNT_FIELD = 'devices_count'
 
+    meta = {'collection': 'subscribers', 'allow_inheritance': False}
+
     @staticmethod
     def get_by_id(sid: ObjectId):
-        try:
-            sub = Subscriber.objects.get({'_id': sid})
-        except Subscriber.DoesNotExist:
-            return None
-        else:
-            return sub
+        return Subscriber.objects(id=sid).first()
 
     @staticmethod
     def get_by_email(email: str):
-        try:
-            sub = Subscriber.objects.get({'email': email})
-        except Subscriber.DoesNotExist:
-            return None
-        else:
-            return sub
-
-    class Meta:
-        collection_name = 'subscribers'
-        allow_inheritance = False
-        indexes = [IndexModel([('email', 1)], unique=True)]
+        return Subscriber.objects(email=email).first()
 
     MAX_DATE = datetime(2100, 1, 1)
 
@@ -235,24 +221,24 @@ class Subscriber(MongoModel, Maker):
     SUBSCRIBER_HASH_LENGTH = 32
 
     email = fields.EmailField(required=True)
-    first_name = fields.CharField(max_length=64, required=True)
-    last_name = fields.CharField(max_length=64, required=True)
-    password = fields.CharField(min_length=SUBSCRIBER_HASH_LENGTH, max_length=SUBSCRIBER_HASH_LENGTH, required=True)
+    first_name = fields.StringField(max_length=64, required=True)
+    last_name = fields.StringField(max_length=64, required=True)
+    password = fields.StringField(min_length=SUBSCRIBER_HASH_LENGTH, max_length=SUBSCRIBER_HASH_LENGTH, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
     exp_date = fields.DateTimeField(default=MAX_DATE, required=True)
-    status = fields.IntegerField(default=Status.NOT_ACTIVE, required=True)  #
-    country = fields.CharField(min_length=2, max_length=3, required=True)
-    language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
+    status = fields.IntField(default=Status.NOT_ACTIVE, required=True)  #
+    country = fields.StringField(min_length=2, max_length=3, required=True)
+    language = fields.StringField(default=constants.DEFAULT_LOCALE, required=True)
 
-    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), blank=True)
-    devices = fields.EmbeddedModelListField(Device, blank=True, required=False)
-    max_devices_count = fields.IntegerField(default=constants.DEFAULT_DEVICES_COUNT, required=False)
+    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=PULL), blank=True)
+    devices = fields.EmbeddedDocumentListField(Device, blank=True, required=False)
+    max_devices_count = fields.IntField(default=constants.DEFAULT_DEVICES_COUNT, required=False)
     # content
-    streams = fields.EmbeddedModelListField(UserStream, blank=True, required=False)
-    vods = fields.EmbeddedModelListField(UserStream, blank=True, required=False)
-    catchups = fields.EmbeddedModelListField(UserStream, blank=True, required=False)
-    series = fields.ListField(fields.ReferenceField(Serial, on_delete=fields.ReferenceField.PULL), blank=True)
-    requests = fields.ListField(fields.ReferenceField(ContentRequest, on_delete=fields.ReferenceField.PULL), blank=True)
+    streams = fields.EmbeddedDocumentListField(UserStream, blank=True, required=False)
+    vods = fields.EmbeddedDocumentListField(UserStream, blank=True, required=False)
+    catchups = fields.EmbeddedDocumentListField(UserStream, blank=True, required=False)
+    series = fields.ListField(fields.ReferenceField(Serial, on_delete=PULL), blank=True)
+    requests = fields.ListField(fields.ReferenceField(ContentRequest, on_delete=PULL), blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Subscriber, self).__init__(*args, **kwargs)
@@ -823,3 +809,10 @@ class Subscriber(MongoModel, Maker):
                 Subscriber.MAX_DEVICE_COUNT_FIELD: self.max_devices_count,
                 Subscriber.LANGUAGE_FIELD: self.language, Subscriber.COUNTRY_FIELD: self.country,
                 Subscriber.SERVERS_FIELD: servers, Subscriber.DEVICES_COUNT_FIELD: len(self.devices)}
+
+    def is_valid(self) -> bool:
+        try:
+            self.validate()
+        except errors.ValidationError:
+            return False
+        return True

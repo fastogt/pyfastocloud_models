@@ -2,9 +2,8 @@ from datetime import datetime
 from enum import IntEnum
 
 from bson.objectid import ObjectId
+from mongoengine import Document, fields, errors, PULL
 from pyfastogt.utils import is_valid_email
-from pymodm import MongoModel, fields, errors
-from pymongo.operations import IndexModel
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import pyfastocloud_models.constants as constants
@@ -16,7 +15,7 @@ from pyfastocloud_models.subscriber.entry import Subscriber
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
-class Provider(MongoModel, Maker):
+class Provider(Document, Maker):
     ID_FIELD = 'id'
     EMAIL_FIELD = 'email'
     FIRST_NAME_FIELD = 'first_name'
@@ -30,23 +29,15 @@ class Provider(MongoModel, Maker):
     CREDITS_FIELD = 'credits'
     CREDITS_REMAINING_FIELD = 'credits_remaining'
 
+    meta = {'collection': 'providers', 'allow_inheritance': True}
+
     @staticmethod
     def get_by_id(sid: ObjectId):
-        try:
-            provider = Provider.objects.get({'_id': sid})
-        except Provider.DoesNotExist:
-            return None
-        else:
-            return provider
+        return Provider.objects(id=sid).first()
 
     @staticmethod
     def get_by_email(email: str):
-        try:
-            provider = Provider.objects.get({'email': email})
-        except Provider.DoesNotExist:
-            return None
-        else:
-            return provider
+        return Provider.objects(email=email).first()
 
     class Status(IntEnum):
         NO_ACTIVE = 0
@@ -57,28 +48,23 @@ class Provider(MongoModel, Maker):
         ADMIN = 0,
         RESELLER = 1
 
-    class Meta:
-        collection_name = 'providers'
-        allow_inheritance = True
-        indexes = [IndexModel([('email', 1)], unique=True)]
-
-    email = fields.EmailField(required=True)
-    first_name = fields.CharField(min_length=2, max_length=64, required=True)
-    last_name = fields.CharField(min_length=2, max_length=64, required=True)
-    password = fields.CharField(required=True)
+    email = fields.EmailField(required=True, unique=True)
+    first_name = fields.StringField(min_length=2, max_length=64, required=True)
+    last_name = fields.StringField(min_length=2, max_length=64, required=True)
+    password = fields.StringField(required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
-    type = fields.IntegerField(default=Type.RESELLER, required=True)  #
-    status = fields.IntegerField(default=Status.NO_ACTIVE, required=True)  #
-    country = fields.CharField(min_length=2, max_length=3, required=True)
-    language = fields.CharField(default=constants.DEFAULT_LOCALE, required=True)
-    credits = fields.IntegerField(default=constants.DEFAULT_DEVICES_COUNT, min_value=constants.MIN_CREDITS_COUNT,
-                                  max_value=constants.MAX_CREDITS_COUNT, required=True)
+    type = fields.IntField(default=Type.RESELLER, required=True)  #
+    status = fields.IntField(default=Status.NO_ACTIVE, required=True)  #
+    country = fields.StringField(min_length=2, max_length=3, required=True)
+    language = fields.StringField(default=constants.DEFAULT_LOCALE, required=True)
+    credits = fields.IntField(default=constants.DEFAULT_DEVICES_COUNT, min_value=constants.MIN_CREDITS_COUNT,
+                              max_value=constants.MAX_CREDITS_COUNT, required=True)
 
-    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=fields.ReferenceField.PULL), blank=True)
-    subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=fields.ReferenceField.PULL), blank=True)
-    load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=fields.ReferenceField.PULL),
+    servers = fields.ListField(fields.ReferenceField(ServiceSettings, on_delete=PULL), blank=True)
+    subscribers = fields.ListField(fields.ReferenceField(Subscriber, on_delete=PULL), blank=True)
+    load_balancers = fields.ListField(fields.ReferenceField(LoadBalanceSettings, on_delete=PULL),
                                       blank=True)
-    epgs = fields.ListField(fields.ReferenceField(EpgSettings, on_delete=fields.ReferenceField.PULL), blank=True)
+    epgs = fields.ListField(fields.ReferenceField(EpgSettings, on_delete=PULL), blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -233,7 +219,7 @@ class Provider(MongoModel, Maker):
                 raise ValueError('Invalid language')
             self.language = language
         try:
-            self.full_clean()
+            self.validate()
         except errors.ValidationError as err:
             raise ValueError(err.message)
 
@@ -266,3 +252,10 @@ class Provider(MongoModel, Maker):
             epg.remove_provider(self.id)
             epg.save()
         return super(Provider, self).delete(*args, **kwargs)
+
+    def is_valid(self) -> bool:
+        try:
+            self.validate()
+        except errors.ValidationError:
+            return False
+        return True

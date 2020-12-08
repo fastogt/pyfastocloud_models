@@ -2,7 +2,7 @@
 import datetime
 import unittest
 
-from pymodm import connect
+from mongoengine import connect
 
 from pyfastocloud_models.service.entry import ServiceSettings, HostAndPort
 from pyfastocloud_models.stream.entry import ProxyStream, OutputUrl
@@ -11,7 +11,7 @@ from pyfastocloud_models.stream.entry import ProxyStream, OutputUrl
 class StreamsTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(StreamsTest, self).__init__(*args, **kwargs)
-        connect(mongodb_uri='mongodb://localhost:27017/iptv')
+        connect(db='iptv')
 
     def test_proxy(self):
         now = datetime.datetime.utcnow()
@@ -32,14 +32,17 @@ class StreamsTest(unittest.TestCase):
         vods_host = HostAndPort(host='localhost2', port=1236)
         cods_host = HostAndPort(host='localhost3', port=1237)
         nginx_host = HostAndPort(host='localhost', port=1344)
+        rtmp_host = HostAndPort(host='localhost', port=1935)
         feed = '/home/fead'
         timeshift_dir = '/home/time'
         hls_dir = '/home/tss'
         vods_dir = '/home/vods'
         cods_dir = '/home/cods'
         proxy_dir = '/hone/proxy'
+        data_dir = '/home/data'
         monitoring = True
         auto_start = True
+        price = 0.1
 
         server = ServiceSettings.make_entry({ServiceSettings.NAME_FIELD: name_server,
                                              ServiceSettings.HOST_FIELD: host.to_front_dict(),
@@ -47,14 +50,17 @@ class StreamsTest(unittest.TestCase):
                                              ServiceSettings.VODS_HOST_FIELD: vods_host.to_front_dict(),
                                              ServiceSettings.CODS_HOST_FIELD: cods_host.to_front_dict(),
                                              ServiceSettings.NGINX_HOST_FIELD: nginx_host.to_front_dict(),
+                                             ServiceSettings.RTMP_HOST_FIELD: rtmp_host.to_front_dict(),
                                              ServiceSettings.FEEDBACK_DIRECOTRY_FIELD: feed,
                                              ServiceSettings.TIMESHIFTS_DIRECTORY_FIELD: timeshift_dir,
                                              ServiceSettings.HLS_DIRECTORY_FIELD: hls_dir,
                                              ServiceSettings.VODS_DIRECTORY_FIELD: vods_dir,
                                              ServiceSettings.CODS_DIRECTORY_FIELD: cods_dir,
                                              ServiceSettings.PROXY_DIRECTORY_FIELD: proxy_dir,
+                                             ServiceSettings.DATA_DIRECTORY_FIELD: data_dir,
                                              ServiceSettings.MONITORING_FILED: monitoring,
-                                             ServiceSettings.AUTO_START_FIELD: auto_start})
+                                             ServiceSettings.AUTO_START_FIELD: auto_start,
+                                             ServiceSettings.PRICE_PACKAGE_FIELD: price})
         server.add_stream(proxy)
         self.assertEqual(len(server.streams), 1)
         server.remove_stream(proxy)

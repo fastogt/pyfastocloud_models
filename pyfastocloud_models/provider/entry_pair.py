@@ -1,9 +1,9 @@
 from enum import IntEnum
 
-from pymodm import EmbeddedMongoModel, fields
+from mongoengine import EmbeddedDocument, fields
 
 
-class ProviderPair(EmbeddedMongoModel):
+class ProviderPair(EmbeddedDocument):
     ID_FIELD = 'id'
     ROLE_FIELD = 'role'
 
@@ -25,7 +25,7 @@ class ProviderPair(EmbeddedMongoModel):
             return str(self.value)
 
     user = fields.ReferenceField('Provider')
-    role = fields.IntegerField(min_value=Roles.READ, max_value=Roles.ADMIN, default=Roles.ADMIN)
+    role = fields.IntField(min_value=Roles.READ, max_value=Roles.ADMIN, default=Roles.ADMIN)
 
     def to_front_dict(self) -> dict:
         return {ProviderPair.ID_FIELD: self.user.get_id(), ProviderPair.ROLE_FIELD: self.role, 'email': self.user.email}

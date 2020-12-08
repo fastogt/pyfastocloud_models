@@ -1,8 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from pymodm import MongoModel, EmbeddedMongoModel, fields, errors
-from pymodm.errors import ValidationError
+from mongoengine import Document, EmbeddedDocument, fields, errors
 
 import pyfastocloud_models.constants as constants
 from pyfastocloud_models.common_entries import HostAndPort, Maker
@@ -11,20 +10,20 @@ from pyfastocloud_models.provider.entry_pair import ProviderPair
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 
-class EpgUrl(EmbeddedMongoModel, Maker):
+class EpgUrl(EmbeddedDocument, Maker):
     ID_FIELD = 'id'
     URL_FIELD = 'url'
 
     id = fields.ObjectIdField(required=True, default=ObjectId, primary_key=True)
-    url = fields.CharField(default='http://0.0.0.0/epg.xml', max_length=constants.MAX_URI_LENGTH, required=True)
+    url = fields.StringField(default='http://0.0.0.0/epg.xml', max_length=constants.MAX_URI_LENGTH, required=True)
 
     def get_id(self) -> str:
         return str(self.id)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -38,7 +37,7 @@ class EpgUrl(EmbeddedMongoModel, Maker):
         return {EpgUrl.ID_FIELD: self.get_id(), EpgUrl.URL_FIELD: self.url}
 
 
-class EpgSettings(MongoModel, Maker):
+class EpgSettings(Document, Maker):
     ID_FIELD = 'id'
     NAME_FIELD = 'name'
     HOST_FIELD = 'host'
@@ -49,18 +48,11 @@ class EpgSettings(MongoModel, Maker):
     AUTO_START_FIELD = 'auto_start'
     ACTIVATION_KEY_FIELD = 'activation_key'
 
+    meta = {'collection': 'epgs', 'allow_inheritance': False}
+
     @staticmethod
     def get_by_id(sid: ObjectId):
-        try:
-            ser = EpgSettings.objects.get({'_id': sid})
-        except EpgSettings.DoesNotExist:
-            return None
-        else:
-            return ser
-
-    class Meta:
-        allow_inheritance = False
-        collection_name = 'epg'
+        return EpgSettings.objects(id=sid).first()
 
     DEFAULT_SERVICE_NAME = 'Epg'
     MIN_SERVICE_NAME_LENGTH = 3
@@ -69,20 +61,20 @@ class EpgSettings(MongoModel, Maker):
     DEFAULT_SERVICE_HOST = '127.0.0.1'
     DEFAULT_SERVICE_PORT = 4317
 
-    providers = fields.EmbeddedModelListField(ProviderPair, blank=True)
-    urls = fields.EmbeddedModelListField(EpgUrl, blank=True)
+    providers = fields.EmbeddedDocumentListField(ProviderPair, blank=True)
+    urls = fields.EmbeddedDocumentListField(EpgUrl, blank=True)
 
-    name = fields.CharField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
-                            min_length=MIN_SERVICE_NAME_LENGTH)
-    host = fields.EmbeddedModelField(HostAndPort,
-                                     default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+    name = fields.StringField(default=DEFAULT_SERVICE_NAME, max_length=MAX_SERVICE_NAME_LENGTH,
+                              min_length=MIN_SERVICE_NAME_LENGTH)
+    host = fields.EmbeddedDocumentField(HostAndPort,
+                                        default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
     # stats
     auto_start = fields.BooleanField(default=False, required=True)
-    activation_key = fields.CharField(max_length=constants.ACTIVATION_KEY_LENGTH,
-                                      min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
+    activation_key = fields.StringField(max_length=constants.ACTIVATION_KEY_LENGTH,
+                                        min_length=constants.ACTIVATION_KEY_LENGTH, required=False)
     monitoring = fields.BooleanField(default=False, required=True)
     created_date = fields.DateTimeField(default=datetime.now, required=True)  #
-    stats = fields.EmbeddedModelListField(Machine, blank=True)
+    stats = fields.EmbeddedDocumentListField(Machine, blank=True)
 
     def get_id(self) -> str:
         return str(self.pk)
@@ -170,7 +162,7 @@ class EpgSettings(MongoModel, Maker):
             self.activation_key = activation_key
 
         try:
-            self.full_clean()
+            self.validate()
         except errors.ValidationError as err:
             raise ValueError(err.message)
 

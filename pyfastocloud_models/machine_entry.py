@@ -1,10 +1,9 @@
-from pymodm import EmbeddedMongoModel, fields
-from pymodm.errors import ValidationError
+from mongoengine import EmbeddedDocument, fields, errors
 
 from pyfastocloud_models.common_entries import Maker
 
 
-class Machine(EmbeddedMongoModel, Maker):
+class Machine(EmbeddedDocument, Maker):
     CPU_FIELD = 'cpu'
     GPU_FIELD = 'gpu'
     LOAD_AVERAGE_FIELD = 'load_average'
@@ -19,30 +18,29 @@ class Machine(EmbeddedMongoModel, Maker):
     TOTAL_BYTES_IN_FIELD = 'total_bytes_in'
     TOTAL_BYTES_OUT_FIELD = 'total_bytes_out'
 
-    class Meta:
-        allow_inheritance = True
+    meta = {'allow_inheritance': True}
 
     cpu = fields.FloatField(required=True)
     gpu = fields.FloatField(required=True)
-    load_average = fields.CharField(required=True)
-    memory_total = fields.IntegerField(required=True)
-    memory_free = fields.IntegerField(required=True)
-    hdd_total = fields.IntegerField(required=True)
-    hdd_free = fields.IntegerField(required=True)
-    bandwidth_in = fields.IntegerField(required=True)
-    bandwidth_out = fields.IntegerField(required=True)
-    uptime = fields.IntegerField(required=True)
-    timestamp = fields.IntegerField(required=True)
-    total_bytes_in = fields.IntegerField(required=True)
-    total_bytes_out = fields.IntegerField(required=True)
+    load_average = fields.StringField(required=True)
+    memory_total = fields.IntField(required=True)
+    memory_free = fields.IntField(required=True)
+    hdd_total = fields.IntField(required=True)
+    hdd_free = fields.IntField(required=True)
+    bandwidth_in = fields.IntField(required=True)
+    bandwidth_out = fields.IntField(required=True)
+    uptime = fields.IntField(required=True)
+    timestamp = fields.IntField(required=True)
+    total_bytes_in = fields.IntField(required=True)
+    total_bytes_out = fields.IntField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(Machine, self).__init__(*args, **kwargs)
 
     def is_valid(self) -> bool:
         try:
-            self.full_clean()
-        except ValidationError:
+            self.validate()
+        except errors.ValidationError:
             return False
         return True
 
@@ -51,7 +49,7 @@ class Machine(EmbeddedMongoModel, Maker):
         return self.hdd_total - self.hdd_free
 
     def to_front_dict(self) -> dict:
-        result = self.to_son()
+        result = self.to_mongo()
         result.pop('_cls')
         return result.to_dict()
 

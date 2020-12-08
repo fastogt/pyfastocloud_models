@@ -28,7 +28,7 @@ class Subscribers(unittest.TestCase):
         exp_date = stable + 1000000
         status = int(Subscriber.Status.ACTIVE)
         max_dev_count = 11
-        country = 'EN'
+        country = 'GB'
         language = 'ru'
         sub = Subscriber.make_entry({Subscriber.EMAIL_FIELD: email, Subscriber.PASSWORD_FIELD: password,
                                      Subscriber.FIRST_NAME_FIELD: first_name, Subscriber.LAST_NAME_FIELD: last_name,

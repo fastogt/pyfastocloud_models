@@ -13,9 +13,11 @@ from pyfastocloud_models.utils.utils import date_to_utc_msec
 class EpgUrl(EmbeddedDocument, Maker):
     ID_FIELD = 'id'
     URL_FIELD = 'url'
+    AUTO_UPDATE_FIELD = 'auto_update'
 
     id = fields.ObjectIdField(required=True, default=ObjectId, primary_key=True)
     url = fields.StringField(default='http://0.0.0.0/epg.xml', max_length=constants.MAX_URI_LENGTH, required=True)
+    auto_update = fields.BooleanField(default=True, required=True)
 
     def get_id(self) -> str:
         return str(self.id)
@@ -33,8 +35,12 @@ class EpgUrl(EmbeddedDocument, Maker):
         if res:
             self.url = url
 
+        res, auto_update = self.check_required_type(EpgUrl.AUTO_UPDATE_FIELD, bool, json)
+        if res:  # optional field
+            self.auto_update = auto_update
+
     def to_front_dict(self) -> dict:
-        return {EpgUrl.ID_FIELD: self.get_id(), EpgUrl.URL_FIELD: self.url}
+        return {EpgUrl.ID_FIELD: self.get_id(), EpgUrl.URL_FIELD: self.url, EpgUrl.AUTO_UPDATE_FIELD: self.auto_update}
 
 
 class EpgSettings(Document, Maker):
@@ -47,6 +53,8 @@ class EpgSettings(Document, Maker):
     MONITORING_FILED = 'monitoring'
     AUTO_START_FIELD = 'auto_start'
     ACTIVATION_KEY_FIELD = 'activation_key'
+    AUTO_UPDATE_FIELD = 'auto_update'
+    AUTO_UPDATE_PERIOD_FIELD = 'auto_update_period'
 
     meta = {'collection': 'epgs', 'allow_inheritance': False}
 
@@ -68,6 +76,12 @@ class EpgSettings(Document, Maker):
                               min_length=MIN_SERVICE_NAME_LENGTH)
     host = fields.EmbeddedDocumentField(HostAndPort,
                                         default=HostAndPort(host=DEFAULT_SERVICE_HOST, port=DEFAULT_SERVICE_PORT))
+
+    auto_update = fields.BooleanField(default=False, required=True)
+    auto_update_period = fields.IntField(min_value=constants.MIN_UPDATE_EPG_TIME,
+                                         max_value=constants.MAX_UPDATE_EPG_TIME,
+                                         required=False)
+
     # stats
     auto_start = fields.BooleanField(default=False, required=True)
     activation_key = fields.StringField(max_length=constants.ACTIVATION_KEY_LENGTH,
@@ -152,6 +166,8 @@ class EpgSettings(Document, Maker):
         res, monitoring = self.check_required_type(EpgSettings.MONITORING_FILED, bool, json)
         if res:  # required field
             self.monitoring = monitoring
+        else:
+            self.monitoring = None
 
         res, auto_start = self.check_required_type(EpgSettings.AUTO_START_FIELD, bool, json)
         if res:  # required field
@@ -160,6 +176,18 @@ class EpgSettings(Document, Maker):
         res, activation_key = self.check_optional_type(EpgSettings.ACTIVATION_KEY_FIELD, str, json)
         if res:  # optional field
             self.activation_key = activation_key
+        else:
+            self.activation_key = None
+
+        res, auto_update = self.check_required_type(EpgSettings.AUTO_UPDATE_FIELD, bool, json)
+        if res:  # required field
+            self.auto_update = auto_update
+
+        res, auto_update_period = self.check_optional_type(EpgSettings.AUTO_UPDATE_PERIOD_FIELD, int, json)
+        if res:  # optional field
+            self.auto_update_period = auto_update_period
+        else:
+            self.auto_update_period = None
 
         try:
             self.validate()
@@ -178,4 +206,6 @@ class EpgSettings(Document, Maker):
                 EpgSettings.CREATED_DATE_FIELD: self.created_date_utc_msec(),
                 EpgSettings.AUTO_START_FIELD: self.auto_start,
                 EpgSettings.ACTIVATION_KEY_FIELD: self.activation_key,
+                EpgSettings.AUTO_UPDATE_FIELD: self.auto_update,
+                EpgSettings.AUTO_UPDATE_PERIOD_FIELD: self.auto_update_period,
                 EpgSettings.PROVIDERS_FIELD: providers, EpgSettings.MONITORING_FILED: self.monitoring}

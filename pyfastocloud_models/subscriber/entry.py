@@ -510,8 +510,8 @@ class Subscriber(Document, Maker):
         istream = IStream.get_by_id(sid)
         if istream:
             for stream in self.streams:
-                if stream.private and stream.sid == sid:
-                    self.stream.remove(stream)
+                if stream.private and stream.sid == istream:
+                    self.streams.remove(stream)
             istream.delete()
 
     def remove_all_own_streams(self):
@@ -520,19 +520,19 @@ class Subscriber(Document, Maker):
                 self.streams.remove(stream)
 
     def add_own_vod(self, user_stream: UserStream):
-        for vod in self.vod:
+        for vod in self.vods:
             if vod.private and vod.sid == user_stream.sid:
                 return
 
         user_stream.private = True
-        self.vod.append(user_stream)
+        self.vods.append(user_stream)
 
     def remove_own_vod_by_id(self, sid: ObjectId):
         vod = IStream.get_by_id(sid)
         if vod:
-            for vod in self.vod:
-                if vod.private and vod.sid == sid:
-                    self.vod.remove(vod)
+            for vod in self.vods:
+                if vod.private and vod.sid == vod:
+                    self.vods.remove(vod)
             vod.delete()
 
     def remove_all_own_vods(self):

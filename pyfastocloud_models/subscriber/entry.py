@@ -797,6 +797,11 @@ class Subscriber(Document, Maker):
                 object_servers.append(ObjectId(server))
             self.servers = object_servers
 
+        try:
+            self.validate()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
+
     def to_front_dict(self) -> dict:
         servers = []
         for server in self.servers:

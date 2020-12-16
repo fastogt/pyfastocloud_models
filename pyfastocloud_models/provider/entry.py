@@ -218,6 +218,7 @@ class Provider(Document, Maker):
             if not constants.is_valid_locale_code(language):
                 raise ValueError('Invalid language')
             self.language = language
+
         try:
             self.validate()
         except errors.ValidationError as err:

@@ -162,7 +162,6 @@ class SrtKey(EmbeddedDocument, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         return result.to_dict()
 
     def update_entry(self, json: dict):
@@ -463,7 +462,6 @@ class Logo(EmbeddedDocument, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         return result.to_dict()
 
 
@@ -504,7 +502,6 @@ class RSVGLogo(EmbeddedDocument, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         return result.to_dict()
 
 
@@ -646,7 +643,6 @@ class MachineLearning(EmbeddedDocument, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         return result.to_dict()
 
 
@@ -667,7 +663,6 @@ class MetaUrl(EmbeddedDocument, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         return result.to_dict()
 
     def update_entry(self, json: dict):
@@ -720,5 +715,4 @@ class Phone(EmbeddedDocument, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         return result.to_dict()

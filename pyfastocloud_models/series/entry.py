@@ -68,7 +68,6 @@ class Serial(Document, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         result.pop('_id')
         result[Serial.CREATED_DATE_FIELD] = self.created_date_utc_msec()
         result[Serial.ID_FIELD] = self.get_id()

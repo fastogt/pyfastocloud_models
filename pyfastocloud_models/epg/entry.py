@@ -13,11 +13,9 @@ from pyfastocloud_models.utils.utils import date_to_utc_msec
 class EpgUrl(EmbeddedDocument, Maker):
     ID_FIELD = 'id'
     URL_FIELD = 'url'
-    AUTO_UPDATE_FIELD = 'auto_update'
 
     id = fields.ObjectIdField(required=True, default=ObjectId, primary_key=True)
     url = fields.StringField(default='http://0.0.0.0/epg.xml', max_length=constants.MAX_URI_LENGTH, required=True)
-    auto_update = fields.BooleanField(default=True, required=True)
 
     def get_id(self) -> str:
         return str(self.id)
@@ -35,12 +33,13 @@ class EpgUrl(EmbeddedDocument, Maker):
         if res:
             self.url = url
 
-        res, auto_update = self.check_required_type(EpgUrl.AUTO_UPDATE_FIELD, bool, json)
-        if res:  # optional field
-            self.auto_update = auto_update
+        try:
+            self.validate()
+        except errors.ValidationError as err:
+            raise ValueError(err.message)
 
     def to_front_dict(self) -> dict:
-        return {EpgUrl.ID_FIELD: self.get_id(), EpgUrl.URL_FIELD: self.url, EpgUrl.AUTO_UPDATE_FIELD: self.auto_update}
+        return {EpgUrl.ID_FIELD: self.get_id(), EpgUrl.URL_FIELD: self.url}
 
 
 class EpgSettings(Document, Maker):

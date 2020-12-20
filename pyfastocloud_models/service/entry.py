@@ -40,6 +40,10 @@ class ServiceSettings(Document, Maker):
     meta = {'collection': 'services', 'allow_inheritance': False}
 
     @staticmethod
+    def all():
+        return ServiceSettings.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return ServiceSettings.objects(id=sid).first()
 

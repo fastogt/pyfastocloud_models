@@ -58,6 +58,10 @@ class EpgSettings(Document, Maker):
     meta = {'collection': 'epgs', 'allow_inheritance': False}
 
     @staticmethod
+    def all():
+        return EpgSettings.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return EpgSettings.objects(id=sid).first()
 

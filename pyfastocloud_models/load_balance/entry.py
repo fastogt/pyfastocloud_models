@@ -26,6 +26,10 @@ class LoadBalanceSettings(Document, Maker):
     meta = {'collection': 'load_balances', 'allow_inheritance': False}
 
     @staticmethod
+    def all():
+        return LoadBalanceSettings.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return LoadBalanceSettings.objects(id=sid).first()
 

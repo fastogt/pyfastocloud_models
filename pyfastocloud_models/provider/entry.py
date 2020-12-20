@@ -32,6 +32,10 @@ class Provider(Document, Maker):
     meta = {'collection': 'providers', 'allow_inheritance': True}
 
     @staticmethod
+    def all():
+        return Provider.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return Provider.objects(id=sid).first()
 

@@ -54,6 +54,10 @@ class IStream(Document, Maker):
     meta = {'collection': 'streams', 'allow_inheritance': True}
 
     @staticmethod
+    def all():
+        return IStream.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return IStream.objects(id=sid).first()
 

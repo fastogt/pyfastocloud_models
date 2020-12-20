@@ -28,6 +28,10 @@ class Serial(Document, Maker):
     meta = {'collection': 'series', 'allow_inheritance': False}
 
     @staticmethod
+    def all():
+        return Serial.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return Serial.objects(id=sid).first()
 

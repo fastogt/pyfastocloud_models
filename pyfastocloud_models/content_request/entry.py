@@ -18,6 +18,10 @@ class ContentRequest(Document, Maker):
     meta = {'collection': 'requests', 'allow_inheritance': False}
 
     @staticmethod
+    def all():
+        return ContentRequest.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return ContentRequest.objects(id=sid).first()
 

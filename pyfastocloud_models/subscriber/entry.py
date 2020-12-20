@@ -193,6 +193,10 @@ class Subscriber(Document, Maker):
     meta = {'collection': 'subscribers', 'allow_inheritance': False}
 
     @staticmethod
+    def all():
+        return Subscriber.objects.all()
+
+    @staticmethod
     def get_by_id(sid: ObjectId):
         return Subscriber.objects(id=sid).first()
 

@@ -355,8 +355,10 @@ class IStream(Document, Maker):
             return CodRelayStream.make_entry(json)
         elif stream_type == constants.StreamType.COD_ENCODE:
             return CodEncodeStream.make_entry(json)
-        else:
+        elif stream_type == constants.StreamType.CV_DATA:
             return CvDataStream.make_entry(json)
+        else:
+            return ChangerStream.make_entry(json)
 
     def is_valid(self) -> bool:
         try:
@@ -1138,6 +1140,14 @@ class CvDataStream(EncodeStream):
 
     def get_type(self) -> constants.StreamType:
         return constants.StreamType.CV_DATA
+
+
+class ChangerStream(EncodeStream):
+    def __init__(self, *args, **kwargs):
+        super(ChangerStream, self).__init__(*args, **kwargs)
+
+    def get_type(self) -> constants.StreamType:
+        return constants.StreamType.CHANGER
 
 
 # if remove catchup also clean parts

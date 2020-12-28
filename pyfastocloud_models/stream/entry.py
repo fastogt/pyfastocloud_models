@@ -775,7 +775,7 @@ class EncodeStream(HardwareStream):
         if res:  # optional field
             self.audio_codec = audio_codec
 
-        res, audio_channel_count = IStream.check_optional_type(EncodeStream.AUDIO_CHANNELS_COUNT_FIELD, str, json)
+        res, audio_channel_count = IStream.check_optional_type(EncodeStream.AUDIO_CHANNELS_COUNT_FIELD, int, json)
         if res:  # optional field
             self.audio_channels_count = audio_channel_count
         else:

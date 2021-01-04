@@ -117,7 +117,7 @@ LAME_MP3_ENC = 'lamemp3enc'
 FAAC = 'faac'
 VOAAC_ENC = 'voaacenc'
 OPUS_ENC = 'opusenc'
-DEFAULT_AUDIO_CODEC = FAAC
+DEFAULT_AUDIO_CODEC = VOAAC_ENC
 
 AVAILABLE_VIDEO_CODECS = [(EAVC_ENC, 'eav'), (OPEN_H264_ENC, 'openh264'), (X264_ENC, 'x264'), (NV_H264_ENC, 'nvh264'),
                           (NV_H265_ENC, 'nvh265'), (VAAPI_H264_ENC, 'vaapih264'), (VAAPI_MPEG2_ENC, 'vaapimpeg2'),

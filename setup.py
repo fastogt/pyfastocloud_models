@@ -17,7 +17,7 @@ DESCRIPTION = 'FastoCloud python models files.'
 URL = 'https://github.com/fastogt/pyfastocloud_models'
 EMAIL = 'support@fastogt.com'
 AUTHOR = 'Alexandr Topilski'
-REQUIRES_PYTHON = '>=3.6'
+REQUIRES_PYTHON = '>=3.0.0'
 VERSION = '1.4.1'
 
 # What packages are required for this module to be executed?

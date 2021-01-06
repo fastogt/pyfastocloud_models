@@ -22,7 +22,7 @@ VERSION = '1.4.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = ['pyfastogt @ git+git://github.com/fastogt/pyfastogt@master',
-            'mongoengine>=0.22.1']
+            'mongoengine>=0.22.0']
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------

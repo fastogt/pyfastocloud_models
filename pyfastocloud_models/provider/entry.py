@@ -29,7 +29,7 @@ class Provider(Document, Maker):
     CREDITS_FIELD = 'credits'
     CREDITS_REMAINING_FIELD = 'credits_remaining'
 
-    meta = {'collection': 'providers', 'allow_inheritance': True}
+    meta = {'collection': 'providers', 'allow_inheritance': False}
 
     @staticmethod
     def all():

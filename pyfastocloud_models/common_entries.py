@@ -598,12 +598,14 @@ class MachineLearning(EmbeddedDocument, Maker):
     MODEL_URL_FIELD = 'model_url'
     TRACKING_FIELD = 'tracking'
     DUMP_FIELD = 'dump'
+    CLASS_ID_FIELD = 'class_id'
     OVERLAY_FIELD = 'overlay'
 
-    backend = fields.IntField(choices=constants.MlBackends.choices(), required=False)
+    backend = fields.IntField(choices=constants.MlBackends.choices(), required=True)
     model_url = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
                                    required=True)
     tracking = fields.BooleanField(required=True)
+    class_id = fields.IntField(required=True)
     dump = fields.BooleanField(required=True)
     overlay = fields.BooleanField(required=True)
 
@@ -636,6 +638,10 @@ class MachineLearning(EmbeddedDocument, Maker):
         res, dump = self.check_required_type(MachineLearning.DUMP_FIELD, bool, json)
         if res:
             self.dump = dump
+
+        res, clid = self.check_required_type(MachineLearning.CLASS_ID_FIELD, int, json)
+        if res:
+            self.class_id = clid
 
         res, overlay = self.check_required_type(MachineLearning.OVERLAY_FIELD, bool, json)
         if res:

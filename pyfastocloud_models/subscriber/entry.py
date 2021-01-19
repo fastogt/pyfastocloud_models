@@ -710,10 +710,10 @@ class Subscriber(Document, Maker):
 
         self.series = self.all_available_official_series()
 
-    def delete(self, *args, **kwargs):
+    def delete(self, signal_kwargs=None, **write_concern):
         self.remove_all_own_streams()
         self.remove_all_own_vods()
-        return super(Subscriber, self).delete(*args, **kwargs)
+        return super(Subscriber, self).delete(signal_kwargs, **write_concern)
 
     def delete_fake(self, *args, **kwargs):
         self.remove_all_own_streams()

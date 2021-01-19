@@ -238,7 +238,7 @@ class Provider(Document, Maker):
                 Provider.LANGUAGE_FIELD: self.language, Provider.COUNTRY_FIELD: self.country,
                 Provider.CREDITS_REMAINING_FIELD: cred}
 
-    def delete(self, *args, **kwargs):
+    def delete(self, signal_kwargs=None, **write_concern):
         from pyfastocloud_models.service.entry import ServiceSettings
         servers = ServiceSettings.objects.all()
         for server in servers:
@@ -256,7 +256,7 @@ class Provider(Document, Maker):
         for epg in epgs:
             epg.remove_provider(self.id)
             epg.save()
-        return super(Provider, self).delete(*args, **kwargs)
+        return super(Provider, self).delete(signal_kwargs, **write_concern)
 
     def is_valid(self) -> bool:
         try:

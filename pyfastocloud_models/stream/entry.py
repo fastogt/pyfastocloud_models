@@ -242,14 +242,14 @@ class IStream(Document, Maker):
     def fixup_output_urls(self, settings):
         return
 
-    def save(self, settings=None, cascade=None, validate=True, force_insert=False):
+    def save(self, settings=None):
         if self.pk is None:
             self.pk = ObjectId()
         self.fixup_input_urls(settings)
         self.fixup_output_urls(settings)
-        return super(IStream, self).save(cascade, validate, force_insert)
+        return super(IStream, self).save()
 
-    def delete(self, *args, **kwargs):
+    def delete(self, signal_kwargs=None, **write_concern):
         from pyfastocloud_models.subscriber.entry import Subscriber
         from pyfastocloud_models.series.entry import Serial
         subscribers = Subscriber.objects.all()
@@ -263,7 +263,7 @@ class IStream(Document, Maker):
         for serial in serials:
             serial.remove_episode(self)
             serial.save()
-        return super(IStream, self).delete(*args, **kwargs)
+        return super(IStream, self).delete(signal_kwargs, **write_concern)
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)

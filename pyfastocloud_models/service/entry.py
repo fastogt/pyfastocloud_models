@@ -270,11 +270,11 @@ class ServiceSettings(Document, Maker):
     def created_date_utc_msec(self):
         return date_to_utc_msec(self.created_date)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, signal_kwargs=None, **write_concern):
         for stream in self.streams:
             if stream:
                 stream.delete()
-        return super(ServiceSettings, self).delete(*args, **kwargs)
+        return super(ServiceSettings, self).delete(signal_kwargs, **write_concern)
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)

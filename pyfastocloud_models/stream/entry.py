@@ -5,9 +5,10 @@ from urllib.parse import urlparse
 
 from bson.objectid import ObjectId
 from mongoengine import Document, fields, PULL, errors
+from pyfastogt.maker import Maker
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, Maker, MetaUrl, \
+from pyfastocloud_models.common_entries import Rational, Size, Logo, RSVGLogo, InputUrl, OutputUrl, MetaUrl, \
     MachineLearning
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 

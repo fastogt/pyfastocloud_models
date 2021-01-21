@@ -3,9 +3,10 @@ from datetime import datetime
 
 from bson import ObjectId
 from mongoengine import Document, fields, errors, PULL
+from pyfastogt.maker import Maker
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import HostAndPort, Maker
+from pyfastocloud_models.common_entries import HostAndPort
 from pyfastocloud_models.machine_entry import Machine
 from pyfastocloud_models.provider.entry_pair import ProviderPair
 from pyfastocloud_models.series.entry import Serial

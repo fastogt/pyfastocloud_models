@@ -2,9 +2,9 @@ from datetime import datetime
 
 from bson.objectid import ObjectId
 from mongoengine import Document, fields, errors, PULL
+from pyfastogt.maker import Maker
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.stream.entry import IStream, ProxyVodStream, VodEncodeStream, VodRelayStream
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 

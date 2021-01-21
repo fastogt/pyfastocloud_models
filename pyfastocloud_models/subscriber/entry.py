@@ -4,10 +4,10 @@ from hashlib import md5
 
 from bson.objectid import ObjectId
 from mongoengine import Document, fields, EmbeddedDocument, errors, PULL
+from pyfastogt.maker import Maker
 from pyfastogt.utils import is_valid_email
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.content_request.entry import ContentRequest
 from pyfastocloud_models.series.entry import Serial
 from pyfastocloud_models.service.entry import ServiceSettings

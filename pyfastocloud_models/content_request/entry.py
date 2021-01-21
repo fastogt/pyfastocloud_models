@@ -3,8 +3,8 @@ from enum import IntEnum
 
 from bson.objectid import ObjectId
 from mongoengine import Document, fields, errors
+from pyfastogt.maker import Maker
 
-from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.utils.utils import date_to_utc_msec
 
 

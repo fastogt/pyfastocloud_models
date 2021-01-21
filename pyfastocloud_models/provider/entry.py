@@ -3,11 +3,11 @@ from enum import IntEnum
 
 from bson.objectid import ObjectId
 from mongoengine import Document, fields, errors, PULL
+from pyfastogt.maker import Maker
 from pyfastogt.utils import is_valid_email
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import pyfastocloud_models.constants as constants
-from pyfastocloud_models.common_entries import Maker
 from pyfastocloud_models.epg.entry import EpgSettings
 from pyfastocloud_models.load_balance.entry import LoadBalanceSettings
 from pyfastocloud_models.service.entry import ServiceSettings

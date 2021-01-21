@@ -1,6 +1,5 @@
 from mongoengine import EmbeddedDocument, fields, errors
-
-from pyfastocloud_models.common_entries import Maker
+from pyfastogt.maker import Maker
 
 
 class Machine(EmbeddedDocument, Maker):

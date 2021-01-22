@@ -17,7 +17,7 @@ class Machine(EmbeddedDocument, Maker):
     TOTAL_BYTES_IN_FIELD = 'total_bytes_in'
     TOTAL_BYTES_OUT_FIELD = 'total_bytes_out'
 
-    meta = {'allow_inheritance': True}
+    meta = {'allow_inheritance': False}
 
     cpu = fields.FloatField(required=True)
     gpu = fields.FloatField(required=True)
@@ -49,7 +49,6 @@ class Machine(EmbeddedDocument, Maker):
 
     def to_front_dict(self) -> dict:
         result = self.to_mongo()
-        result.pop('_cls')
         return result.to_dict()
 
     def update_entry(self, json: dict):

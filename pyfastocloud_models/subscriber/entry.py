@@ -198,11 +198,11 @@ class Subscriber(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return Subscriber.objects(id=sid).first()
+        return Subscriber.objects.get(id=sid)
 
     @staticmethod
     def get_by_email(email: str):
-        return Subscriber.objects(email=email).first()
+        return Subscriber.objects.get(email=email)
 
     MAX_DATE = datetime(2100, 1, 1)
 

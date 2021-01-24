@@ -46,7 +46,7 @@ class ServiceSettings(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return ServiceSettings.objects(id=sid).first()
+        return ServiceSettings.objects.get(id=sid)
 
     DEFAULT_SERVICE_NAME = 'Service'
     MIN_SERVICE_NAME_LENGTH = 3

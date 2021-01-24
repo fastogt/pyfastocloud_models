@@ -33,7 +33,7 @@ class Serial(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return Serial.objects(id=sid).first()
+        return Serial.objects.get(id=sid)
 
     def get_id(self) -> str:
         return str(self.pk)

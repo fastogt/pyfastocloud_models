@@ -32,7 +32,7 @@ class LoadBalanceSettings(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return LoadBalanceSettings.objects(id=sid).first()
+        return LoadBalanceSettings.objects.get(id=sid)
 
     DEFAULT_SERVICE_NAME = 'Load Balance'
     MIN_SERVICE_NAME_LENGTH = 3

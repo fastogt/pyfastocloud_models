@@ -64,7 +64,7 @@ class EpgSettings(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return EpgSettings.objects(id=sid).first()
+        return EpgSettings.objects.get(id=sid)
 
     DEFAULT_SERVICE_NAME = 'Epg'
     MIN_SERVICE_NAME_LENGTH = 3

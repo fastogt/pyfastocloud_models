@@ -37,11 +37,11 @@ class Provider(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return Provider.objects(id=sid).first()
+        return Provider.objects.get(id=sid)
 
     @staticmethod
     def get_by_email(email: str):
-        return Provider.objects(email=email).first()
+        return Provider.objects.get(email=email)
 
     class Status(IntEnum):
         NO_ACTIVE = 0

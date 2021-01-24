@@ -23,7 +23,7 @@ class ContentRequest(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return ContentRequest.objects(id=sid).first()
+        return ContentRequest.objects.get(id=sid)
 
     class Status(IntEnum):
         NEW = 0

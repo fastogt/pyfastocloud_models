@@ -60,7 +60,7 @@ class IStream(Document, Maker):
 
     @staticmethod
     def get_by_id(sid: ObjectId):
-        return IStream.objects(id=sid).first()
+        return IStream.objects.get(id=sid)
 
     # required
     name = fields.StringField(min_length=constants.MIN_STREAM_NAME_LENGTH, max_length=constants.MAX_STREAM_NAME_LENGTH,

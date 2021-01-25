@@ -516,6 +516,7 @@ class Subscriber(Document, Maker):
             for stream in self.streams:
                 if stream.private and stream.sid == istream:
                     self.streams.remove(stream)
+                    break
             istream.delete()
 
     def remove_all_own_streams(self):

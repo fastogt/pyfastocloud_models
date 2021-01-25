@@ -54,11 +54,13 @@ class Url(EmbeddedDocument, Maker):
 class StreamLink(EmbeddedDocument, Maker):
     HTTP_PROXY_FIELD = 'http_proxy'
     HTTPS_PROXY_FIELD = 'https_proxy'
+    PREFER_FIELD = 'prefer'
 
     http_proxy = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
                                     required=False, blank=True)
     https_proxy = fields.StringField(min_length=constants.MIN_URI_LENGTH, max_length=constants.MAX_URI_LENGTH,
                                      required=False, blank=True)
+    prefer = fields.IntField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(StreamLink, self).__init__(*args, **kwargs)
@@ -76,6 +78,10 @@ class StreamLink(EmbeddedDocument, Maker):
 
     def update_entry(self, json: dict):
         Maker.update_entry(self, json)
+
+        res, pref = self.check_required_type(StreamLink.PREFER_FIELD, int, json)
+        if res:
+            self.prefer = pref
 
         res, http = self.check_optional_type(StreamLink.HTTP_PROXY_FIELD, str, json)
         if res:

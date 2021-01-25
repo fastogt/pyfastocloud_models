@@ -202,7 +202,7 @@ class Subscriber(Document, Maker):
 
     @staticmethod
     def get_by_email(email: str):
-        return Subscriber.objects.get(email=email)
+        return Subscriber.objects.objects(email=email).first()
 
     MAX_DATE = datetime(2100, 1, 1)
 

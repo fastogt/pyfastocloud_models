@@ -41,7 +41,7 @@ class Provider(Document, Maker):
 
     @staticmethod
     def get_by_email(email: str):
-        return Provider.objects.objects(email=email).first()
+        return Provider.objects(email=email).first()
 
     class Status(IntEnum):
         NO_ACTIVE = 0
